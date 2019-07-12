@@ -16,7 +16,7 @@
   "Modules": [
     {
       "Name": "GamsAgents",
-      "Type": "Developer",
+      "Type": "Runtime",
       "WhitelistPlatforms": [ "Win64", "Mac", "Linux" ],
       "LoadingPhase": "Default"
     }
