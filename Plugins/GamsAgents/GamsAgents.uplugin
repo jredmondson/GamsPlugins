@@ -1,0 +1,24 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "Gams Agents",
+  "Description": "Gams Agents provides interfaces for working with the Group Autonomy for Mobile Systems (GAMS) project. GAMS provides knowledge sharing, deterministic execution, and multi-agent behaviors for virtual and real-world agents.",
+  "Category": "Artificial Intelligence",
+  "CreatedBy": "James Edmondson",
+  "CreatedByURL": "https://github.com/jredmondson",
+  "DocsURL": "https://github.com/jredmondson/GamsPlugins",
+  "MarketplaceURL": "",
+  "SupportURL": "https://github.com/jredmondson/GamsPlugins",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GamsAgents",
+      "Type": "Developer",
+      "WhitelistPlatforms": [ "Win64", "Mac", "Linux" ],
+      "LoadingPhase": "Default"
+    }
+  ]
+}
