@@ -2,8 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "Gams Agents",
-	"Description": "Gams Agents provides assets and interfaces to AI primitives in the Group Autonomy for Mobile Systems (GAMS) project. Include this plugin for quadcopters and other vehicles.",
+	"FriendlyName": "Gams Library",
+	"Description": "Gams Library provides C++ includes, libraries, etc. for working with the Group Autonomy for Mobile Systems Project on Github. Other GAMS plugins generally depend on this one.",
 	"Category": "AI",
 	"CreatedBy": "James Edmondson",
 	"CreatedByURL": "https://github.com/jredmondson",
@@ -15,20 +15,9 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "GamsAgents",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [
-				"Win64",
-				"Mac",
-				"Linux"
-			]
-		}
-	],
-	"Plugins": [
-		{
 			"Name": "GamsLibrary",
-			"Enabled": true
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	]
 }

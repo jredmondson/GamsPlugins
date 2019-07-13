@@ -1,12 +1,10 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
-using System;
-using System.IO;
 
-public class GamsAgents : ModuleRules
+public class GamsLibrary : ModuleRules
 {
-	public GamsAgents(ReadOnlyTargetRules Target) : base(Target)
+	public GamsLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -28,7 +26,8 @@ public class GamsAgents : ModuleRules
 			new string[]
 			{
 				"Core",
-        "GamsLibrary"
+				"GamsLibraryLibrary",
+				"Projects"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -37,11 +36,6 @@ public class GamsAgents : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
-        "GamsLibrary"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
@@ -53,10 +47,5 @@ public class GamsAgents : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
-
-    // Boost has lots of warnings. Disable them
-    //PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
-    //PublicDefinitions.Add("MADARA_NO_THREAD_LOCAL=1");
-
-  }
+	}
 }
