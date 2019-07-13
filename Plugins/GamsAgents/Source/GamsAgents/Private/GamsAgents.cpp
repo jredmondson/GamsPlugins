@@ -4,6 +4,10 @@
 
 #define LOCTEXT_NAMESPACE "FGamsAgentsModule"
 
+namespace controllers = gams::controllers;
+namespace knowledge = madara::knowledge;
+namespace utility = madara::utility;
+
 void FGamsAgentsModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
@@ -17,4 +21,10 @@ void FGamsAgentsModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
+utility::Refcounter<knowledge::KnowledgeBase> gams_kb (
+  new knowledge::KnowledgeBase ());
+
+utility::Refcounter<controllers::Multicontroller> gams_controller (
+  new controllers::Multicontroller ());
+
 IMPLEMENT_MODULE(FGamsAgentsModule, GamsAgents)

@@ -55,8 +55,10 @@ public class GamsAgents : ModuleRules
 			);
 
     // Boost has lots of warnings. Disable them
-    //PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
+    PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
     //PublicDefinitions.Add("MADARA_NO_THREAD_LOCAL=1");
+    bUseRTTI = true;
+    bEnableExceptions = true;
 
   }
 }

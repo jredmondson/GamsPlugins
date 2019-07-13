@@ -76,6 +76,10 @@ public class GamsLibraryLibrary : ModuleRules
         BOOST_TOOLSET + "-mt-gd-" + BOOST_ARCH + "-" + BOOST_VERSION + ".lib";
       string BOOST_SYSTEM_RELEASE = BOOST_STATIC_LIB_PREFIX + "boost_system-" +
         BOOST_TOOLSET + "-mt-gd-" + BOOST_ARCH + "-" + BOOST_VERSION + ".lib";
+      string BOOST_FS_DEBUG = BOOST_STATIC_LIB_PREFIX + "boost_filesystem-" +
+        BOOST_TOOLSET + "-mt-gd-" + BOOST_ARCH + "-" + BOOST_VERSION + ".lib";
+      string BOOST_FS_RELEASE = BOOST_STATIC_LIB_PREFIX + "boost_filesystem-" +
+        BOOST_TOOLSET + "-mt-gd-" + BOOST_ARCH + "-" + BOOST_VERSION + ".lib";
 
       // add the Boost lib path
       PublicLibraryPaths.Add(Path.Combine(BOOST_ROOT, "stage", "lib"));
@@ -84,10 +88,12 @@ public class GamsLibraryLibrary : ModuleRules
       if (Target.Configuration == UnrealTargetConfiguration.Debug)
       {
         PublicAdditionalLibraries.Add(BOOST_SYSTEM_DEBUG);
+        PublicAdditionalLibraries.Add(BOOST_FS_DEBUG);
       }
       else
       {
         PublicAdditionalLibraries.Add(BOOST_SYSTEM_RELEASE);
+        PublicAdditionalLibraries.Add(BOOST_FS_RELEASE);
       }
 
       PublicIncludePaths.Add(BOOST_ROOT);
@@ -106,5 +112,6 @@ public class GamsLibraryLibrary : ModuleRules
     // Boost has lots of warnings. Disable them
     PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
     PublicDefinitions.Add("MADARA_NO_THREAD_LOCAL=1");
+    PublicDefinitions.Add("_USE_MATH_DEFINES=1");
   }
 }
