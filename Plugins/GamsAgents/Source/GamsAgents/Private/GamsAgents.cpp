@@ -11,6 +11,8 @@ namespace utility = madara::utility;
 void FGamsAgentsModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+
+  gams_controller = new controllers::Multicontroller ();
 }
 
 void FGamsAgentsModule::ShutdownModule()
@@ -20,11 +22,11 @@ void FGamsAgentsModule::ShutdownModule()
 }
 
 #undef LOCTEXT_NAMESPACE
-	
-utility::Refcounter<knowledge::KnowledgeBase> gams_kb (
+	/*
+utility::Refcounter<> gams_kb (
   new knowledge::KnowledgeBase ());
 
 utility::Refcounter<controllers::Multicontroller> gams_controller (
-  new controllers::Multicontroller ());
+  new controllers::Multicontroller ());*/
 
 IMPLEMENT_MODULE(FGamsAgentsModule, GamsAgents)

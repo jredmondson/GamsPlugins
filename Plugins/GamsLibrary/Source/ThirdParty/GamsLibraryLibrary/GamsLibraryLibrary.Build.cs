@@ -6,9 +6,19 @@ using UnrealBuildTool;
 
 public class GamsLibraryLibrary : ModuleRules
 {
-	public GamsLibraryLibrary(ReadOnlyTargetRules Target) : base(Target)
+  private string ModulePath
+  {
+    get { return ModuleDirectory; }
+  }
+
+  private string ThirdPartyPath
+  {
+    get { return Path.GetFullPath(Path.Combine(ModulePath, "../../../Binaries/Win64")); }
+  }
+
+  public GamsLibraryLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
-	Type = ModuleType.External;
+    Type = ModuleType.External;
 
     string CAPNP_ROOT =
       Environment.GetEnvironmentVariable("CAPNP_ROOT");
@@ -34,9 +44,16 @@ public class GamsLibraryLibrary : ModuleRules
     PrivateIncludePaths.Add(Path.Combine(GAMS_ROOT, "src"));
     PrivateIncludePaths.Add(EIGEN_ROOT);
 
+
     // add universal libraries
-    PublicDelayLoadDLLs.Add("MADARA");
-    PublicDelayLoadDLLs.Add("GAMS");
+    //PublicAdditionalLibraries.Add("MADARA.lib");
+    //PublicAdditionalLibraries.Add("GAMS.lib");
+    PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyPath, "GAMS.lib"));
+    PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyPath, "MADARA.lib"));
+    PublicDelayLoadDLLs.Add(Path.Combine(ThirdPartyPath, "GAMS.dll"));
+    PublicDelayLoadDLLs.Add(Path.Combine(ThirdPartyPath, "MADARA.dll"));
+    //PublicAdditionalLibraries.Add("MADARAs.lib");
+    //PublicAdditionalLibraries.Add("GAMSs.lib");
 
     // Windows specific build information
     if (Target.Platform == UnrealTargetPlatform.Win32 ||
@@ -81,7 +98,7 @@ public class GamsLibraryLibrary : ModuleRules
       string BOOST_FS_RELEASE = BOOST_STATIC_LIB_PREFIX + "boost_filesystem-" +
         BOOST_TOOLSET + "-mt-gd-" + BOOST_ARCH + "-" + BOOST_VERSION + ".lib";
 
-      // add the Boost lib path
+      //// add the Boost lib path
       PublicLibraryPaths.Add(Path.Combine(BOOST_ROOT, "stage", "lib"));
 
       // depending on if we're in Debug or Release, the user needs diff lib
@@ -97,6 +114,14 @@ public class GamsLibraryLibrary : ModuleRules
       }
 
       PublicIncludePaths.Add(BOOST_ROOT);
+
+
+      Console.WriteLine("... PrivateIncludePaths -> \n" + string.Join("\n  ", PrivateIncludePaths));
+      Console.WriteLine("... PublicIncludePaths -> \n" + string.Join("\n  ", PublicIncludePaths));
+      
+      Console.WriteLine("... PublicLibraryPaths -> \n" + string.Join("\n  ", PublicLibraryPaths));
+
+      Console.WriteLine("... PublicAdditionalLibraries -> \n" + string.Join("\n  ", PublicAdditionalLibraries));
     }
     // Linux or Mac specific build information
     else if (Target.Platform == UnrealTargetPlatform.Linux ||
@@ -112,6 +137,12 @@ public class GamsLibraryLibrary : ModuleRules
     // Boost has lots of warnings. Disable them
     PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
     PublicDefinitions.Add("MADARA_NO_THREAD_LOCAL=1");
+    PublicDefinitions.Add("MADARA_BUILD_STATIC=1");
+    PublicDefinitions.Add("GAMS_BUILD_STATIC=1");
     PublicDefinitions.Add("_USE_MATH_DEFINES=1");
+    PublicDefinitions.Add("BOOST_ALL_NO_LIB=1");
+    PublicDefinitions.Add("BOOST_DISABLE_ABI_HEADERS=1");
+    //PublicDefinitions.Add("BOOST_FILESYSTEM_NO_LIB=1");
+    //PublicDefinitions.Add("BOOST_DATE_TIME_NO_LIB=1");
   }
 }

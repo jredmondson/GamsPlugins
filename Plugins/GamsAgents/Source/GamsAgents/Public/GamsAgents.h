@@ -17,6 +17,7 @@
 #pragma warning(disable:4583)
 #pragma warning(disable:4582)
 #pragma warning(disable:4668)
+#pragma warning(disable:4996)
 #include "gams/controllers/Multicontroller.h"
 #pragma warning(pop)
 
@@ -28,7 +29,9 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+  //madara::utility::Refcounter<madara::knowledge::KnowledgeBase> gams_kb;
+  madara::utility::Refcounter<gams::controllers::Multicontroller> gams_controller;
 };
 
-extern GAMSAGENTS_API madara::utility::Refcounter<gams::controllers::Multicontroller> gams_controller;
-extern GAMSAGENTS_API madara::utility::Refcounter<madara::knowledge::KnowledgeBase> gams_kb;
+//extern GAMSAGENTS_API madara::utility::Refcounter<gams::controllers::Multicontroller> gams_controller;
+//extern GAMSAGENTS_API madara::utility::Refcounter<madara::knowledge::KnowledgeBase> gams_kb;
