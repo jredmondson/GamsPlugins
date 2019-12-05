@@ -14,21 +14,32 @@ void FGamsLibraryModule::StartupModule()
   // Get the base directory of this plugin
   const FString BaseDir = IPluginManager::Get ().FindPlugin (
     "GamsLibrary")->GetBaseDir ();
-  const FString MadaraDir = FPaths::Combine (
+  const FString GamsDir = FPaths::Combine (
     *BaseDir, TEXT ("ThirdParty"), TEXT ("gams"));
 
+  const FString MadaraBaseDir = IPluginManager::Get ().FindPlugin (
+    "MadaraLibrary")->GetBaseDir ();
+  const FString MadaraDir = FPaths::Combine (
+    *BaseDir, TEXT ("ThirdParty"), TEXT ("madara"));
+
   // Add on the relative location of the third party dll and load it
-  FString LibraryPath;
+  FString GamsLibraryPath;
+  FString MadaraLibraryPath;
 #if PLATFORM_WINDOWS
-  LibraryPath = FPaths::Combine (*MadaraDir, TEXT ("Win64"), TEXT ("GAMS.dll"));
+  GamsLibraryPath = FPaths::Combine (*GamsDir, TEXT ("Win64"), TEXT ("GAMS.dll"));
+  MadaraLibraryPath = FPaths::Combine (*MadaraDir, TEXT ("Win64"), TEXT ("MADARA.dll"));
 #elif PLATFORM_MAC
-  LibraryPath = FPaths::Combine (*MadaraDir, TEXT ("Mac"), TEXT ("GAMS.dylib"));
+  GamsLibraryPath = FPaths::Combine (*GamsDir, TEXT ("Mac"), TEXT ("GAMS.dylib"));
+  MadaraLibraryPath = FPaths::Combine (*MadaraDir, TEXT ("Mac"), TEXT ("MADARA.dylib"));
 #endif // PLATFORM_WINDOWS
 
-	ExampleLibraryHandle = !LibraryPath.IsEmpty() ?
-    FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;
+  GamsHandle = !GamsLibraryPath.IsEmpty() ?
+    FPlatformProcess::GetDllHandle(*GamsLibraryPath) : nullptr;
 
-  if (ExampleLibraryHandle)
+  MadaraHandle = !MadaraLibraryPath.IsEmpty () ?
+    FPlatformProcess::GetDllHandle (*MadaraLibraryPath) : nullptr;
+
+  if (GamsHandle)
   {
     FMessageDialog::Open (EAppMsgType::Ok,
       LOCTEXT ("GAMS LOAD SUCCESS", "Found GAMS library"));
@@ -38,6 +49,18 @@ void FGamsLibraryModule::StartupModule()
     FMessageDialog::Open (EAppMsgType::Ok,
       LOCTEXT ("GAMS LOAD FAILURE", "Couldn't find GAMS library :("));
   }
+
+  if (MadaraHandle)
+  {
+    FMessageDialog::Open (EAppMsgType::Ok,
+      LOCTEXT ("MADARA LOAD SUCCESS", "Found MADARA library"));
+  }
+  else
+  {
+    FMessageDialog::Open (EAppMsgType::Ok,
+      LOCTEXT ("MADARA LOAD FAILURE", "Couldn't find MADARA library :("));
+  }
+
 }
 
 void FGamsLibraryModule::ShutdownModule()
@@ -46,8 +69,11 @@ void FGamsLibraryModule::ShutdownModule()
 	// we call this function before unloading the module.
 
 	// Free the dll handle
-	FPlatformProcess::FreeDllHandle(ExampleLibraryHandle);
-	ExampleLibraryHandle = nullptr;
+	FPlatformProcess::FreeDllHandle(GamsHandle);
+  GamsHandle = nullptr;
+
+  FPlatformProcess::FreeDllHandle (MadaraHandle);
+  MadaraHandle = nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

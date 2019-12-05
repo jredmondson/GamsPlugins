@@ -5,6 +5,22 @@
 #include "Modules/ModuleManager.h"
 #include "Interfaces/IPluginManager.h"
 
+#pragma warning(push)
+#pragma warning(disable:4005)
+#pragma warning(disable:4103)
+#pragma warning(disable:4191)
+#pragma warning(disable:4457)
+#pragma warning(disable:4458)
+#pragma warning(disable:4459)
+#pragma warning(disable:4530)
+#pragma warning(disable:4577)
+#pragma warning(disable:4583)
+#pragma warning(disable:4582)
+#pragma warning(disable:4668)
+#pragma warning(disable:4996)
+#include "madara/knowledge/KnowledgeBase.h"
+#pragma warning(pop)
+
 #define LOCTEXT_NAMESPACE "FMadaraLibraryModule"
 
 void FMadaraLibraryModule::StartupModule()
@@ -38,6 +54,8 @@ void FMadaraLibraryModule::StartupModule()
 		FMessageDialog::Open(EAppMsgType::Ok,
       LOCTEXT("MADARA LOAD FAILURE", "Couldn't find MADARA library :("));
 	}
+
+  madara::knowledge::KnowledgeBase kb;
 }
 
 void FMadaraLibraryModule::ShutdownModule()
