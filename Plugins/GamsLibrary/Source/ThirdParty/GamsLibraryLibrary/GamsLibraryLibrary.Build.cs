@@ -1,140 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-using System;
 using System.IO;
 using UnrealBuildTool;
 
 public class GamsLibraryLibrary : ModuleRules
 {
-  private string ModulePath
-  {
-    get { return ModuleDirectory; }
-  }
-
-  private string ThirdPartyPath
-  {
-    get { return Path.GetFullPath(Path.Combine(ModulePath, "../../../Binaries/Win64")); }
-  }
-
-  public GamsLibraryLibrary(ReadOnlyTargetRules Target) : base(Target)
+	public GamsLibraryLibrary(ReadOnlyTargetRules Target) : base(Target)
 	{
-    Type = ModuleType.External;
+		Type = ModuleType.External;
 
-    string CAPNP_ROOT =
-      Environment.GetEnvironmentVariable("CAPNP_ROOT");
-    string EIGEN_ROOT =
-      Environment.GetEnvironmentVariable("EIGEN_ROOT");
-    string BOOST_ROOT =
-      Environment.GetEnvironmentVariable("BOOST_ROOT");
-    string MADARA_ROOT =
-      Environment.GetEnvironmentVariable("MADARA_ROOT");
-    string GAMS_ROOT =
-      Environment.GetEnvironmentVariable("GAMS_ROOT");
+    PublicIncludePaths.AddRange(
+      new string[] {
+              "ThirdParty",
+      });
 
-    // add universal library paths
-    PublicLibraryPaths.Add(Path.Combine(MADARA_ROOT, "lib"));
-    PublicLibraryPaths.Add(Path.Combine(GAMS_ROOT, "lib"));
-
-    // add universal include paths
-    PublicIncludePaths.Add(Path.Combine(MADARA_ROOT, "include"));
-    PublicIncludePaths.Add(Path.Combine(GAMS_ROOT, "src"));
-    PublicIncludePaths.Add(EIGEN_ROOT);
-
-    PrivateIncludePaths.Add(Path.Combine(MADARA_ROOT, "include"));
-    PrivateIncludePaths.Add(Path.Combine(GAMS_ROOT, "src"));
-    PrivateIncludePaths.Add(EIGEN_ROOT);
-
-
-    // add universal libraries
-    //PublicAdditionalLibraries.Add("MADARA.lib");
-    //PublicAdditionalLibraries.Add("GAMS.lib");
-    PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyPath, "GAMS.lib"));
-    PublicAdditionalLibraries.Add(Path.Combine(ThirdPartyPath, "MADARA.lib"));
-    PublicDelayLoadDLLs.Add(Path.Combine(ThirdPartyPath, "GAMS.dll"));
-    PublicDelayLoadDLLs.Add(Path.Combine(ThirdPartyPath, "MADARA.dll"));
-    //PublicAdditionalLibraries.Add("MADARAs.lib");
-    //PublicAdditionalLibraries.Add("GAMSs.lib");
-
-    // Windows specific build information
-    if (Target.Platform == UnrealTargetPlatform.Win32 ||
-        Target.Platform == UnrealTargetPlatform.Win64 ||
-        Target.Platform == UnrealTargetPlatform.XboxOne)
-    {
-      // try to intelligently build the BOOST references for Windows
-      string BOOST_VERSION =
-        Environment.GetEnvironmentVariable("BOOST_VERSION");
-      string BOOST_STATIC_LIB_PREFIX =
-        Environment.GetEnvironmentVariable("BOOST_STATIC_LIB_PREFIX");
-      string BOOST_ARCH =
-        Environment.GetEnvironmentVariable("BOOST_ARCH");
-      string BOOST_TOOLSET =
-        Environment.GetEnvironmentVariable("BOOST_TOOLSET");
-
-      // if user hasn't defined their environment, try reasonable defaults
-      if (BOOST_VERSION == null)
-      {
-        BOOST_VERSION = "1_70";
-      }
-      if (BOOST_STATIC_LIB_PREFIX == null)
-      {
-        BOOST_STATIC_LIB_PREFIX = "lib";
-      }
-      if (BOOST_ARCH == null)
-      {
-        BOOST_ARCH = "x64";
-      }
-      if (BOOST_TOOLSET == null)
-      {
-        BOOST_TOOLSET = "vc141";
-      }
-
-      // build the boost system lib name for Debug and Release
-      string BOOST_SYSTEM_DEBUG = BOOST_STATIC_LIB_PREFIX + "boost_system-" +
-        BOOST_TOOLSET + "-mt-gd-" + BOOST_ARCH + "-" + BOOST_VERSION + ".lib";
-      string BOOST_SYSTEM_RELEASE = BOOST_STATIC_LIB_PREFIX + "boost_system-" +
-        BOOST_TOOLSET + "-mt-gd-" + BOOST_ARCH + "-" + BOOST_VERSION + ".lib";
-      string BOOST_FS_DEBUG = BOOST_STATIC_LIB_PREFIX + "boost_filesystem-" +
-        BOOST_TOOLSET + "-mt-gd-" + BOOST_ARCH + "-" + BOOST_VERSION + ".lib";
-      string BOOST_FS_RELEASE = BOOST_STATIC_LIB_PREFIX + "boost_filesystem-" +
-        BOOST_TOOLSET + "-mt-gd-" + BOOST_ARCH + "-" + BOOST_VERSION + ".lib";
-
-      //// add the Boost lib path
-      PublicLibraryPaths.Add(Path.Combine(BOOST_ROOT, "stage", "lib"));
-
-      // depending on if we're in Debug or Release, the user needs diff lib
-      if (Target.Configuration == UnrealTargetConfiguration.Debug)
-      {
-        PublicAdditionalLibraries.Add(BOOST_SYSTEM_DEBUG);
-        PublicAdditionalLibraries.Add(BOOST_FS_DEBUG);
-      }
-      else
-      {
-        PublicAdditionalLibraries.Add(BOOST_SYSTEM_RELEASE);
-        PublicAdditionalLibraries.Add(BOOST_FS_RELEASE);
-      }
-
-      PublicIncludePaths.Add(BOOST_ROOT);
-
-
-      Console.WriteLine("... PrivateIncludePaths -> \n" + string.Join("\n  ", PrivateIncludePaths));
-      Console.WriteLine("... PublicIncludePaths -> \n" + string.Join("\n  ", PublicIncludePaths));
-      
-      Console.WriteLine("... PublicLibraryPaths -> \n" + string.Join("\n  ", PublicLibraryPaths));
-
-      Console.WriteLine("... PublicAdditionalLibraries -> \n" + string.Join("\n  ", PublicAdditionalLibraries));
-    }
-    // Linux or Mac specific build information
-    else if (Target.Platform == UnrealTargetPlatform.Linux ||
-             Target.Platform == UnrealTargetPlatform.Mac)
-    {
-      PublicAdditionalLibraries.Add("boost_system");
-    }
-
-    // MADARA and BOOST need RTTI
-    bUseRTTI = true;
-    bEnableExceptions = true;
-
-    // Boost has lots of warnings. Disable them
     PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
     PublicDefinitions.Add("MADARA_NO_THREAD_LOCAL=1");
     PublicDefinitions.Add("MADARA_BUILD_STATIC=1");
@@ -142,7 +21,21 @@ public class GamsLibraryLibrary : ModuleRules
     PublicDefinitions.Add("_USE_MATH_DEFINES=1");
     PublicDefinitions.Add("BOOST_ALL_NO_LIB=1");
     PublicDefinitions.Add("BOOST_DISABLE_ABI_HEADERS=1");
-    //PublicDefinitions.Add("BOOST_FILESYSTEM_NO_LIB=1");
-    //PublicDefinitions.Add("BOOST_DATE_TIME_NO_LIB=1");
+
+    bUseRTTI = true;
+    bEnableExceptions = true;
+
+    string BaseLibDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory,
+      "..", ".."));
+    string MadaraLibDirectory = Path.Combine(BaseLibDirectory, "ThirdParty",
+      "gams", Target.Platform.ToString());
+
+    if (Target.Platform == UnrealTargetPlatform.Win64)
+    {
+      RuntimeDependencies.Add(Path.Combine(MadaraLibDirectory, "GAMS.dll"));
+    }
+    else if (Target.Platform == UnrealTargetPlatform.Mac)
+    {
+    }
   }
 }
