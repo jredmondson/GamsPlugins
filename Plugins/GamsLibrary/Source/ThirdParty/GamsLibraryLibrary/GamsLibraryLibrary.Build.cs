@@ -35,12 +35,15 @@ public class GamsLibraryLibrary : ModuleRules
 
     string BaseLibDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory,
       "..", "..", ".."));
-    string MadaraLibDirectory = Path.Combine(BaseLibDirectory, "ThirdParty",
+    string GamsLibDirectory = Path.Combine(BaseLibDirectory, "ThirdParty",
       "gams", Target.Platform.ToString());
 
     if (Target.Platform == UnrealTargetPlatform.Win64)
     {
-      RuntimeDependencies.Add(Path.Combine(MadaraLibDirectory, "GAMS.dll"));
+      //RuntimeDependencies.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
+      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.lib"));
+
+      PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {

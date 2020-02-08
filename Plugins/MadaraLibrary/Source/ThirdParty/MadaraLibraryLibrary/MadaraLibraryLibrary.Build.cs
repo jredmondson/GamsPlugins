@@ -41,7 +41,10 @@ public class MadaraLibraryLibrary : ModuleRules
 
     if (Target.Platform == UnrealTargetPlatform.Win64)
     {
-      RuntimeDependencies.Add(Path.Combine(MadaraLibDirectory, "MADARA.dll"));
+      //RuntimeDependencies.Add(Path.Combine(MadaraLibDirectory, "MADARA.dll"));
+      PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "MADARA.lib"));
+
+      PublicDelayLoadDLLs.Add(Path.Combine(MadaraLibDirectory, "MADARA.dll"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
