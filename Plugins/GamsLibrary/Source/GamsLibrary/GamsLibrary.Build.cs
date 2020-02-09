@@ -26,8 +26,8 @@ public class GamsLibrary : ModuleRules
 			new string[]
 			{
 				"Core",
+        "MadaraLibrary",
 				"GamsLibraryLibrary",
-        "MadaraLibraryLibrary",
         "Projects"
 				// ... add other public dependencies that you statically link with here ...
 			}

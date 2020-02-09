@@ -5,21 +5,7 @@
 #include "Modules/ModuleManager.h"
 #include "Interfaces/IPluginManager.h"
 
-#pragma warning(push)
-#pragma warning(disable:4005)
-#pragma warning(disable:4103)
-#pragma warning(disable:4191)
-#pragma warning(disable:4457)
-#pragma warning(disable:4458)
-#pragma warning(disable:4459)
-#pragma warning(disable:4530)
-#pragma warning(disable:4577)
-#pragma warning(disable:4583)
-#pragma warning(disable:4582)
-#pragma warning(disable:4668)
-#pragma warning(disable:4996)
-#include "madara/knowledge/KnowledgeBase.h"
-#pragma warning(pop)
+#include "MadaraIncludes.h"
 
 #define LOCTEXT_NAMESPACE "FMadaraLibraryModule"
 
@@ -47,28 +33,26 @@ void FMadaraLibraryModule::StartupModule()
 	if (ExampleLibraryHandle)
 	{
     FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("MADARA LOAD SUCCESS", "Found MADARA library"));
+      LOCTEXT ("MADARA LOAD SUCCESS",
+        "MadaraLibrary: Found MADARA library"));
 	}
 	else
 	{
 		FMessageDialog::Open(EAppMsgType::Ok,
-      LOCTEXT("MADARA LOAD FAILURE", "Couldn't find MADARA library :("));
+      LOCTEXT("MADARA LOAD FAILURE",
+        "MadaraLibrary: Couldn't find MADARA library :("));
 	}
 
   madara::knowledge::KnowledgeBase kb;
 
   kb.set ("bob", "bobtext");
 
-  std::string kb_text ("KB LOAD TEST\nbob: ");
+  std::string kb_text ("MadaraLibrary: KB LOAD TEST\nbob: ");
   kb_text += kb.get ("bob").to_string ().c_str ();
   FString kb_text_f (kb_text.c_str());
 
-
-
   FMessageDialog::Open (EAppMsgType::Ok,
     FText::FromString (kb_text_f));
-    //LOCTEXT("KB LOAD TEST", kb_text_f));
-
 }
 
 void FMadaraLibraryModule::ShutdownModule()

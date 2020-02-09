@@ -9,6 +9,6 @@ public class GamsPluginsTarget : TargetRules
 	{
 		Type = TargetType.Game;
 
-		ExtraModuleNames.AddRange( new string[] { "GamsPlugins" } );
+    ExtraModuleNames.AddRange( new string[] { "GamsPlugins" } );
 	}
 }

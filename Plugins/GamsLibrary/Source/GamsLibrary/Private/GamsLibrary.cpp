@@ -60,23 +60,27 @@ void FGamsLibraryModule::StartupModule()
   if (GamsHandle)
   {
     FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("GAMS LOAD SUCCESS", "Found GAMS library"));
+      LOCTEXT ("GAMS LOAD SUCCESS",
+        "GamsLibrary: Found GAMS library"));
   }
   else
   {
     FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("GAMS LOAD FAILURE", "Couldn't find GAMS library :("));
+      LOCTEXT ("GAMS LOAD FAILURE",
+        "GamsLibrary: Couldn't find GAMS library :("));
   }
 
   if (MadaraHandle)
   {
     FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("MADARA LOAD SUCCESS", "Found MADARA library"));
+      LOCTEXT ("MADARA LOAD SUCCESS",
+        "GamsLibrary: Found MADARA library"));
   }
   else
   {
     FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("MADARA LOAD FAILURE", "Couldn't find MADARA library :("));
+      LOCTEXT ("MADARA LOAD FAILURE",
+        "GamsLibrary: Couldn't find MADARA library :("));
   }
 
   madara::knowledge::KnowledgeBase kb;
@@ -84,7 +88,7 @@ void FGamsLibraryModule::StartupModule()
   size_t num_check = controller.get_num_controllers ();
 
   std::stringstream buffer;
-  buffer << "Multicontroller init test\ncontrollers loaded: ";
+  buffer << "GamsLibrary: Multicontroller init test\ncontrollers loaded: ";
   buffer << num_check;
   FString status_text_f (buffer.str().c_str ());
 
