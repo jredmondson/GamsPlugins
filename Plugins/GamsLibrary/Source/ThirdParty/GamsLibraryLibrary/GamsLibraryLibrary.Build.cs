@@ -5,9 +5,9 @@ using UnrealBuildTool;
 
 public class GamsLibraryLibrary : ModuleRules
 {
-	public GamsLibraryLibrary(ReadOnlyTargetRules Target) : base(Target)
-	{
-		Type = ModuleType.External;
+  public GamsLibraryLibrary(ReadOnlyTargetRules Target) : base(Target)
+  {
+    Type = ModuleType.External;
 
     PublicDependencyModuleNames.AddRange(
       new string[]

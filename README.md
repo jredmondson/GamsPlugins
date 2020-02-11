@@ -3,18 +3,22 @@ UE4 Plugins for GAMS middleware usage
 
 # Installation
 
-## Linux
-
-```bash
-$GAMS_ROOT/scripts/linux/base_build.sh madara gams prereqs
-Then open the uproject/compile the plugin
-```
-
 ## Windows
 
-```bash
-%GAMS_ROOT%\scripts\windows\base_build.sh forcecapnp forceboost forceosc madara gams
-Open MADARA.sln and gams.sln in %MADARA_ROOT% and %GAMS_ROOT% and build solutions in that order
-Right click on GamsPlugins.uproj and regenerate VS studio files
-Open GamsPlugins.sln and compile
-```
+### For Users
+  * Clone this repository to your computer (e.g., "git clone https://github.com/jredmondson/GamsPlugins.git")
+  * Open the GamsPlugins.uproject file
+  * Within UE4, migrate the Plugins directory contents to your project
+
+### For Repository Developers
+  * Clone this repository to your computer (e.g., "git clone https://github.com/jredmondson/GamsPlugins.git")
+  * Right click on GamsPlugins.uproject and select "Generate VS Studio project files"
+  * Open GamsPlugins.sln and build project (Ctrl+Shift+B)
+
+## Linux
+
+Not currently supported yet. 
+
+## Mac
+
+Not currently supported yet.

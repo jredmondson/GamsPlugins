@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 public class GamsPluginsEditorTarget : TargetRules
 {
-	public GamsPluginsEditorTarget(TargetInfo Target) : base(Target)
-	{
-		Type = TargetType.Editor;
+  public GamsPluginsEditorTarget(TargetInfo Target) : base(Target)
+  {
+    Type = TargetType.Editor;
 
-		ExtraModuleNames.AddRange( new string[] { "GamsPlugins" } );
-	}
+    ExtraModuleNames.AddRange(new string[] { "GamsPlugins" });
+  }
 }

@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 public class GamsPluginsTarget : TargetRules
 {
-	public GamsPluginsTarget(TargetInfo Target) : base(Target)
-	{
-		Type = TargetType.Game;
+  public GamsPluginsTarget(TargetInfo Target) : base(Target)
+  {
+    Type = TargetType.Game;
 
-    ExtraModuleNames.AddRange( new string[] { "GamsPlugins" } );
-	}
+    ExtraModuleNames.AddRange(new string[] { "GamsPlugins" });
+  }
 }
