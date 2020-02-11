@@ -10,6 +10,12 @@ project sites.
 
 # Modules
 
+## GamsAgents
+
+Provides access to agents and controllers that use GAMS and MADARA for
+standard distributed algorithms within UE4. Allows for interfacing with
+custom algorithms and platforms generated via the GAMS gpc.pl tool.
+
 ## GamsLibraryLibrary
 
 Provides access to GAMS controllers, algorithms, and platforms for multi-agent
