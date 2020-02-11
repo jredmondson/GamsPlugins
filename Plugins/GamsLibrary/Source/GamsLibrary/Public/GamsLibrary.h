@@ -8,12 +8,12 @@ class FGamsLibraryModule : public IModuleInterface
 {
 public:
 
-	/** IModuleInterface implementation */
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
+  /** IModuleInterface implementation */
+  virtual void StartupModule() override;
+  virtual void ShutdownModule() override;
 
 private:
-	/** Handle to the test dll we will load */
-	void*	GamsHandle;
-  void*	MadaraHandle;
+  /** Handle to the test dll we will load */
+  void*  GamsHandle;
+  void*  MadaraHandle;
 };

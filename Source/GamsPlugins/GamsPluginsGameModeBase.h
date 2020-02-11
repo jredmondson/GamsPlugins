@@ -12,6 +12,5 @@
 UCLASS()
 class GAMSPLUGINS_API AGamsPluginsGameModeBase : public AGameModeBase
 {
-	GENERATED_BODY()
-	
+  GENERATED_BODY()
 };
