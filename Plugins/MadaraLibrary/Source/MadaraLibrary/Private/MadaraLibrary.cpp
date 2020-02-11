@@ -32,9 +32,9 @@ void FMadaraLibraryModule::StartupModule()
 
 	if (ExampleLibraryHandle)
 	{
-    FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("MADARA LOAD SUCCESS",
-        "MadaraLibrary: Found MADARA library"));
+    //FMessageDialog::Open (EAppMsgType::Ok,
+    //  LOCTEXT ("MADARA LOAD SUCCESS",
+    //    "MadaraLibrary: Found MADARA library"));
 	}
 	else
 	{
@@ -43,16 +43,16 @@ void FMadaraLibraryModule::StartupModule()
         "MadaraLibrary: Couldn't find MADARA library :("));
 	}
 
-  madara::knowledge::KnowledgeBase kb;
+  //madara::knowledge::KnowledgeBase kb;
 
-  kb.set ("bob", "bobtext");
+  //kb.set ("bob", "bobtext");
 
-  std::string kb_text ("MadaraLibrary: KB LOAD TEST\nbob: ");
-  kb_text += kb.get ("bob").to_string ().c_str ();
-  FString kb_text_f (kb_text.c_str());
+  //std::string kb_text ("MadaraLibrary: KB LOAD TEST\nbob: ");
+  //kb_text += kb.get ("bob").to_string ().c_str ();
+  //FString kb_text_f (kb_text.c_str());
 
-  FMessageDialog::Open (EAppMsgType::Ok,
-    FText::FromString (kb_text_f));
+  //FMessageDialog::Open (EAppMsgType::Ok,
+  //  FText::FromString (kb_text_f));
 }
 
 void FMadaraLibraryModule::ShutdownModule()

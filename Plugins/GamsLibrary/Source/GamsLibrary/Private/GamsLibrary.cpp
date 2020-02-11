@@ -1,27 +1,10 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "GamsLibrary.h"
+#include "GamsIncludes.h"
 #include "Core.h"
 #include "Modules/ModuleManager.h"
 #include "Interfaces/IPluginManager.h"
-
-
-#pragma warning(push)
-#pragma warning(disable:4005)
-#pragma warning(disable:4103)
-#pragma warning(disable:4191)
-#pragma warning(disable:4457)
-#pragma warning(disable:4458)
-#pragma warning(disable:4459)
-#pragma warning(disable:4530)
-#pragma warning(disable:4577)
-#pragma warning(disable:4583)
-#pragma warning(disable:4582)
-#pragma warning(disable:4668)
-#pragma warning(disable:4996)
-#include "madara/knowledge/KnowledgeBase.h"
-#include "gams/controllers/Multicontroller.h"
-#pragma warning(pop)
 
 #define LOCTEXT_NAMESPACE "FGamsLibraryModule"
 
@@ -59,9 +42,9 @@ void FGamsLibraryModule::StartupModule()
 
   if (GamsHandle)
   {
-    FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("GAMS LOAD SUCCESS",
-        "GamsLibrary: Found GAMS library"));
+    //FMessageDialog::Open (EAppMsgType::Ok,
+    //  LOCTEXT ("GAMS LOAD SUCCESS",
+    //    "GamsLibrary: Found GAMS library"));
   }
   else
   {
@@ -70,30 +53,30 @@ void FGamsLibraryModule::StartupModule()
         "GamsLibrary: Couldn't find GAMS library :("));
   }
 
-  if (MadaraHandle)
-  {
-    FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("MADARA LOAD SUCCESS",
-        "GamsLibrary: Found MADARA library"));
-  }
-  else
-  {
-    FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("MADARA LOAD FAILURE",
-        "GamsLibrary: Couldn't find MADARA library :("));
-  }
+  //if (MadaraHandle)
+  //{
+  //  FMessageDialog::Open (EAppMsgType::Ok,
+  //    LOCTEXT ("MADARA LOAD SUCCESS",
+  //      "GamsLibrary: Found MADARA library"));
+  //}
+  //else
+  //{
+  //  FMessageDialog::Open (EAppMsgType::Ok,
+  //    LOCTEXT ("MADARA LOAD FAILURE",
+  //      "GamsLibrary: Couldn't find MADARA library :("));
+  //}
 
-  madara::knowledge::KnowledgeBase kb;
-  gams::controllers::Multicontroller controller (5);
-  size_t num_check = controller.get_num_controllers ();
+  //madara::knowledge::KnowledgeBase kb;
+  //gams::controllers::Multicontroller controller (5);
+  //size_t num_check = controller.get_num_controllers ();
 
-  std::stringstream buffer;
-  buffer << "GamsLibrary: Multicontroller init test\ncontrollers loaded: ";
-  buffer << num_check;
-  FString status_text_f (buffer.str().c_str ());
+  //std::stringstream buffer;
+  //buffer << "GamsLibrary: Multicontroller init test\ncontrollers loaded: ";
+  //buffer << num_check;
+  //FString status_text_f (buffer.str().c_str ());
 
-  FMessageDialog::Open (EAppMsgType::Ok,
-    FText::FromString (status_text_f));
+  //FMessageDialog::Open (EAppMsgType::Ok,
+  //  FText::FromString (status_text_f));
 }
 
 void FGamsLibraryModule::ShutdownModule()
