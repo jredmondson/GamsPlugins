@@ -48,5 +48,9 @@ public class GamsLibraryLibrary : ModuleRules
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
     }
+    else if (Target.Platform == UnrealTargetPlatform.Linux)
+    {
+      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libGAMS.so"));
+    }
   }
 }
