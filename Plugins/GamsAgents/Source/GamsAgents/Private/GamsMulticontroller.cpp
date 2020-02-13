@@ -22,5 +22,6 @@ void AGamsMulticontroller::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
 
+  controller.run_once();
 }
 
