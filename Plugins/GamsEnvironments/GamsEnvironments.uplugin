@@ -1,0 +1,28 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.2.3",
+  "FriendlyName": "GAMS Environments",
+  "Description": "Sample environments and levels for GAMS experiments.",
+  "Category": "Environments",
+  "CreatedBy": "James Edmondson",
+  "CreatedByURL": "https://github.com/jredmondson",
+  "DocsURL": "https://github.com/jredmondson/GamsPlugins",
+  "MarketplaceURL": "",
+  "SupportURL": "https://github.com/jredmondson/GamsPlugins",
+  "CanContainContent": true,
+  "IsBetaVersion": false,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "GamsEnvironments",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "WhitelistPlatforms": [
+        "Win64",
+        "Mac",
+        "Linux"
+      ]
+    }
+  ]
+}
