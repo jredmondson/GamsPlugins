@@ -24,6 +24,26 @@ public:
   // Called every frame
   virtual void Tick(float DeltaTime) override;
 
+  UPROPERTY (EditAnywhere)
+    int num_controllers;
+
+  UPROPERTY (EditAnywhere)
+    FString platform;
+
+  UPROPERTY (EditAnywhere)
+    float controller_hertz;
+
+protected:
+
   // GAMS multicontroller for controlling multiple platforms
   gams::controllers::Multicontroller controller;
+
+  // the last number of controllers before evaluating blueprint interface
+  int last_controllers;
+
+  // the last platform for controllers before evaluating blueprint interface
+  FString last_platform;
+
+  // the last controller hertz rate before evaluating blueprint interface
+  double last_hertz;
 };
