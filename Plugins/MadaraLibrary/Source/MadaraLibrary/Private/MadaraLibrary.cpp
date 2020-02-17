@@ -20,37 +20,41 @@ void FMadaraLibraryModule::StartupModule()
     *BaseDir, TEXT("ThirdParty"), TEXT("madara"));
 
   // Add on the relative location of the third party dll and load it
-  FString LibraryPath;
+  FString EditorLibraryPath;
+  FString GameLibraryPath;
 #if PLATFORM_WINDOWS
-  LibraryPath = TEXT("MADARA.dll");
+  EditorLibraryPath = FPaths::Combine (
+    *MadaraDir, TEXT ("Win64"), TEXT ("MADARA.dll"));
+  GameLibraryPath = TEXT ("MADARA.dll");
 #elif PLATFORM_MAC
-  LibraryPath = TEXT ("MADARA.dylib");
+  EditorLibraryPath = FPaths::Combine (
+    *MadaraDir, TEXT ("Win64"), TEXT ("MADARA.dylib"));
+  GameLibraryPath = TEXT ("MADARA.dylib");
 #elif PLATFORM_LINUX
-  LibraryPath = TEXT ("libMADARA.so");
+  EditorLibraryPath = FPaths::Combine (
+    *MadaraDir, TEXT ("Win64"), TEXT ("libMADARA.so"));
+  GameLibraryPath = TEXT ("libMADARA.so");
 #endif // PLATFORM_WINDOWS
 
-  ExampleLibraryHandle = !LibraryPath.IsEmpty() ?
-    FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;
+  MadaraLibraryHandle = FPlatformProcess::GetDllHandle(*EditorLibraryPath);
 
-  if (ExampleLibraryHandle)
+  if (!MadaraLibraryHandle)
   {
-    //FMessageDialog::Open (EAppMsgType::Ok,
-    //  LOCTEXT ("MADARA LOAD SUCCESS",
-    //    "MadaraLibrary: Found MADARA library"));
-  }
-  else
-  {
-    FMessageDialog::Open(EAppMsgType::Ok,
-      LOCTEXT("MADARA LOAD FAILURE",
-        "MadaraLibrary: Couldn't find MADARA library :("));
+    MadaraLibraryHandle = FPlatformProcess::GetDllHandle (*GameLibraryPath);
+    if (!MadaraLibraryHandle)
+    {
+      FMessageDialog::Open (EAppMsgType::Ok,
+        LOCTEXT ("MADARA LOAD FAILURE",
+          "MadaraLibrary: Couldn't find MADARA library :("));
+    }
   }
 }
 
 void FMadaraLibraryModule::ShutdownModule()
 {
   // Free the dll handle
-  FPlatformProcess::FreeDllHandle(ExampleLibraryHandle);
-  ExampleLibraryHandle = nullptr;
+  FPlatformProcess::FreeDllHandle(MadaraLibraryHandle);
+  MadaraLibraryHandle = nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

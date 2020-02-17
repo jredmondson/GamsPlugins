@@ -14,6 +14,6 @@ public:
 
 private:
   /** Handle to the test dll we will load */
-  void*  GamsHandle;
-  void*  MadaraHandle;
+  void*  GamsLibraryHandle;
+  void*  MadaraLibraryHandle;
 };

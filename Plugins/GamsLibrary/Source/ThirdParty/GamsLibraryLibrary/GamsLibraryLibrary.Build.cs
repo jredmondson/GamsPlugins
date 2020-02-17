@@ -46,8 +46,11 @@ public class GamsLibraryLibrary : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.lib"));
 
       PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
-      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dll"),
+      if (Target.Type == TargetType.Game)
+      {
+        System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dll"),
         Path.Combine(BinariesDir, "GAMS.dll"), true);
+      }
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {

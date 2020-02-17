@@ -21,53 +21,72 @@ void FGamsLibraryModule::StartupModule()
   const FString MadaraBaseDir = IPluginManager::Get ().FindPlugin (
     "MadaraLibrary")->GetBaseDir ();
   const FString MadaraDir = FPaths::Combine(
-    *BaseDir, TEXT("ThirdParty"), TEXT("madara"));
+    *MadaraBaseDir, TEXT("ThirdParty"), TEXT("madara"));
 
   // Add on the relative location of the third party dll and load it
-  FString GamsLibraryPath;
-  FString MadaraLibraryPath;
+  FString EditorGamsLibraryPath;
+  FString EditorMadaraLibraryPath;
+  FString GameGamsLibraryPath;
+  FString GameMadaraLibraryPath;
 #if PLATFORM_WINDOWS
-  MadaraLibraryPath = TEXT ("MADARA.dll");
-  GamsLibraryPath = TEXT ("GAMS.dll");
+  // PIE causes the DLL copy function to stall if the editor is holding the
+  // dll, so bind to the source copy of the DLL and not the destination
+  EditorGamsLibraryPath = FPaths::Combine (
+    *GamsDir, TEXT ("Win64"), TEXT ("GAMS.dll"));
+  EditorMadaraLibraryPath = FPaths::Combine (
+    *MadaraDir, TEXT ("Win64"), TEXT ("MADARA.dll"));
+  GameMadaraLibraryPath = TEXT ("MADARA.dll");
+  GameGamsLibraryPath = TEXT ("GAMS.dll");
 #elif PLATFORM_MAC
-  MadaraLibraryPath = TEXT ("MADARA.dylib");
-  GamsLibraryPath = TEXT ("GAMS.dylib");
+  EditorGamsLibraryPath = FPaths::Combine (
+    *GamsDir, TEXT ("Win64"), TEXT ("GAMS.dylib"));
+  EditorMadaraLibraryPath = FPaths::Combine (
+    *MadaraDir, TEXT ("Win64"), TEXT ("MADARA.dylib"));
+  GameMadaraLibraryPath = TEXT ("MADARA.dylib");
+  GameGamsLibraryPath = TEXT ("GAMS.dylib");
 #elif PLATFORM_LINUX
-  MadaraLibraryPath = TEXT ("libMADARA.so");
-  GamsLibraryPath = TEXT ("libGAMS.so");
+  EditorGamsLibraryPath = FPaths::Combine (
+    *GamsDir, TEXT ("Win64"), TEXT ("libGAMS.so"));
+  EditorMadaraLibraryPath = FPaths::Combine (
+    *MadaraDir, TEXT ("Win64"), TEXT ("libMADARA.so"));
+  GameMadaraLibraryPath = TEXT ("libMADARA.so");
+  GameGamsLibraryPath = TEXT ("libGAMS.so");
 #endif // PLATFORM_WINDOWS
 
-  GamsHandle = !GamsLibraryPath.IsEmpty() ?
-    FPlatformProcess::GetDllHandle(*GamsLibraryPath) : nullptr;
+  // try to load editor source lib first to avoid dll copy issues
+  GamsLibraryHandle = FPlatformProcess::GetDllHandle(*EditorGamsLibraryPath);
 
-  MadaraHandle = !MadaraLibraryPath.IsEmpty () ?
-    FPlatformProcess::GetDllHandle(*MadaraLibraryPath) : nullptr;
+  if (!GamsLibraryHandle)
+  {
+    // try game lib if edit mode fails
+    GamsLibraryHandle = FPlatformProcess::GetDllHandle(*GameGamsLibraryPath);
 
-  if (GamsHandle)
-  {
-    //FMessageDialog::Open (EAppMsgType::Ok,
-    //  LOCTEXT ("GAMS LOAD SUCCESS",
-    //    "GamsLibrary: Found GAMS library"));
-  }
-  else
-  {
-    FMessageDialog::Open(EAppMsgType::Ok,
-      LOCTEXT("GAMS LOAD FAILURE",
-        "GamsLibrary: Couldn't find GAMS library :("));
+    if (!GamsLibraryHandle)
+    {
+      FMessageDialog::Open (EAppMsgType::Ok,
+        LOCTEXT ("GAMS LOAD FAILURE",
+          "GamsLibrary: Couldn't find GAMS library :("));
+    }
   }
 
-  if (MadaraHandle)
+  // try to load editor source lib first to avoid dll copy issues
+  MadaraLibraryHandle = FPlatformProcess::GetDllHandle (
+    *EditorMadaraLibraryPath);
+
+  if (!MadaraLibraryHandle)
   {
-    //FMessageDialog::Open (EAppMsgType::Ok,
-    //  LOCTEXT ("MADARA LOAD SUCCESS",
-    //    "GamsLibrary: Found MADARA library"));
+    // try game lib if edit mode fails
+    MadaraLibraryHandle = FPlatformProcess::GetDllHandle(
+      *GameMadaraLibraryPath);
+
+    if (!MadaraLibraryHandle)
+    {
+      FMessageDialog::Open (EAppMsgType::Ok,
+        LOCTEXT ("GAMS LOAD FAILURE",
+          "GamsLibrary: Couldn't find MADARA library :("));
+    }
   }
-  else
-  {
-    FMessageDialog::Open (EAppMsgType::Ok,
-      LOCTEXT ("MADARA LOAD FAILURE",
-        "GamsLibrary: Couldn't find MADARA library :("));
-  }
+
 }
 
 void FGamsLibraryModule::ShutdownModule()
@@ -76,11 +95,11 @@ void FGamsLibraryModule::ShutdownModule()
   // we call this function before unloading the module.
 
   // Free the dll handle
-  FPlatformProcess::FreeDllHandle(GamsHandle);
-  GamsHandle = nullptr;
+  FPlatformProcess::FreeDllHandle(GamsLibraryHandle);
+  GamsLibraryHandle = nullptr;
 
-  FPlatformProcess::FreeDllHandle(MadaraHandle);
-  MadaraHandle = nullptr;
+  FPlatformProcess::FreeDllHandle(MadaraLibraryHandle);
+  MadaraLibraryHandle = nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

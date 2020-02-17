@@ -50,8 +50,11 @@ public class MadaraLibraryLibrary : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "MADARA.lib"));
 
       PublicDelayLoadDLLs.Add(Path.Combine(MadaraLibDirectory, "MADARA.dll"));
-      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "MADARA.dll"),
-        Path.Combine(BinariesDir, "MADARA.dll"), true);
+      if (Target.Type == TargetType.Game)
+      {
+        System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "MADARA.dll"),
+          Path.Combine(BinariesDir, "MADARA.dll"), true);
+      }
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
