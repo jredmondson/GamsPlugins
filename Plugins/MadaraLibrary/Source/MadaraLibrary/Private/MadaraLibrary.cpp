@@ -28,11 +28,11 @@ void FMadaraLibraryModule::StartupModule()
   GameLibraryPath = TEXT ("MADARA.dll");
 #elif PLATFORM_MAC
   EditorLibraryPath = FPaths::Combine (
-    *MadaraDir, TEXT ("Win64"), TEXT ("MADARA.dylib"));
+    *MadaraDir, TEXT ("Mac"), TEXT ("MADARA.dylib"));
   GameLibraryPath = TEXT ("MADARA.dylib");
 #elif PLATFORM_LINUX
   EditorLibraryPath = FPaths::Combine (
-    *MadaraDir, TEXT ("Win64"), TEXT ("libMADARA.so"));
+    *MadaraDir, TEXT ("Linux"), TEXT ("libMADARA.so"));
   GameLibraryPath = TEXT ("libMADARA.so");
 #endif // PLATFORM_WINDOWS
 

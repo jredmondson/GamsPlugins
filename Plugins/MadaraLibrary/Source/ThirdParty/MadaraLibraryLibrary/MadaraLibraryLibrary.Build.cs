@@ -17,10 +17,8 @@ public class MadaraLibraryLibrary : ModuleRules
       "ThirdParty");
     string MadaraLibDirectory = Path.Combine(BaseLibDirectory, "ThirdParty",
       "madara", Target.Platform.ToString());
-    string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
 
     System.Console.WriteLine("BaseDir = " + BaseDirectory);
-    System.Console.WriteLine("BinariesDir = " + BinariesDir);
     System.Console.WriteLine("Baselibdir = " + BaseLibDirectory);
     System.Console.WriteLine("SourceDirectory = " + SourceDirectory);
     System.Console.WriteLine("MadaraLibDirectory = " + MadaraLibDirectory);
@@ -52,18 +50,33 @@ public class MadaraLibraryLibrary : ModuleRules
       PublicDelayLoadDLLs.Add(Path.Combine(MadaraLibDirectory, "MADARA.dll"));
       if (Target.Type == TargetType.Game)
       {
+        string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
+
         System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "MADARA.dll"),
           Path.Combine(BinariesDir, "MADARA.dll"), true);
       }
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
+      PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "MADARA.dylib"));
+      if (Target.Type == TargetType.Game)
+      {
+        string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Mac");
+
+        System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "MADARA.dylib"),
+          Path.Combine(BinariesDir, "MADARA.dylib"), true);
+      }
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
       PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "libMADARA.so"));
-      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "libMADARA.so"),
-        Path.Combine(BinariesDir, "libMADARA.so"), true);
+      if (Target.Type == TargetType.Game)
+      {
+        string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Linux");
+
+        System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "libMADARA.so"),
+          Path.Combine(BinariesDir, "libMADARA.so"), true);
+      }
     }
   }
 }

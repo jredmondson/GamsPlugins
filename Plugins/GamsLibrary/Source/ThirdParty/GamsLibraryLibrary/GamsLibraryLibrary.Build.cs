@@ -39,7 +39,6 @@ public class GamsLibraryLibrary : ModuleRules
       "..", "..", ".."));
     string GamsLibDirectory = Path.Combine(BaseLibDirectory, "ThirdParty",
       "gams", Target.Platform.ToString());
-    string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
 
     if (Target.Platform == UnrealTargetPlatform.Win64)
     {
@@ -48,18 +47,33 @@ public class GamsLibraryLibrary : ModuleRules
       PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
       if (Target.Type == TargetType.Game)
       {
+        string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
+
         System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dll"),
         Path.Combine(BinariesDir, "GAMS.dll"), true);
       }
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
+      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.dylib"));
+      if (Target.Type == TargetType.Game)
+      {
+        string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Mac");
+
+        System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dylib"),
+          Path.Combine(BinariesDir, "GAMS.dylib"), true);
+      }
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libGAMS.so"));
-      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
-        Path.Combine(BinariesDir, "libGAMS.so"), true);
+      if (Target.Type == TargetType.Game)
+      {
+        string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Linux");
+
+        System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
+          Path.Combine(BinariesDir, "libGAMS.so"), true);
+      }
     }
   }
 }

@@ -39,16 +39,16 @@ void FGamsLibraryModule::StartupModule()
   GameGamsLibraryPath = TEXT ("GAMS.dll");
 #elif PLATFORM_MAC
   EditorGamsLibraryPath = FPaths::Combine (
-    *GamsDir, TEXT ("Win64"), TEXT ("GAMS.dylib"));
+    *GamsDir, TEXT ("Mac"), TEXT ("GAMS.dylib"));
   EditorMadaraLibraryPath = FPaths::Combine (
-    *MadaraDir, TEXT ("Win64"), TEXT ("MADARA.dylib"));
+    *MadaraDir, TEXT ("Mac"), TEXT ("MADARA.dylib"));
   GameMadaraLibraryPath = TEXT ("MADARA.dylib");
   GameGamsLibraryPath = TEXT ("GAMS.dylib");
 #elif PLATFORM_LINUX
   EditorGamsLibraryPath = FPaths::Combine (
-    *GamsDir, TEXT ("Win64"), TEXT ("libGAMS.so"));
+    *GamsDir, TEXT ("Linux"), TEXT ("libGAMS.so"));
   EditorMadaraLibraryPath = FPaths::Combine (
-    *MadaraDir, TEXT ("Win64"), TEXT ("libMADARA.so"));
+    *MadaraDir, TEXT ("Linux"), TEXT ("libMADARA.so"));
   GameMadaraLibraryPath = TEXT ("libMADARA.so");
   GameGamsLibraryPath = TEXT ("libGAMS.so");
 #endif // PLATFORM_WINDOWS
