@@ -33,17 +33,21 @@ public class GamsLibraryLibrary : ModuleRules
     bUseRTTI = true;
     bEnableExceptions = true;
 
+    string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory,
+      "..", "..", "..", "..", ".."));
     string BaseLibDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory,
       "..", "..", ".."));
     string GamsLibDirectory = Path.Combine(BaseLibDirectory, "ThirdParty",
       "gams", Target.Platform.ToString());
+    string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
 
     if (Target.Platform == UnrealTargetPlatform.Win64)
     {
-      //RuntimeDependencies.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.lib"));
 
       PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dll"),
+        Path.Combine(BinariesDir, "GAMS.dll"), true);
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
@@ -51,6 +55,8 @@ public class GamsLibraryLibrary : ModuleRules
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libGAMS.so"));
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
+        Path.Combine(BinariesDir, "libGAMS.so"), true);
     }
   }
 }

@@ -8,14 +8,19 @@ public class MadaraLibraryLibrary : ModuleRules
   public MadaraLibraryLibrary(ReadOnlyTargetRules Target) : base(Target)
   {
     Type = ModuleType.External;
-
+    
+    string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory,
+      "..", "..", "..", "..", ".."));
     string BaseLibDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory,
       "..", "..", ".."));
     string SourceDirectory = Path.Combine(BaseLibDirectory, "Source",
       "ThirdParty");
     string MadaraLibDirectory = Path.Combine(BaseLibDirectory, "ThirdParty",
       "madara", Target.Platform.ToString());
+    string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
 
+    System.Console.WriteLine("BaseDir = " + BaseDirectory);
+    System.Console.WriteLine("BinariesDir = " + BinariesDir);
     System.Console.WriteLine("Baselibdir = " + BaseLibDirectory);
     System.Console.WriteLine("SourceDirectory = " + SourceDirectory);
     System.Console.WriteLine("MadaraLibDirectory = " + MadaraLibDirectory);
@@ -45,6 +50,8 @@ public class MadaraLibraryLibrary : ModuleRules
       PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "MADARA.lib"));
 
       PublicDelayLoadDLLs.Add(Path.Combine(MadaraLibDirectory, "MADARA.dll"));
+      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "MADARA.dll"),
+        Path.Combine(BinariesDir, "MADARA.dll"), true);
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
@@ -52,6 +59,8 @@ public class MadaraLibraryLibrary : ModuleRules
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
       PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "libMADARA.so"));
+      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "libMADARA.so"),
+        Path.Combine(BinariesDir, "libMADARA.so"), true);
     }
   }
 }

@@ -22,11 +22,11 @@ void FMadaraLibraryModule::StartupModule()
   // Add on the relative location of the third party dll and load it
   FString LibraryPath;
 #if PLATFORM_WINDOWS
-  LibraryPath = FPaths::Combine(*MadaraDir, TEXT("Win64"), TEXT("MADARA.dll"));
+  LibraryPath = TEXT("MADARA.dll");
 #elif PLATFORM_MAC
-  LibraryPath = FPaths::Combine (*MadaraDir, TEXT ("Mac"), TEXT ("MADARA.dylib"));
+  LibraryPath = TEXT ("MADARA.dylib");
 #elif PLATFORM_LINUX
-  MadaraLibraryPath = FPaths::Combine (*MadaraDir, TEXT ("Linux"), TEXT ("libMADARA.so"));
+  LibraryPath = TEXT ("libMADARA.so");
 #endif // PLATFORM_WINDOWS
 
   ExampleLibraryHandle = !LibraryPath.IsEmpty() ?
@@ -44,17 +44,6 @@ void FMadaraLibraryModule::StartupModule()
       LOCTEXT("MADARA LOAD FAILURE",
         "MadaraLibrary: Couldn't find MADARA library :("));
   }
-
-  //madara::knowledge::KnowledgeBase kb;
-
-  //kb.set ("bob", "bobtext");
-
-  //std::string kb_text ("MadaraLibrary: KB LOAD TEST\nbob: ");
-  //kb_text += kb.get ("bob").to_string ().c_str ();
-  //FString kb_text_f (kb_text.c_str());
-
-  //FMessageDialog::Open (EAppMsgType::Ok,
-  //  FText::FromString (kb_text_f));
 }
 
 void FMadaraLibraryModule::ShutdownModule()

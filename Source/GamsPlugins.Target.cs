@@ -8,7 +8,7 @@ public class GamsPluginsTarget : TargetRules
   public GamsPluginsTarget(TargetInfo Target) : base(Target)
   {
     Type = TargetType.Game;
-
+    
     ExtraModuleNames.AddRange(new string[] { "GamsPlugins" });
   }
 }

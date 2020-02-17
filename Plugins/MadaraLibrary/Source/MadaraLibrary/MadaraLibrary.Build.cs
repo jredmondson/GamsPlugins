@@ -8,6 +8,9 @@ public class MadaraLibrary : ModuleRules
   {
     PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
+    bUseRTTI = true;
+    bEnableExceptions = true;
+
     PublicIncludePaths.AddRange(
       new string[] {
 				// ... add public include paths required here ...

@@ -7,8 +7,11 @@ public class GamsAgents : ModuleRules
 	public GamsAgents(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
-		PublicIncludePaths.AddRange(
+
+    bUseRTTI = true;
+    bEnableExceptions = true;
+
+    PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
 			}

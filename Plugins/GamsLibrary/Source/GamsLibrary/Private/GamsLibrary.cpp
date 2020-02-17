@@ -27,14 +27,14 @@ void FGamsLibraryModule::StartupModule()
   FString GamsLibraryPath;
   FString MadaraLibraryPath;
 #if PLATFORM_WINDOWS
-  GamsLibraryPath = FPaths::Combine (*GamsDir, TEXT ("Win64"), TEXT ("GAMS.dll"));
-  MadaraLibraryPath = FPaths::Combine (*MadaraDir, TEXT ("Win64"), TEXT ("MADARA.dll"));
+  MadaraLibraryPath = TEXT ("MADARA.dll");
+  GamsLibraryPath = TEXT ("GAMS.dll");
 #elif PLATFORM_MAC
-  GamsLibraryPath = FPaths::Combine (*GamsDir, TEXT ("Mac"), TEXT ("GAMS.dylib"));
-  MadaraLibraryPath = FPaths::Combine (*MadaraDir, TEXT ("Mac"), TEXT ("MADARA.dylib"));
+  MadaraLibraryPath = TEXT ("MADARA.dylib");
+  GamsLibraryPath = TEXT ("GAMS.dylib");
 #elif PLATFORM_LINUX
-  GamsLibraryPath = FPaths::Combine (*GamsDir, TEXT ("Linux"), TEXT ("libGAMS.so"));
-  MadaraLibraryPath = FPaths::Combine (*MadaraDir, TEXT ("Linux"), TEXT ("libMADARA.so"));
+  MadaraLibraryPath = TEXT ("libMADARA.so");
+  GamsLibraryPath = TEXT ("libGAMS.so");
 #endif // PLATFORM_WINDOWS
 
   GamsHandle = !GamsLibraryPath.IsEmpty() ?
@@ -56,30 +56,18 @@ void FGamsLibraryModule::StartupModule()
         "GamsLibrary: Couldn't find GAMS library :("));
   }
 
-  //if (MadaraHandle)
-  //{
-  //  FMessageDialog::Open (EAppMsgType::Ok,
-  //    LOCTEXT ("MADARA LOAD SUCCESS",
-  //      "GamsLibrary: Found MADARA library"));
-  //}
-  //else
-  //{
-  //  FMessageDialog::Open (EAppMsgType::Ok,
-  //    LOCTEXT ("MADARA LOAD FAILURE",
-  //      "GamsLibrary: Couldn't find MADARA library :("));
-  //}
-
-  //madara::knowledge::KnowledgeBase kb;
-  //gams::controllers::Multicontroller controller (5);
-  //size_t num_check = controller.get_num_controllers ();
-
-  //std::stringstream buffer;
-  //buffer << "GamsLibrary: Multicontroller init test\ncontrollers loaded: ";
-  //buffer << num_check;
-  //FString status_text_f (buffer.str().c_str ());
-
-  //FMessageDialog::Open (EAppMsgType::Ok,
-  //  FText::FromString (status_text_f));
+  if (MadaraHandle)
+  {
+    //FMessageDialog::Open (EAppMsgType::Ok,
+    //  LOCTEXT ("MADARA LOAD SUCCESS",
+    //    "GamsLibrary: Found MADARA library"));
+  }
+  else
+  {
+    FMessageDialog::Open (EAppMsgType::Ok,
+      LOCTEXT ("MADARA LOAD FAILURE",
+        "GamsLibrary: Couldn't find MADARA library :("));
+  }
 }
 
 void FGamsLibraryModule::ShutdownModule()
