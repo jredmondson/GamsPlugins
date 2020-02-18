@@ -59,7 +59,35 @@ Provides access to simple header includes for MADARA that mask UE4 build issues
 
 ## Linux
 
-Not currently supported. 
+
+### Install Unreal Engine 4.21
+```
+git clone -b 4.21 git@github.com:EpicGames/UnrealEngine.git
+cd UnrealEngine
+./Setup.sh
+./GenerateProjectFiles.sh
+make
+export UE4_ROOT=`pwd`
+```
+
+Don't forget to set your UE4_ROOT to the UE 4.21 directory as above!
+
+### Generate and Build Makefiles
+```
+git clone https://github.com/jredmondson/GamsPlugins.git
+cd GamsPlugins
+Scripts/Linux/generate.sh
+Scripts/Linux/build.sh
+```
+
+### Run the project in Editor or Game mode
+```
+# to run in Editor mode do this:
+Scripts/Linux/run_editor.sh
+
+# or if you want to run in Game mode do this:
+Scripts/Linux/run_game.sh
+```
 
 ---
 
