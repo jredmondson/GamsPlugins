@@ -1,16 +1,30 @@
 {
-	"FileVersion": 3,
-	"EngineAssociation": "4.21",
-	"Category": "",
-	"Description": "",
-	"Modules": [
-		{
-			"Name": "GamsPlugins",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine"
-			]
-		}
-	]
+  "FileVersion": 3,
+  "EngineAssociation": "4.21",
+  "Category": "",
+  "Description": "",
+  "Modules": [
+    {
+      "Name": "GamsPlugins",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "AdditionalDependencies": [
+        "Engine"
+      ]
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "GamsLibrary",
+      "Enabled": true
+    },
+    {
+      "Name": "MadaraLibrary",
+      "Enabled": true
+    },
+    {
+      "Name": "GamsAgents",
+      "Enabled": true
+    }
+  ]
 }
