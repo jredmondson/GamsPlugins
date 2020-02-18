@@ -6,6 +6,28 @@ More information on these AI middleware packages can be found on
 the GAMS (http://gams.ai) and MADARA (http://madara.ai) open source
 project sites.
 
+
+---
+
+# Table of Contents
+
+  * [Modules](#modules)
+    * [GamsAgents](#gamsagents)
+    * [GamsLibraryLibrary](#gamslibrarylibrary)
+    * [GamsLibrary](#gamslibrary)
+    * [MadaraLibraryLibrary](#madaralibrarylibrary)
+    * [MadaraLibrary](#madaralibrary)
+  * [Installation](#installation)
+    * [Windows](#windows)
+      * [Install Unreal Engine 4.21 from Launcher](#install-unreal-engine-421-from-launcher)
+      * [For Users](#for-users)
+      * [For Repository Developers](#for-repository-developers)
+    * [Linux](#linux)
+      * [Install Unreal Engine 4.21](#install-unreal-engine-421)
+      * [Generate and Build Makefiles](#generate-and-build-makefiles)
+      * [Run the project in Editor or Game mode](#run-the-project-in-editor-or-game-mode)
+    * [Mac](#mac)
+   
 ---
 
 # Modules
@@ -44,6 +66,9 @@ Provides access to simple header includes for MADARA that mask UE4 build issues
 
 ## Windows
 
+### Install Unreal Engine 4.21 from Launcher
+  * From your Epic Games launcher, download the Unreal Engine 4.21
+  
 ### For Users
   * Clone this repository to your computer (e.g., "git clone https://github.com/jredmondson/GamsPlugins.git")
   * Open the GamsPlugins.uproject file
