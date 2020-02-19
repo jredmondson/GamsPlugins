@@ -1,6 +1,7 @@
 #include "UnrealAgentPlatform.h"
 #include "Math/UnrealMathUtility.h"
 #include "GamsAgentsLogs.h"
+#include "GamsGameInstance.h"
 
 
 #pragma warning(push)
@@ -77,12 +78,11 @@ UnrealAgentPlatform::UnrealAgentPlatform(
   // as an example of what to do here, create a coverage sensor
   if (knowledge && sensors)
   {
-    //UE_LOG (LogUnrealAgentPlatform, Warning,
-    //  TEXT ("constr: entering"));
+    FString agent_prefix (self_->agent.prefix.c_str ());
 
-    //UE_LOG (LogUnrealAgentPlatform, Warning,
-    //  TEXT ("%s: constr: entering"),
-    //  self_->agent.prefix.c_str ());
+    UE_LOG (LogUnrealAgentPlatform, Log,
+      TEXT ("%s: constr: entering"),
+      *agent_prefix);
 
     // create a coverage sensor
     //gams::variables::Sensors::iterator it = sensors->find("coverage");
@@ -103,34 +103,38 @@ UnrealAgentPlatform::UnrealAgentPlatform(
     //(*sensors_)["coverage"] = (*sensors)["coverage"];
     status_.init_vars(*knowledge, get_id());
 
-    //UE_LOG (LogUnrealAgentPlatform, Warning,
-    //  TEXT ("%s: constr: searching for relevant args"),
-    //  self_->agent.prefix.c_str ());
+    UE_LOG (LogUnrealAgentPlatform, Log,
+      TEXT ("%s: constr: searching for relevant args"),
+      *agent_prefix);
 
     KnowledgeMap::const_iterator location = args.find("location");
     KnowledgeMap::const_iterator orientation = args.find("orientation");
     KnowledgeMap::const_iterator blueprint = args.find ("blueprint");
     FString class_name;
 
-    //UE_LOG (LogUnrealAgentPlatform, Warning,
-    //  TEXT ("%s: constr: checking for blueprint"),
-    //  self_->agent.prefix.c_str ());
+    UE_LOG (LogUnrealAgentPlatform, Log,
+      TEXT ("%s: constr: checking for blueprint"),
+      *agent_prefix);
 
     if (blueprint != args.end())
     {
       if (blueprint->second.is_string_type() && blueprint->second == "random")
       {
-        class_name = unreal_platforms[FMath::Rand() % 3].c_str();
+        class_name = ANSI_TO_TCHAR(unreal_platforms[FMath::Rand() % 3].c_str());
       }
       else
       {
-        class_name = blueprint->second.to_string().c_str();
+        class_name = ANSI_TO_TCHAR(blueprint->second.to_string().c_str());
       }
     }
+    else
+    {
+      class_name = ANSI_TO_TCHAR(unreal_platforms[FMath::Rand () % 3].c_str ());
+    }
 
-    //UE_LOG (LogUnrealAgentPlatform, Warning,
-    //  TEXT("%s: selected agent class: %s"),
-    //  self_->agent.prefix.c_str (), *class_name);
+    UE_LOG (LogUnrealAgentPlatform, Log,
+      TEXT("%s: selected agent class: %s"),
+      *agent_prefix, *class_name);
 
     knowledge::KnowledgeRecord initial_pose = knowledge->get(".initial_pose");
 
@@ -178,6 +182,12 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
     // need to call GetWorld()->SpawnActor(type, loc, rot, spawnparameters)
     // then save the actor into the platform class
+
+    UE_LOG (LogUnrealAgentPlatform, Log,
+      TEXT ("%s: spawning %s from global world object"),
+      *agent_prefix, *class_name);
+
+
 
     status_.movement_available = 1;
   }
