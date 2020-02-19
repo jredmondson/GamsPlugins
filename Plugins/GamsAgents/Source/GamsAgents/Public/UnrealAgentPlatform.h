@@ -2,6 +2,8 @@
 #ifndef   _GAMS_UNREALAGENTPLATFORM_H_
 #define   _GAMS_UNREALAGENTPLATFORM_H_
 
+#include "GameFramework/Actor.h"
+
 #pragma warning(push)
 #pragma warning(disable:4005)
 #pragma warning(disable:4103)
@@ -55,7 +57,7 @@
       madara::knowledge::KnowledgeBase * knowledge = 0,
       gams::variables::Sensors * sensors = 0,
       gams::variables::Self * self = 0,
-      const std::string & type = "quadcopter");
+      const madara::knowledge::KnowledgeMap & args = {});
 
     /**
      * Destructor
@@ -168,10 +170,6 @@
     virtual const gams::pose::ReferenceFrame & get_frame(void) const override;
     
   private:
-    /**
-     * Builds prefixes
-     **/
-    void build_prefixes(void);
 
     /**
      * Calculate velocity/thrust necessary to send in OSC
@@ -185,29 +183,8 @@
       const gams::pose::Position & current, const gams::pose::Position & target,
       bool & finished);
 
-    /// transport settings for OSC
-    madara::transport::QoSTransportSettings settings_;
-
-    /// holds xy velocity prefix for OSC messages
-    std::string xy_velocity_prefix_;
-
-    /// holds z velocity prefix for OSC messages
-    std::string z_velocity_prefix_;
-
-    /// holds yaw velocity prefix for OSC messages
-    std::string yaw_velocity_prefix_;
-
-    /// holds position prefix for OSC messages
-    std::string position_prefix_;
-
-    /// holds rotation prefix for OSC messages
-    std::string rotation_prefix_;
-
     /// holds whether the agent is known to exist in the simulator
     bool is_created_ = false;
-
-    /// message to hold on to for agent creation/recreation
-    std::string json_creation_;
 
     /// last move target
     gams::pose::Position last_move_;
@@ -224,8 +201,11 @@
     /// timer for last updated position
     madara::utility::Timer<madara::utility::Clock> last_position_timer_;
 
-    /// type of robotics platform to simulate
-    std::string type_;
+    /// actor being manipulated in the world
+    AActor * actor_;
+
+    /// world actor to keep track of whether our actor is still valid
+    UWorld * world_;
 
     /// timeout for when to loiter
     double loiter_timeout_;
@@ -247,7 +227,7 @@
      * @param type   the type of robotics system to simulate(quadcopter,
      *               satellite)
      **/
-    UnrealAgentPlatformFactory(const std::string & type = "quadcopter");
+    UnrealAgentPlatformFactory();
 
     /**
      * Destructor. Shouldn't be necessary but trying to find vtable issue
@@ -275,8 +255,6 @@
       gams::variables::Platforms * platforms,
       gams::variables::Self * self);
 
-    /// the type of the factory/platform
-    std::string type_;
   };
 
 #endif // _GAMS_UNREALAGENTPLATFORM_H_

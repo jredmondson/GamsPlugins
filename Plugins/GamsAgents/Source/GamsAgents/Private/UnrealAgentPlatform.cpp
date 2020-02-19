@@ -1,4 +1,6 @@
 #include "UnrealAgentPlatform.h"
+#include "Math/UnrealMathUtility.h"
+#include "GamsAgentsLogs.h"
 
 
 #pragma warning(push)
@@ -27,9 +29,15 @@
 
 namespace knowledge = madara::knowledge;
 typedef knowledge::KnowledgeRecord  KnowledgeRecord;
+typedef knowledge::KnowledgeMap KnowledgeMap;
 
-UnrealAgentPlatformFactory::UnrealAgentPlatformFactory(const std::string & type)
-: type_(type)
+const std::vector <std::string> unreal_platforms = {
+"/Game/Quadcopters/Blueprints/BP_Quadcopter_A.BP_Quadcopter_A",
+"/Game/Quadcopters/Blueprints/BP_Quadcopter_B.BP_Quadcopter_B",
+"/Game/Quadcopters/Blueprints/BP_Quadcopter_C.BP_Quadcopter_C"
+};
+
+UnrealAgentPlatformFactory::UnrealAgentPlatformFactory()
 {
   
 }
@@ -42,7 +50,7 @@ UnrealAgentPlatformFactory::~UnrealAgentPlatformFactory()
 // factory class for creating a UnrealAgentPlatform 
 gams::platforms::BasePlatform *
 UnrealAgentPlatformFactory::create(
-        const madara::knowledge::KnowledgeMap &,
+        const madara::knowledge::KnowledgeMap & args,
         madara::knowledge::KnowledgeBase * knowledge,
         gams::variables::Sensors * sensors,
         gams::variables::Platforms * ,
@@ -50,16 +58,9 @@ UnrealAgentPlatformFactory::create(
 {
   gams::platforms::BasePlatform * result(0);
 
-  if (type_ != "quadcopter" &&
-      type_ != "satellite")
-  {
-    type_ = "quadcopter";
-  }
-  
   if (knowledge && sensors && self)
   {
-    result = new UnrealAgentPlatform(knowledge, sensors, self,
-      type_);
+    result = new UnrealAgentPlatform(knowledge, sensors, self, args);
   }
 
   return result;
@@ -70,38 +71,66 @@ UnrealAgentPlatform::UnrealAgentPlatform(
   madara::knowledge::KnowledgeBase * knowledge,
   gams::variables::Sensors * sensors,
   gams::variables::Self * self,
-  const std::string & type)        
-: gams::platforms::BasePlatform(knowledge, sensors, self),
-  type_(type)
+  const madara::knowledge::KnowledgeMap & args)
+: gams::platforms::BasePlatform(knowledge, sensors, self)
 {
   // as an example of what to do here, create a coverage sensor
   if (knowledge && sensors)
   {
-    // create a coverage sensor
-    gams::variables::Sensors::iterator it = sensors->find("coverage");
-    if (it == sensors->end()) // create coverage sensor
-    {
-      // get origin
-      gams::pose::Position origin(gams::pose::gps_frame());
-      madara::knowledge::containers::NativeDoubleArray origin_container;
-      origin_container.set_name("sensor.coverage.origin", *knowledge, 3);
-      origin.from_container(origin_container);
+    //UE_LOG (LogUnrealAgentPlatform, Warning,
+    //  TEXT ("constr: entering"));
 
-      // establish sensor
-      gams::variables::Sensor* coverage_sensor =
-        new gams::variables::Sensor("coverage", knowledge, 2.5, origin);
-      (*sensors)["coverage"] = coverage_sensor;
+    //UE_LOG (LogUnrealAgentPlatform, Warning,
+    //  TEXT ("%s: constr: entering"),
+    //  self_->agent.prefix.c_str ());
+
+    // create a coverage sensor
+    //gams::variables::Sensors::iterator it = sensors->find("coverage");
+    //if (it == sensors->end()) // create coverage sensor
+    //{
+    //  // get origin
+    //  gams::pose::Position origin(gams::pose::gps_frame());
+    //  madara::knowledge::containers::NativeDoubleArray origin_container;
+    //  origin_container.set_name("sensor.coverage.origin", *knowledge, 3);
+    //  origin.from_container(origin_container);
+
+    //  // establish sensor
+    //  gams::variables::Sensor* coverage_sensor =
+    //    new gams::variables::Sensor("coverage", knowledge, 2.5, origin);
+    //  (*sensors)["coverage"] = coverage_sensor;
+    //}
+
+    //(*sensors_)["coverage"] = (*sensors)["coverage"];
+    status_.init_vars(*knowledge, get_id());
+
+    //UE_LOG (LogUnrealAgentPlatform, Warning,
+    //  TEXT ("%s: constr: searching for relevant args"),
+    //  self_->agent.prefix.c_str ());
+
+    KnowledgeMap::const_iterator location = args.find("location");
+    KnowledgeMap::const_iterator orientation = args.find("orientation");
+    KnowledgeMap::const_iterator blueprint = args.find ("blueprint");
+    FString class_name;
+
+    //UE_LOG (LogUnrealAgentPlatform, Warning,
+    //  TEXT ("%s: constr: checking for blueprint"),
+    //  self_->agent.prefix.c_str ());
+
+    if (blueprint != args.end())
+    {
+      if (blueprint->second.is_string_type() && blueprint->second == "random")
+      {
+        class_name = unreal_platforms[FMath::Rand() % 3].c_str();
+      }
+      else
+      {
+        class_name = blueprint->second.to_string().c_str();
+      }
     }
 
-    (*sensors_)["coverage"] = (*sensors)["coverage"];
-    status_.init_vars(*knowledge, get_id());
-    
-    build_prefixes();
-
-    settings_.hosts.push_back(
-      knowledge->get(".osc.local.endpoint").to_string());
-    settings_.hosts.push_back(
-      knowledge->get(".osc.server.endpoint").to_string());
+    //UE_LOG (LogUnrealAgentPlatform, Warning,
+    //  TEXT("%s: selected agent class: %s"),
+    //  self_->agent.prefix.c_str (), *class_name);
 
     knowledge::KnowledgeRecord initial_pose = knowledge->get(".initial_pose");
 
@@ -157,11 +186,6 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
 // Destructor
 UnrealAgentPlatform::~UnrealAgentPlatform()
-{
-}
-
-void
-UnrealAgentPlatform::build_prefixes(void)
 {
 }
 

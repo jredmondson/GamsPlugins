@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 
+#include "GamsIncludes.h"
+#include "UnrealAgentPlatform.h"
+
 #include "GamsGameInstance.generated.h"
 
 /**
@@ -18,6 +21,14 @@ class GAMSAGENTS_API UGamsGameInstance : public UGameInstance
 public:
 
   virtual void Init () override;
+
+  virtual void Shutdown () override;
+
+  gams::controllers::Multicontroller controller_;
+
+private:
+  UnrealAgentPlatformFactory agent_factory_;
+
   //virtual void OnWorldChanged (
   //  UWorld* OldWorld,
   //  UWorld* NewWorld) override;

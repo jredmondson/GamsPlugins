@@ -30,6 +30,7 @@
 #pragma warning(disable:4996)
 #include "gams/controllers/Multicontroller.h"
 #include "gams/controllers/BaseController.h"
+#include "gams/platforms/PlatformFactoryRepository.h"
 #pragma warning(pop)
 
 
