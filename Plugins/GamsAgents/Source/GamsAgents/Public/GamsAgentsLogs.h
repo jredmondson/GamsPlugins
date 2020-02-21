@@ -10,3 +10,9 @@ DECLARE_LOG_CATEGORY_EXTERN (LogUnrealAgentPlatform, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN (LogGamsMulticontroller, Log, All);
 
 DECLARE_LOG_CATEGORY_EXTERN (LogGamsGameInstance, Log, All);
+
+DECLARE_LOG_CATEGORY_EXTERN (LogGamsAssetManager, Log, All);
+
+DECLARE_LOG_CATEGORY_EXTERN(LogGamsVehicle, Log, All);
+
+DECLARE_LOG_CATEGORY_EXTERN(LogGamsDjiPhantom, Log, All);

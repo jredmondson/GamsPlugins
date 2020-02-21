@@ -1,7 +1,12 @@
+
 #include "UnrealAgentPlatform.h"
 #include "Math/UnrealMathUtility.h"
 #include "GamsAgentsLogs.h"
 #include "GamsGameInstance.h"
+#include "Engine/World.h"
+#include "UObject/UObjectGlobals.h"
+#include "Math/Vector.h"
+#include "GamsDjiPhantom.h"
 
 
 #pragma warning(push)
@@ -142,10 +147,18 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
     if (!initial_pose.is_array_type())
     {
+      KnowledgeRecord::Integer id = self_->id.to_integer();
+
+      float row = (float)((id / 10) % 10);
+      float col = (float)(id % 10);
+      float level = (float)(id / 100);
+
       // by default initialize agents to [.id, .id, .id]
-      initial_pose.set_index(2, 200);
-      initial_pose.set_index(1, *(self_->id) * 300);
-      initial_pose.set_index(0, *(self_->id) * 300);
+      initial_pose.set_index(2, 50.0f + 100 * level);
+      //initial_pose.set_index(1, -2200.0f + 440 * (*(self_->id) % 10));
+      //initial_pose.set_index(0, -1200.0f + 240 * (*(self_->id) / 10));
+      initial_pose.set_index(1, -2200.0f + 140 * col);
+      initial_pose.set_index(0, -1200.0f + 140 * row);
     }
     else
     {
@@ -156,7 +169,7 @@ UnrealAgentPlatform::UnrealAgentPlatform(
       value = initial_pose.retrieve_index(2).to_double() * 100;
       initial_pose.set_index(2, value);
     }
-    
+
     loiter_timeout_ = knowledge->get(".osc.loiter_timeout").to_double();
 
     respawn_timeout_ = knowledge->get(".osc.respawn_timeout").to_double();
@@ -187,7 +200,66 @@ UnrealAgentPlatform::UnrealAgentPlatform(
       TEXT ("%s: spawning %s from global world object"),
       *agent_prefix, *class_name);
 
+    if (gams_current_world != 0)
+    {
+      UE_LOG (LogUnrealAgentPlatform, Log,
+        TEXT ("%s: global world object is not null"),
+        *agent_prefix, *class_name);
 
+      //UGamsAssetManager * manager = dynamic_cast<UGamsAssetManager*>(
+      //  UAssetManager::Get());
+
+      FVector ue_location(
+        float(initial_pose.retrieve_index(0).to_double()),
+        float(initial_pose.retrieve_index(1).to_double()),
+        float(initial_pose.retrieve_index(2).to_double()));
+      FRotator ue_orientation(0.0f, 0.0f, 0.0f);
+      FActorSpawnParameters spawn_parameters;
+
+      UE_LOG(LogUnrealAgentPlatform, Log,
+        TEXT("%s: spawning actor at %s, rotation=%s."),
+        *agent_prefix, *ue_location.ToString(), *ue_orientation.ToString());
+
+      actor_ = gams_current_world->SpawnActor<AGamsDjiPhantom>(
+        AGamsDjiPhantom::StaticClass(),
+        ue_location, ue_orientation,
+        spawn_parameters);
+
+      if (actor_)
+      {
+        UE_LOG(LogUnrealAgentPlatform, Log,
+          TEXT("%s: SUCCESS: actor spawned at %s, rotation=%s."),
+          *agent_prefix, *ue_location.ToString(), *ue_orientation.ToString());
+      }
+      else
+      {
+        UE_LOG(LogUnrealAgentPlatform, Warning,
+          TEXT("%s: FAILED: actor spawn returned null."),
+          *agent_prefix);
+      }
+
+      UBlueprint * actor_object = LoadObject<UBlueprint> (NULL, *class_name, NULL, LOAD_None, NULL);
+
+      if (actor_object != 0)
+      {
+        UE_LOG(LogUnrealAgentPlatform, Log,
+          TEXT("%s: actor class lookup %s succeeded! Actor can be spawned."),
+          *agent_prefix, *class_name);
+
+      }
+      else
+      {
+        UE_LOG (LogUnrealAgentPlatform, Warning,
+          TEXT ("%s: actor class lookup %s failed. No actor can be spawned."),
+          *agent_prefix, *class_name);
+      }
+    }
+    else
+    {
+      UE_LOG (LogUnrealAgentPlatform, Warning,
+        TEXT ("%s: global world object is null. No actor can be spawned."),
+        *agent_prefix);
+    }
 
     status_.movement_available = 1;
   }

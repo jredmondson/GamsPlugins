@@ -7,3 +7,9 @@ DEFINE_LOG_CATEGORY (LogUnrealAgentPlatform);
 DEFINE_LOG_CATEGORY (LogGamsMulticontroller);
 
 DEFINE_LOG_CATEGORY (LogGamsGameInstance);
+
+DEFINE_LOG_CATEGORY (LogGamsAssetManager);
+
+DEFINE_LOG_CATEGORY(LogGamsVehicle);
+
+DEFINE_LOG_CATEGORY(LogGamsDjiPhantom);

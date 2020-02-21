@@ -28,10 +28,6 @@ public:
 
 private:
   UnrealAgentPlatformFactory agent_factory_;
-
-  //virtual void OnWorldChanged (
-  //  UWorld* OldWorld,
-  //  UWorld* NewWorld) override;
 };
 
 extern UWorld * gams_current_world;

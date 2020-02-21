@@ -2,7 +2,7 @@
 #ifndef   _GAMS_UNREALAGENTPLATFORM_H_
 #define   _GAMS_UNREALAGENTPLATFORM_H_
 
-#include "GameFramework/Actor.h"
+#include "GamsVehicle.h"
 
 #pragma warning(push)
 #pragma warning(disable:4005)
@@ -33,7 +33,7 @@
 #include "gams/platforms/PlatformFactory.h"
 #include "gams/pose/CartesianFrame.h"
 #pragma warning(pop)
-        
+    
   /**
   * A GAMS platform for controlling Unreal agents
   **/

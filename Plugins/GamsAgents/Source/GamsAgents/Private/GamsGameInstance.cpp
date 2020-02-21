@@ -8,8 +8,6 @@ void UGamsGameInstance::Init()
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("UGamsGameInstance: Init: entering"));
 
-  //agent_factory_ = new UnrealAgentPlatformFactory ();
-
   // add the dynamic unreal agent platform factory
   std::vector <std::string> aliases;
   aliases.resize(3);
@@ -29,7 +27,7 @@ void UGamsGameInstance::Init()
     TEXT ("UGamsGameInstance: Init: resizing controller to 100 agents"));
 
   // create 100 agents
-  controller_.resize(100);
+  controller_.resize(500);
 
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("UGamsGameInstance: Init: creating args knowledge map"));
@@ -58,6 +56,4 @@ float gams_delta_time (0.0);
 
 void UGamsGameInstance::Shutdown ()
 {
-  //delete agent_factory_;
-  //agent_factory_ = 0;
 }
