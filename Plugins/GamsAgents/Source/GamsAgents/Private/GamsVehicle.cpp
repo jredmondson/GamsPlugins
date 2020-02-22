@@ -6,7 +6,7 @@
 AGamsVehicle::AGamsVehicle()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
   move_forward = 0.0f;
   move_up = 0.0f;

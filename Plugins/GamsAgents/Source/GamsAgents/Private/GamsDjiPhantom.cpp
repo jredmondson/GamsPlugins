@@ -12,7 +12,7 @@
 
 AGamsDjiPhantom::AGamsDjiPhantom()
 {
-  PrimaryActorTick.bCanEverTick = true;
+  PrimaryActorTick.bCanEverTick = false;
 
   UStaticMeshComponent* mesh =
     CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
@@ -130,9 +130,5 @@ AGamsDjiPhantom::AGamsDjiPhantom()
 }
 
 void AGamsDjiPhantom::BeginPlay()
-{
-}
-
-void AGamsDjiPhantom::Tick(float delta_time)
 {
 }

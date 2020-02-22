@@ -83,11 +83,11 @@ UnrealAgentPlatform::UnrealAgentPlatform(
   // as an example of what to do here, create a coverage sensor
   if (knowledge && sensors)
   {
-    FString agent_prefix (self_->agent.prefix.c_str ());
+    agent_prefix_ = self_->agent.prefix.c_str ();
 
     UE_LOG (LogUnrealAgentPlatform, Log,
       TEXT ("%s: constr: entering"),
-      *agent_prefix);
+      *agent_prefix_);
 
     // create a coverage sensor
     //gams::variables::Sensors::iterator it = sensors->find("coverage");
@@ -110,7 +110,7 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
     UE_LOG (LogUnrealAgentPlatform, Log,
       TEXT ("%s: constr: searching for relevant args"),
-      *agent_prefix);
+      *agent_prefix_);
 
     KnowledgeMap::const_iterator location = args.find("location");
     KnowledgeMap::const_iterator orientation = args.find("orientation");
@@ -119,7 +119,7 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
     UE_LOG (LogUnrealAgentPlatform, Log,
       TEXT ("%s: constr: checking for blueprint"),
-      *agent_prefix);
+      *agent_prefix_);
 
     if (blueprint != args.end())
     {
@@ -139,7 +139,7 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
     UE_LOG (LogUnrealAgentPlatform, Log,
       TEXT("%s: selected agent class: %s"),
-      *agent_prefix, *class_name);
+      *agent_prefix_, *class_name);
 
     knowledge::KnowledgeRecord initial_pose = knowledge->get(".initial_pose");
 
@@ -198,13 +198,15 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
     UE_LOG (LogUnrealAgentPlatform, Log,
       TEXT ("%s: spawning %s from global world object"),
-      *agent_prefix, *class_name);
+      *agent_prefix_, *class_name);
+
+    world_ = gams_current_world;
 
     if (gams_current_world != 0)
     {
       UE_LOG (LogUnrealAgentPlatform, Log,
         TEXT ("%s: global world object is not null"),
-        *agent_prefix, *class_name);
+        *agent_prefix_, *class_name);
 
       //UGamsAssetManager * manager = dynamic_cast<UGamsAssetManager*>(
       //  UAssetManager::Get());
@@ -218,7 +220,7 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
       UE_LOG(LogUnrealAgentPlatform, Log,
         TEXT("%s: spawning actor at %s, rotation=%s."),
-        *agent_prefix, *ue_location.ToString(), *ue_orientation.ToString());
+        *agent_prefix_, *ue_location.ToString(), *ue_orientation.ToString());
 
       actor_ = gams_current_world->SpawnActor<AGamsDjiPhantom>(
         AGamsDjiPhantom::StaticClass(),
@@ -229,36 +231,36 @@ UnrealAgentPlatform::UnrealAgentPlatform(
       {
         UE_LOG(LogUnrealAgentPlatform, Log,
           TEXT("%s: SUCCESS: actor spawned at %s, rotation=%s."),
-          *agent_prefix, *ue_location.ToString(), *ue_orientation.ToString());
+          *agent_prefix_, *ue_location.ToString(), *ue_orientation.ToString());
       }
       else
       {
         UE_LOG(LogUnrealAgentPlatform, Warning,
           TEXT("%s: FAILED: actor spawn returned null."),
-          *agent_prefix);
+          *agent_prefix_);
       }
 
-      UBlueprint * actor_object = LoadObject<UBlueprint> (NULL, *class_name, NULL, LOAD_None, NULL);
+      //UBlueprint * actor_object = LoadObject<UBlueprint> (NULL, *class_name, NULL, LOAD_None, NULL);
 
-      if (actor_object != 0)
-      {
-        UE_LOG(LogUnrealAgentPlatform, Log,
-          TEXT("%s: actor class lookup %s succeeded! Actor can be spawned."),
-          *agent_prefix, *class_name);
+      //if (actor_object != 0)
+      //{
+      //  UE_LOG(LogUnrealAgentPlatform, Log,
+      //    TEXT("%s: actor class lookup %s succeeded! Actor can be spawned."),
+      //    *agent_prefix_, *class_name);
 
-      }
-      else
-      {
-        UE_LOG (LogUnrealAgentPlatform, Warning,
-          TEXT ("%s: actor class lookup %s failed. No actor can be spawned."),
-          *agent_prefix, *class_name);
-      }
+      //}
+      //else
+      //{
+      //  UE_LOG (LogUnrealAgentPlatform, Warning,
+      //    TEXT ("%s: actor class lookup %s failed. No actor can be spawned."),
+      //    *agent_prefix_, *class_name);
+      //}
     }
     else
     {
       UE_LOG (LogUnrealAgentPlatform, Warning,
         TEXT ("%s: global world object is null. No actor can be spawned."),
-        *agent_prefix);
+        *agent_prefix_);
     }
 
     status_.movement_available = 1;
@@ -322,13 +324,11 @@ UnrealAgentPlatform::calculate_thrust(
   }
   
   madara::knowledge::KnowledgeRecord record(difference);
+  FString difference_str(record.to_string().c_str());
 
-  madara_logger_ptr_log(gams::loggers::global_logger.get(),
-    gams::loggers::LOG_MAJOR,
-    "UnrealAgentPlatform::calculate_thrust: " \
-    "%s: returning thrust of [%s]\n",
-    self_->agent.prefix.c_str(),
-    record.to_string().c_str());
+  UE_LOG(LogUnrealAgentPlatform, Log,
+    TEXT("%s: UnrealAgentPlatform::calculate_thrust: thrust is [%s]"),
+    *agent_prefix_, *difference_str);
 
   return difference;
 }
@@ -344,12 +344,32 @@ UnrealAgentPlatform::sense(void)
   // convert osc order to the frame order
   gams::pose::Position loc (get_frame());
   gams::pose::Rotation rot (get_frame());
-  //loc.from_array (value.second.to_doubles ());
 
-  // The UnrealEngine provides us with centimeters. Convert to meters.
-  //loc.x (loc.x () / 100);
-  //loc.y (loc.y () / 100);
-  //loc.z (loc.z () / 100);
+  FVector location = actor_->GetActorLocation();
+  FRotator orientation = actor_->GetActorRotation();
+  FString is_hidden = FString(actor_->bHidden ? "Hidden" : "Shown");
+  FString is_init = FString(actor_->IsActorInitialized() ? "Init" : "Uninit");
+  FString in_world = FString(world_ == gams_current_world ? "Yes" : "No");
+
+  // UE provides location in centimeters. Convert to meters.
+  loc.x(location.X / 100);
+  loc.y(location.Y / 100);
+  loc.z(location.Z / 100);
+
+  rot.rx(orientation.Roll);
+  rot.ry(orientation.Pitch);
+  rot.rz(orientation.Yaw);
+
+  loc.to_container(self_->agent.location);
+  rot.to_container(self_->agent.orientation);
+
+  FString loc_str(loc.to_string().c_str());
+  FString orient_str(rot.to_string().c_str());
+
+  UE_LOG(LogUnrealAgentPlatform, Log,
+    TEXT("%s: UnrealAgentPlatform::sense: location=[%s], orientation=[%s]"
+    ", hidden=%s, init=%s, world=%s"),
+    *agent_prefix_, *loc_str, *orient_str, *is_hidden, *is_init, *in_world);
 
   return gams::platforms::PLATFORM_OK;
 }

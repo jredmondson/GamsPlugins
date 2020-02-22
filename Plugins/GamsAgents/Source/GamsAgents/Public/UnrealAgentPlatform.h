@@ -207,6 +207,9 @@
     /// world actor to keep track of whether our actor is still valid
     UWorld * world_;
 
+    /// local, non-mutexed copy of self_->prefix
+    FString agent_prefix_;
+
     /// timeout for when to loiter
     double loiter_timeout_;
 

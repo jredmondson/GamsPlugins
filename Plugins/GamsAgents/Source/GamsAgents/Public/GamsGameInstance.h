@@ -16,18 +16,24 @@
 UCLASS()
 class GAMSAGENTS_API UGamsGameInstance : public UGameInstance
 {
-  GENERATED_BODY ()
+  GENERATED_BODY()
 
 public:
 
-  virtual void Init () override;
+  virtual void Init() override;
 
-  virtual void Shutdown () override;
+  virtual void Shutdown() override;
+
+  void OnPostLoadMap(UWorld * new_world);
+
+  void ControllerRun();
 
   gams::controllers::Multicontroller controller_;
 
 private:
   UnrealAgentPlatformFactory agent_factory_;
+
+  FTimerHandle run_timer_handler_;
 };
 
 extern UWorld * gams_current_world;
