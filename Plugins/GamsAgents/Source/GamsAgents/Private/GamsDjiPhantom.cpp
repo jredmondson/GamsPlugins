@@ -9,13 +9,13 @@
 #include "Materials/Material.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "GamsAgentsLogs.h"
+#include "GameFramework/MovementComponent.h"
 
 AGamsDjiPhantom::AGamsDjiPhantom()
 {
   PrimaryActorTick.bCanEverTick = false;
 
-  UStaticMeshComponent* mesh =
-    CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+  mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
   //mesh->SetupAttachment(RootComponent);
   RootComponent = mesh;
 
@@ -45,6 +45,14 @@ AGamsDjiPhantom::AGamsDjiPhantom()
     mesh->SetStaticMesh(mesh_asset.Object);
     mesh->SetRelativeLocation(FVector(0.0f, 0.0f, -25.0f));
     mesh->SetWorldScale3D(FVector(1.0f));
+
+    //movement = CreateDefaultSubobject<UMovementComponent>(TEXT("MovementComponent"));
+    //movement->SetUpdatedComponent(mesh);
+    //movement->InitialSpeed = 10.0f;
+    //movement->MaxSpeed = 30.0f;
+    //movement->bRotationFollowsVelocity = true;
+    //movement->bShouldBounce = true;
+    //movement->Bounciness = 0.3f;
 
     // setup the rotors
     if (rotor_asset.Succeeded())

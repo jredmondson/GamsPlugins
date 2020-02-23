@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "GamsVehicle.generated.h"
 
+class UStaticMeshComponent;
+class UMovementComponent;
+
 UCLASS()
 class GAMSAGENTS_API AGamsVehicle : public AActor
 {
@@ -23,16 +26,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-  UPROPERTY (EditAnywhere, BlueprintReadOnly)
-    float move_forward;
+  UPROPERTY(VisibleAnywhere, Category = Movement)
+    UStaticMeshComponent* mesh;
 
-  UPROPERTY (EditAnywhere, BlueprintReadOnly)
-    float move_right;
-
-  UPROPERTY (EditAnywhere, BlueprintReadOnly)
-    float move_up;
-
-  UPROPERTY (EditAnywhere, BlueprintReadOnly)
-    float look_up;
-
+  UPROPERTY(VisibleAnywhere, Category = Movement)
+    UMovementComponent* movement;
 };

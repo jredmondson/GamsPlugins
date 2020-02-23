@@ -43,6 +43,10 @@ const std::vector <std::string> unreal_platforms = {
 "/Game/Quadcopters/Blueprints/BP_Quadcopter_C.BP_Quadcopter_C"
 };
 
+const std::vector <UClass *> platform_classes = {
+  AGamsDjiPhantom::StaticClass()
+};
+
 UnrealAgentPlatformFactory::UnrealAgentPlatformFactory()
 {
   
@@ -222,8 +226,11 @@ UnrealAgentPlatform::UnrealAgentPlatform(
         TEXT("%s: spawning actor at %s, rotation=%s."),
         *agent_prefix_, *ue_location.ToString(), *ue_orientation.ToString());
 
+      UClass * actor_class =
+        platform_classes[FMath::Rand() % platform_classes.size()];
+
       actor_ = gams_current_world->SpawnActor<AGamsDjiPhantom>(
-        AGamsDjiPhantom::StaticClass(),
+        actor_class,
         ue_location, ue_orientation,
         spawn_parameters);
 

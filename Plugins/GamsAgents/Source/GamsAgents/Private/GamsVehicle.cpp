@@ -4,13 +4,10 @@
 
 // Sets default values
 AGamsVehicle::AGamsVehicle()
+  : mesh(0), movement(0)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
-  move_forward = 0.0f;
-  move_up = 0.0f;
-  look_up = 0.0f;
 }
 
 // Called when the game starts or when spawned
