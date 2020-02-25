@@ -26,9 +26,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-  UPROPERTY(VisibleAnywhere, Category = Movement)
+  UPROPERTY(VisibleAnywhere, Category = Vehicle)
     UStaticMeshComponent* mesh;
 
   UPROPERTY(VisibleAnywhere, Category = Movement)
     UMovementComponent* movement;
+
+  UPROPERTY(VisibleAnywhere, Category = Movement)
+  float max_speed;
+
+  UPROPERTY(VisibleAnywhere, Category = Movement)
+  float acceleration;
 };

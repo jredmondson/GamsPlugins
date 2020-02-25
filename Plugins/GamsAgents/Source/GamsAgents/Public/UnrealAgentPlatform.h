@@ -175,13 +175,59 @@
      * Calculate velocity/thrust necessary to send in OSC
      * @param current  current location
      * @param target   target location
-     * @param type     0(try to stop at target), 1(keep on trucking)
+     * @param finished indicates whether current == target
      * @return  thrust vector to get from current to target according to
      *          movement profile
      **/
     std::vector<double> calculate_thrust(
       const gams::pose::Position & current, const gams::pose::Position & target,
       bool & finished);
+
+    /**
+     * Calculate location necessary to add to UE actor
+     * @param current  current location
+     * @param target   target location
+     * @param diff_location  location offset of target - current
+     * @param finished indicates whether current == target
+     **/
+    void calculate_diff(
+      const gams::pose::Position& current, const gams::pose::Position& target,
+      FVector& diff_location,
+      bool& finished);
+
+    /**
+     * Calculate rotation necessary to add to UE actor
+     * @param current  current location
+     * @param target   target location
+     * @param diff_rotator   orientation offset of target - current
+     * @param finished indicates whether current == target
+     **/
+    void calculate_diff(
+    const gams::pose::Orientation& current, const gams::pose::Orientation& target,
+      FRotator& diff_rotator,
+      bool& finished);
+
+    /**
+     * Calculate local distance possible within delta_time to move actor
+     * @param total_diff  overall distance between cur and destination
+     * @param local_diff  distance to travel within delta_time
+     * @param speed       speed to travel over the time
+     * @param delta_time  time expected to travel toward destination
+     * @param finished indicates whether current == target
+     **/
+    void calculate_delta(const FVector& total_diff, FVector& local_diff,
+      float speed, float delta_time);
+
+    /**
+     * Calculate local rotation possible within delta_time to move actor
+     * @param total_diff  overall rotation between cur and destination
+     * @param local_diff  rotation to travel within delta_time
+     * @param speed       speed to travel over the time
+     * @param delta_time  time expected to travel toward destination
+     * @param finished indicates whether current == target
+     **/
+    void calculate_delta(const FRotator& total_diff, FRotator& local_diff,
+      float speed, float delta_time);
 
     /// holds whether the agent is known to exist in the simulator
     bool is_created_ = false;
@@ -206,6 +252,12 @@
 
     /// world actor to keep track of whether our actor is still valid
     UWorld * world_;
+
+    /// actor's max speed in engine (cm/s)
+    float max_speed_;
+
+    /// actor's acceleration in engine (cm/s^2)
+    float acceleration_;
 
     /// local, non-mutexed copy of self_->prefix
     FString agent_prefix_;

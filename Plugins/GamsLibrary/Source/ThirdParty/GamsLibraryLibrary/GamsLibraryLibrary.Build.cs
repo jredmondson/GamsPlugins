@@ -42,15 +42,22 @@ public class GamsLibraryLibrary : ModuleRules
 
     if (Target.Platform == UnrealTargetPlatform.Win64)
     {
+      string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.lib"));
 
-      PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
       if (Target.Type == TargetType.Game)
       {
-        string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
-
         System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dll"),
-        Path.Combine(BinariesDir, "GAMS.dll"), true);
+          Path.Combine(BinariesDir, "GAMS.dll"), true);
+        PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
+      }
+      else
+      {
+        PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
+        if (System.IO.File.Exists(Path.Combine(BinariesDir, "GAMS.dll")))
+        {
+          System.IO.File.Delete(Path.Combine(BinariesDir, "GAMS.dll"));
+        }
       }
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)

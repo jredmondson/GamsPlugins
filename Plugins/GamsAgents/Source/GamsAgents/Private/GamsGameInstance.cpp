@@ -4,6 +4,11 @@
 #include "GamsAgentsLogs.h"
 #include "TimerManager.h"
 #include "UObject/UObjectGlobals.h"
+#include "madara/utility/Utility.h"
+#include "GenericPlatform/GenericPlatformMisc.h"
+#include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
+#include <stdlib.h>
 
 void UGamsGameInstance::Init()
 {
@@ -31,8 +36,28 @@ void UGamsGameInstance::Init()
   // create 100 agents
   controller_.resize(250);
 
-  UE_LOG (LogGamsGameInstance, Log,
-    TEXT ("UGamsGameInstance: Init: creating args knowledge map"));
+  FString filename = FPaths::Combine(FPaths::GameContentDir(),
+    TEXT("Scripts"), TEXT("line.mf"));
+  FString filecontents;
+  FFileHelper::LoadFileToString(filecontents, *filename);
+
+  //std::string filename_with_env =
+  //  "$(GAMS_ROOT)/scripts/simulation/unreal/move/line.mf";
+  //std::string filename = madara::utility::expand_envs(filename_with_env);
+  //FString filename_ue (filename.c_str());
+
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("UGamsGameInstance: Init: reading karl init from file %s"),
+    *filename);
+
+  //std::string contents = madara::utility::file_to_string(filename.s);
+
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("UGamsGameInstance: Init: evaluating %d byte karl logic on each platform"),
+      (int32)filecontents.Len());
+
+  std::string contents = TCHAR_TO_UTF8(*filecontents);
+  controller_.evaluate(contents);
 
   FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UGamsGameInstance::OnPostLoadMap);
 
@@ -51,6 +76,9 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("UGamsGameInstance: post_level_load: "
       "initializing unreal_agent platforms"));
+
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("UGamsGameInstance: post_level_load: creating args knowledge map"));
 
   // assign dynamic unreal platforms to the agents
   madara::knowledge::KnowledgeMap args;
@@ -93,4 +121,4 @@ void UGamsGameInstance::ControllerRun()
 
 // global static variables
 UWorld * gams_current_world(0);
-float gams_delta_time(1.0);
+float gams_delta_time(0.1);
