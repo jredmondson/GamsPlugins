@@ -15,7 +15,7 @@ AGamsDjiPhantom::AGamsDjiPhantom()
   : AGamsAerialVehicle()
 {
   PrimaryActorTick.bCanEverTick = false;
-  this->max_speed = 1000.0f;
+  this->max_speed = 500.0f;
 
   mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
   //mesh->SetupAttachment(RootComponent);

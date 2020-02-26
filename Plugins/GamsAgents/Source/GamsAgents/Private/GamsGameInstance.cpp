@@ -8,6 +8,7 @@
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
+#include "Engine/World.h"
 #include <stdlib.h>
 
 void UGamsGameInstance::Init()
@@ -29,14 +30,16 @@ void UGamsGameInstance::Init()
 
   // seed the current world
   gams_current_world = GetWorld();
+  size_t num_controllers = 100;
 
   UE_LOG (LogGamsGameInstance, Log,
-    TEXT ("UGamsGameInstance: Init: resizing controller to 100 agents"));
+    TEXT ("UGamsGameInstance: Init: resizing controller to %d agents"),
+    num_controllers);
 
   // create 100 agents
-  controller_.resize(250);
+  controller_.resize(num_controllers);
 
-  FString filename = FPaths::Combine(FPaths::GameContentDir(),
+  FString filename = FPaths::Combine(FPaths::ProjectContentDir(),
     TEXT("Scripts"), TEXT("line.mf"));
   FString filecontents;
   FFileHelper::LoadFileToString(filecontents, *filename);
@@ -60,6 +63,8 @@ void UGamsGameInstance::Init()
   controller_.evaluate(contents);
 
   FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UGamsGameInstance::OnPostLoadMap);
+
+  UnrealAgentPlatform::load_platform_classes();
 
 #if UE_EDITOR
   OnPostLoadMap(gams_current_world);
@@ -98,6 +103,7 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
 
 void UGamsGameInstance::Shutdown ()
 {
+  UnrealAgentPlatform::unload_platform_classes();
   TimerManager->ClearTimer(run_timer_handler_);
 }
 
@@ -107,6 +113,8 @@ void UGamsGameInstance::ControllerRun()
     TEXT("UGamsGameInstance: controller_run: calling"));
 
   UWorld * temp_world = GetWorld();
+
+  gams_delta_time = temp_world->DeltaTimeSeconds;
 
   if (gams_current_world != temp_world)
   {

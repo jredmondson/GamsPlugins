@@ -169,6 +169,16 @@
      **/
     virtual const gams::pose::ReferenceFrame & get_frame(void) const override;
     
+    /**
+     * Loads platform classes
+     **/
+    static void load_platform_classes(void);
+
+    /**
+     * Loads platform classes
+     **/
+    static void unload_platform_classes(void);
+
   private:
 
     /**
@@ -237,6 +247,12 @@
 
     /// last orient target
     gams::pose::Orientation last_orient_;
+
+    // optimizations to remove function calls to get_location/orientation
+    FVector ue_location_;
+    FRotator ue_orientation_;
+    FVector last_ue_target_location_;
+    FRotator last_ue_target_orientation_;
 
     /// timer for checking last movement
     madara::utility::Timer<madara::utility::Clock> move_timer_;

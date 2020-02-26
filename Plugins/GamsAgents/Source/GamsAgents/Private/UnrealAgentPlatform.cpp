@@ -43,18 +43,18 @@ const std::vector <std::string> unreal_platforms = {
 "/Game/Quadcopters/Blueprints/BP_Quadcopter_C.BP_Quadcopter_C"
 };
 
-const std::vector <UClass *> platform_classes = {
-  AGamsDjiPhantom::StaticClass()
-};
+//const std::vector <UClass *> platform_classes = {
+//  AGamsDjiPhantom::StaticClass()
+//};
+
+std::vector <UClass *> platform_classes;
 
 UnrealAgentPlatformFactory::UnrealAgentPlatformFactory()
 {
-  
 }
 
 UnrealAgentPlatformFactory::~UnrealAgentPlatformFactory()
 {
-  
 }
 
 // factory class for creating a UnrealAgentPlatform 
@@ -220,7 +220,10 @@ UnrealAgentPlatform::UnrealAgentPlatform(
         float(initial_pose.retrieve_index(1).to_double()),
         float(initial_pose.retrieve_index(2).to_double()));
       FRotator ue_orientation(0.0f, 0.0f, 0.0f);
+
       FActorSpawnParameters spawn_parameters;
+      spawn_parameters.SpawnCollisionHandlingOverride =
+        ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
       UE_LOG(LogUnrealAgentPlatform, Log,
         TEXT("%s: spawning actor at %s, rotation=%s."),
@@ -231,12 +234,13 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
       AGamsVehicle * vehicle;
 
-      vehicle = gams_current_world->SpawnActor<AGamsVehicle>(
+      actor_ = gams_current_world->SpawnActor<AGamsVehicle>(
         actor_class,
         ue_location, ue_orientation,
         spawn_parameters);
 
-      actor_ = vehicle;
+      //actor_ = vehicle;
+      vehicle = Cast<AGamsVehicle>(actor_);
 
       if (actor_)
       {
@@ -244,10 +248,11 @@ UnrealAgentPlatform::UnrealAgentPlatform(
           TEXT("%s: SUCCESS: actor spawned at %s, rotation=%s."),
           *agent_prefix_, *ue_location.ToString(), *ue_orientation.ToString());
 
-        //max_speed_ = vehicle->max_speed;
-        //acceleration_ = vehicle->acceleration;
-        max_speed_ = 1000.0f;
-        acceleration_ = 500.0f;
+        max_speed_ = vehicle->max_speed;
+        acceleration_ = vehicle->acceleration;
+
+        //max_speed_ = 200.0f;
+        //acceleration_ = 500.0f;
       }
       else
       {
@@ -493,20 +498,20 @@ UnrealAgentPlatform::sense(void)
     gams::pose::Position loc(get_frame());
     gams::pose::Rotation rot(get_frame());
 
-    FVector location = actor_->GetActorLocation();
-    FRotator orientation = actor_->GetActorRotation();
+    ue_location_ = actor_->GetActorLocation();
+    ue_orientation_ = actor_->GetActorRotation();
     FString is_hidden = FString(actor_->bHidden ? "Hidden" : "Shown");
     FString is_init = FString(actor_->IsActorInitialized() ? "Init" : "Uninit");
     FString in_world = FString(world_ == gams_current_world ? "Yes" : "No");
 
     // UE provides location in centimeters. Convert to meters.
-    loc.x(location.X / 100);
-    loc.y(location.Y / 100);
-    loc.z(location.Z / 100);
+    loc.x(ue_location_.X / 100);
+    loc.y(ue_location_.Y / 100);
+    loc.z(ue_location_.Z / 100);
 
-    rot.rx(orientation.Roll);
-    rot.ry(orientation.Pitch);
-    rot.rz(orientation.Yaw);
+    rot.rx(ue_orientation_.Roll);
+    rot.ry(ue_orientation_.Pitch);
+    rot.rz(ue_orientation_.Yaw);
 
     loc.to_container(self_->agent.location);
     rot.to_container(self_->agent.orientation);
@@ -611,31 +616,56 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
     gams::pose::Position new_target(get_frame(), target);
 
     // are we moving to a new location? If so, start an acceleration timer
-    if (!last_move_.approximately_equal(new_target, 5.0))
+    if (!last_move_.approximately_equal(new_target, 0.1))
     {
       move_timer_.start();
       last_move_ = new_target;
+
+      last_ue_target_location_.X = new_target.x() * 100;
+      last_ue_target_location_.Y = new_target.y() * 100;
+      last_ue_target_location_.Z = new_target.z() * 100;
     }
 
-    gams::pose::Position cur_loc = get_location();
+    //gams::pose::Position cur_loc = get_location();
 
-    bool finished = false;
+    //bool finished = false;
 
-    FVector diff_location, delta_location;
-    FRotator diff_rotator, delta_rotator;
+    //FVector diff_location, delta_location;
+    //FRotator diff_rotator, delta_rotator;
 
-    calculate_diff(cur_loc, new_target, diff_location, finished);
-    calculate_delta(diff_location, delta_location, max_speed_, gams_delta_time);
+    //calculate_diff(cur_loc, new_target, diff_location, finished);
+    //calculate_delta(diff_location, delta_location, max_speed_, gams_delta_time);
 
-    actor_->AddActorWorldOffset(delta_location);
+    //actor_->AddActorWorldOffset(delta_location, false, nullptr, ETeleportType::TeleportPhysics);
 
-    if (finished)
+    if (ue_location_.Equals(last_ue_target_location_, 1.0f))
     {
       UE_LOG(LogUnrealAgentPlatform, Log,
         TEXT("%s: UnrealAgentPlatform::move: arrived at target."),
         *agent_prefix_);
 
       result = gams::platforms::PLATFORM_ARRIVED;
+    }
+    else
+    {
+      FVector next_location;
+
+      //next_location = FMath::VInterpTo(ue_location_, last_ue_target_location_,
+      //  world_->DeltaTimeSeconds, 3);
+
+      calculate_delta(last_ue_target_location_ - ue_location_, next_location,
+        max_speed_, world_->DeltaTimeSeconds);
+      next_location += ue_location_;
+
+      UE_LOG(LogUnrealAgentPlatform, Log,
+        TEXT("%s: UnrealAgentPlatform::move: [%s] -> [%s]."
+             " next=[%s] with delta_t=%f and max_speed=%f"),
+        *agent_prefix_,
+        *ue_location_.ToString(), *last_ue_target_location_.ToString(),
+        *next_location.ToString(), world_->DeltaTimeSeconds, max_speed_);
+
+      actor_->SetActorLocation(next_location,
+        false, nullptr, ETeleportType::None);
     }
   }
 
@@ -715,4 +745,14 @@ UnrealAgentPlatform::get_frame(void) const
 {
   // For cartesian, replace with gams::pose::default_frame()
   return gams::pose::default_frame();
+}
+
+void UnrealAgentPlatform::load_platform_classes(void)
+{
+  platform_classes.push_back(AGamsDjiPhantom::StaticClass());
+}
+
+void UnrealAgentPlatform::unload_platform_classes(void)
+{
+  platform_classes.clear();
 }
