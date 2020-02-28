@@ -1,39 +1,39 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "1.2.3",
-  "FriendlyName": "GAMS Agents",
-  "Description": "GAMS agent implementations for UE4. Currently supports quadcopters.",
-  "Category": "AI",
-  "CreatedBy": "James Edmondson",
-  "CreatedByURL": "https://github.com/jredmondson",
-  "DocsURL": "https://github.com/jredmondson/GamsPlugins",
-  "MarketplaceURL": "",
-  "SupportURL": "https://github.com/jredmondson/GamsPlugins",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "Installed": false,
-  "EnabledByDefault": true,
-  "Modules": [
-    {
-      "Name": "GamsAgents",
-      "Type": "Runtime",
-      "LoadingPhase": "Default",
-      "WhitelistPlatforms": [
-        "Win64",
-        "Mac",
-        "Linux"
-      ]
-    }
-  ],
-  "Plugins": [
-    {
-      "Name": "GamsLibrary",
-      "Enabled": true
-    },
-    {
-      "Name": "MadaraLibrary",
-      "Enabled": true
-    }
-  ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "0.0.2",
+	"FriendlyName": "GAMS Agents",
+	"Description": "GAMS agent implementations for UE4. Currently supports quadcopters.",
+	"Category": "AI",
+	"CreatedBy": "James Edmondson",
+	"CreatedByURL": "https://github.com/jredmondson",
+	"DocsURL": "https://github.com/jredmondson/GamsPlugins",
+	"MarketplaceURL": "",
+	"SupportURL": "https://github.com/jredmondson/GamsPlugins",
+	"EnabledByDefault": true,
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "GamsAgents",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Mac",
+				"Linux"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "GamsLibrary",
+			"Enabled": true
+		},
+		{
+			"Name": "MadaraLibrary",
+			"Enabled": true
+		}
+	]
 }

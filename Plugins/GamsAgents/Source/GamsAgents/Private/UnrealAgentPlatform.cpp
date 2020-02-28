@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "UObject/UObjectGlobals.h"
 #include "Math/Vector.h"
+#include "GamsVehicle.h"
 #include "GamsDjiPhantom.h"
 
 
@@ -232,15 +233,10 @@ UnrealAgentPlatform::UnrealAgentPlatform(
       UClass * actor_class =
         platform_classes[FMath::Rand() % platform_classes.size()];
 
-      AGamsVehicle * vehicle;
-
       actor_ = gams_current_world->SpawnActor<AGamsVehicle>(
         actor_class,
         ue_location, ue_orientation,
         spawn_parameters);
-
-      //actor_ = vehicle;
-      vehicle = Cast<AGamsVehicle>(actor_);
 
       if (actor_)
       {
@@ -248,8 +244,10 @@ UnrealAgentPlatform::UnrealAgentPlatform(
           TEXT("%s: SUCCESS: actor spawned at %s, rotation=%s."),
           *agent_prefix_, *ue_location.ToString(), *ue_orientation.ToString());
 
-        max_speed_ = vehicle->max_speed;
-        acceleration_ = vehicle->acceleration;
+        max_speed_ = actor_->max_speed;
+        acceleration_ = actor_->acceleration;
+
+        actor_->init_knowledge(gams_game_instance->kb, self_->agent.prefix);
 
         //max_speed_ = 200.0f;
         //acceleration_ = 500.0f;
@@ -500,7 +498,6 @@ UnrealAgentPlatform::sense(void)
 
     ue_location_ = actor_->GetActorLocation();
     ue_orientation_ = actor_->GetActorRotation();
-    FString is_hidden = FString(actor_->bHidden ? "Hidden" : "Shown");
     FString is_init = FString(actor_->IsActorInitialized() ? "Init" : "Uninit");
     FString in_world = FString(world_ == gams_current_world ? "Yes" : "No");
 
@@ -521,8 +518,8 @@ UnrealAgentPlatform::sense(void)
 
     UE_LOG(LogUnrealAgentPlatform, Log,
       TEXT("%s: UnrealAgentPlatform::sense: location=[%s], orientation=[%s]"
-        ", hidden=%s, init=%s, world=%s"),
-      *agent_prefix_, *loc_str, *orient_str, *is_hidden, *is_init, *in_world);
+        ", init=%s, world=%s"),
+      *agent_prefix_, *loc_str, *orient_str, *is_init, *in_world);
   }
 
   return gams::platforms::PLATFORM_OK;
@@ -602,8 +599,6 @@ int
 UnrealAgentPlatform::move(const gams::pose::Position & target,
   const gams::pose::PositionBounds & bounds)
 {
-  // update variables
-  gams::platforms::BasePlatform::move(target, bounds);
   int result = gams::platforms::PLATFORM_MOVING;
 
   UE_LOG(LogUnrealAgentPlatform, Log,
@@ -619,6 +614,9 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
     if (!last_move_.approximately_equal(new_target, 0.1))
     {
       move_timer_.start();
+      // update variables
+      gams::platforms::BasePlatform::move(target, bounds);
+      new_target.to_container(actor_->dest);
       last_move_ = new_target;
 
       last_ue_target_location_.X = new_target.x() * 100;
@@ -648,24 +646,24 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
     }
     else
     {
-      FVector next_location;
+      //FVector next_location;
 
       //next_location = FMath::VInterpTo(ue_location_, last_ue_target_location_,
       //  world_->DeltaTimeSeconds, 3);
 
-      calculate_delta(last_ue_target_location_ - ue_location_, next_location,
-        max_speed_, world_->DeltaTimeSeconds);
-      next_location += ue_location_;
+      //calculate_delta(last_ue_target_location_ - ue_location_, next_location,
+      //  max_speed_, world_->DeltaTimeSeconds);
+      //next_location += ue_location_;
 
-      UE_LOG(LogUnrealAgentPlatform, Log,
-        TEXT("%s: UnrealAgentPlatform::move: [%s] -> [%s]."
-             " next=[%s] with delta_t=%f and max_speed=%f"),
-        *agent_prefix_,
-        *ue_location_.ToString(), *last_ue_target_location_.ToString(),
-        *next_location.ToString(), world_->DeltaTimeSeconds, max_speed_);
+      //UE_LOG(LogUnrealAgentPlatform, Log,
+      //  TEXT("%s: UnrealAgentPlatform::move: [%s] -> [%s]."
+      //       " next=[%s] with delta_t=%f and max_speed=%f"),
+      //  *agent_prefix_,
+      //  *ue_location_.ToString(), *last_ue_target_location_.ToString(),
+      //  *next_location.ToString(), world_->DeltaTimeSeconds, max_speed_);
 
-      actor_->SetActorLocation(next_location,
-        false, nullptr, ETeleportType::None);
+      //actor_->SetActorLocation(next_location,
+      //  false, nullptr, ETeleportType::None);
     }
   }
 

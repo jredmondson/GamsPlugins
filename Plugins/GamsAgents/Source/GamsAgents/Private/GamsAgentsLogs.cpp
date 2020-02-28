@@ -13,3 +13,5 @@ DEFINE_LOG_CATEGORY (LogGamsAssetManager);
 DEFINE_LOG_CATEGORY(LogGamsVehicle);
 
 DEFINE_LOG_CATEGORY(LogGamsDjiPhantom);
+
+DEFINE_LOG_CATEGORY(LogGamsControllerThread);

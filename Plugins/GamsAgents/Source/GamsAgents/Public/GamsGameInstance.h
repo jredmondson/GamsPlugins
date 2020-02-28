@@ -6,9 +6,26 @@
 #include "Engine/GameInstance.h"
 
 #include "GamsIncludes.h"
-#include "UnrealAgentPlatform.h"
+
+#pragma warning(push)
+#pragma warning(disable:4005)
+#pragma warning(disable:4103)
+#pragma warning(disable:4191)
+#pragma warning(disable:4457)
+#pragma warning(disable:4458)
+#pragma warning(disable:4459)
+#pragma warning(disable:4530)
+#pragma warning(disable:4577)
+#pragma warning(disable:4583)
+#pragma warning(disable:4582)
+#pragma warning(disable:4668)
+#pragma warning(disable:4996)
+#include "madara/threads/Threader.h"
+#pragma warning(pop)
 
 #include "GamsGameInstance.generated.h"
+
+class UnrealAgentPlatformFactory;
 
 /**
  * 
@@ -28,13 +45,19 @@ public:
 
   void ControllerRun();
 
-  gams::controllers::Multicontroller controller_;
+  gams::controllers::Multicontroller controller;
+
+  madara::knowledge::KnowledgeBase kb;
 
 private:
-  UnrealAgentPlatformFactory agent_factory_;
+
+  UnrealAgentPlatformFactory * agent_factory_;
+
+  madara::threads::Threader threader_;
 
   FTimerHandle run_timer_handler_;
 };
 
-extern UWorld * gams_current_world;
+extern UWorld* gams_current_world;
 extern float gams_delta_time;
+extern UGamsGameInstance* gams_game_instance;

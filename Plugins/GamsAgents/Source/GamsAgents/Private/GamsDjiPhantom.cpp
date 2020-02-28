@@ -10,6 +10,8 @@
 #include "Materials/MaterialInstanceConstant.h"
 #include "GamsAgentsLogs.h"
 #include "GameFramework/MovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 
 AGamsDjiPhantom::AGamsDjiPhantom()
   : AGamsAerialVehicle()
@@ -60,13 +62,13 @@ AGamsDjiPhantom::AGamsDjiPhantom()
     if (rotor_asset.Succeeded())
     {
       UStaticMeshComponent* rotor1 =
-        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rotor1"));
+        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor1"));
       UStaticMeshComponent* rotor2 =
-        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rotor2"));
+        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor2"));
       UStaticMeshComponent* rotor3 =
-        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rotor3"));
+        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor3"));
       UStaticMeshComponent* rotor4 =
-        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("rotor4"));
+        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor4"));
 
       rotor1->SetupAttachment(mesh);
       rotor2->SetupAttachment(mesh);
@@ -99,6 +101,16 @@ AGamsDjiPhantom::AGamsDjiPhantom()
         rotor3->SetMaterial(0, mesh_mat.Object);
         rotor3->SetMaterial(0, mesh_mat.Object);
       }
+
+      //camera_boom = CreateDefaultSubobject<USpringArmComponent>(
+      //  TEXT("CameraBoom"));
+      //camera_boom->SetupAttachment(mesh);
+      //camera_boom->TargetArmLength = 500.0f;
+      //camera_boom->bUsePawnControlRotation = true;
+
+      //camera->CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+      //camera->SetupAttachment(camera_boom, USpringArmComponent::SocketName);
+      //camera->bUsePawnControlRotation = false;
     }
     else
     {
@@ -131,6 +143,8 @@ AGamsDjiPhantom::AGamsDjiPhantom()
       UE_LOG(LogUnrealAgentPlatform, Warning,
         TEXT("DjiPhantom: constr: ERROR: couldn't load root mesh material"));
     }
+
+
   } // end root mesh check
   else
   {

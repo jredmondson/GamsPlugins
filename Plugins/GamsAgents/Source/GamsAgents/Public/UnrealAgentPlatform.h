@@ -33,7 +33,9 @@
 #include "gams/platforms/PlatformFactory.h"
 #include "gams/pose/CartesianFrame.h"
 #pragma warning(pop)
-    
+
+class AGamsVehicle;
+
   /**
   * A GAMS platform for controlling Unreal agents
   **/
@@ -264,10 +266,10 @@
     madara::utility::Timer<madara::utility::Clock> last_position_timer_;
 
     /// actor being manipulated in the world
-    AActor * actor_;
+    AGamsVehicle* actor_;
 
     /// world actor to keep track of whether our actor is still valid
-    UWorld * world_;
+    UWorld* world_;
 
     /// actor's max speed in engine (cm/s)
     float max_speed_;
