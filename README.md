@@ -19,13 +19,16 @@ project sites.
     * [MadaraLibrary](#madaralibrary)
   * [Installation](#installation)
     * [Windows](#windows)
-      * [Install Unreal Engine 4.21 from Launcher](#install-unreal-engine-421-from-launcher)
+      * [Install Unreal Engine 4.24 from Launcher](#install-unreal-engine-424-from-launcher)
+      * [Build Unreal Engine 4.24](#build-unreal-engine-424)
       * [For Users](#for-users)
       * [For Repository Developers](#for-repository-developers)
-    * [Linux](#linux)
-      * [Install Unreal Engine 4.21](#install-unreal-engine-421)
+    * [Linux Users](#linux-users)
+      * [Install Unreal Engine 4.24](#install-unreal-engine-424)
       * [Generate and Build Makefiles](#generate-and-build-makefiles)
       * [Run the project in Editor or Game mode](#run-the-project-in-editor-or-game-mode)
+    * [Linux Developers](#linux-developers)
+      * [Updating MADARA and GAMS](#updating-madara-and-gams)
     * [Mac](#mac)
    
 ---
@@ -66,9 +69,22 @@ Provides access to simple header includes for MADARA that mask UE4 build issues
 
 ## Windows
 
-### Install Unreal Engine 4.21 from Launcher
-  * From your Epic Games launcher, download the Unreal Engine 4.21
+### Install Unreal Engine 4.24 from Launcher
+  * From your Epic Games launcher, download the Unreal Engine 4.24
   
+### Build Unreal Engine 4.24
+
+UE requires VS 2017 at the moment. It does not support VS 2019+.
+
+```
+git clone -b 4.24 git@github.com:EpicGames/UnrealEngine.git
+cd UnrealEngine
+.\Setup.bat
+.\GenerateProjectFiles.bat
+UE.sln (this should open in VS 2017)
+
+```
+
 ### For Users
   * Clone this repository to your computer (e.g., "git clone https://github.com/jredmondson/GamsPlugins.git")
   * Open the GamsPlugins.uproject file
@@ -85,9 +101,9 @@ Provides access to simple header includes for MADARA that mask UE4 build issues
 ## Linux
 
 
-### Install Unreal Engine 4.21
+### Install Unreal Engine 4.24
 ```
-git clone -b 4.21 git@github.com:EpicGames/UnrealEngine.git
+git clone -b 4.24 git@github.com:EpicGames/UnrealEngine.git
 cd UnrealEngine
 ./Setup.sh
 ./GenerateProjectFiles.sh
@@ -112,6 +128,27 @@ Scripts/Linux/run_editor.sh
 
 # or if you want to run in Game mode do this:
 Scripts/Linux/run_game.sh
+```
+
+---
+
+## Linux Developers
+
+Following the instructions above in Linux Users will get you everything you need to use the GamsPlugins. However, if you're wanting to help with updating the Linux libraries for the GamsPlugins, please use the following process.
+
+### Updating MADARA and GAMS
+
+As of 4.24, we have to compile the MADARA and GAMS libraries with clang-8. Consequently, the following should build the libraries you need and copy them to your GamsPlugins directories.
+
+```
+mkdir projects
+cd projects
+git clone -b windows_fixes https://github.com/jredmondson/gams.git
+git clone -b windows_fixes https://github.com/jredmondson/madara.git
+git clone https://github.com/jredmondson/GamsPlugins.git
+gams/scripts/linux/base_build.sh prereqs gams madara nocapnp clang-8
+source ~/.gams/env.sh
+GamsPlugins/Scripts/Linux/copy_libs.sh
 ```
 
 ---
