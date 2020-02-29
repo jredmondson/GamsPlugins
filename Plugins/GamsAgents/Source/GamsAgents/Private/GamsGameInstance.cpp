@@ -15,6 +15,7 @@
 #include "UnrealAgentPlatform.h"
 #include "GamsVehicle.h"
 #include "MadaraUnrealUtility.h"
+#include "madara/knowledge/containers/Double.h"
 #include "madara/knowledge/containers/Integer.h"
 #include "madara/knowledge/containers/String.h"
 #include "madara/knowledge/containers/StringVector.h"
@@ -27,7 +28,7 @@ namespace containers = knowledge::containers;
 void UGamsGameInstance::Init()
 {
   UE_LOG (LogGamsGameInstance, Log,
-    TEXT ("UGamsGameInstance: Init: entering"));
+    TEXT ("Init: entering"));
 
   FString filename;
   FString filecontents;
@@ -44,7 +45,7 @@ void UGamsGameInstance::Init()
   aliases[2] = "dynamic_agent";
 
   UE_LOG (LogGamsGameInstance, Log,
-    TEXT ("UGamsGameInstance: Init: adding aliases for agent factory"));
+    TEXT ("Init: adding aliases for agent factory"));
 
   gams::platforms::global_platform_factory()->add(aliases, agent_factory_);
 
@@ -56,10 +57,25 @@ void UGamsGameInstance::Init()
     FPaths::ProjectContentDir(),
     TEXT("Scripts"), TEXT("transport_settings.mf"));
 
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("Init: loading transport settings from file %s."),
+    *transport_settings_file);
+
   transport_settings.load_text(TCHAR_TO_UTF8(*transport_settings_file));
 
-  FFileHelper::LoadFileToString(filecontents, *sim_settings_file);
-  kb.evaluate(TCHAR_TO_UTF8(*filecontents));
+  if (FFileHelper::LoadFileToString(filecontents, *sim_settings_file))
+  {
+    UE_LOG(LogGamsGameInstance, Log,
+      TEXT("Init: loading sim settings from file %s."),
+      *sim_settings_file);
+    kb.evaluate(TCHAR_TO_UTF8(*filecontents));
+  }
+  else
+  {
+    UE_LOG(LogGamsGameInstance, Warning,
+      TEXT("Init: failed to load sim settings file. %s did not exist."),
+      *sim_settings_file);
+  }
 
   // log the transport settings to help with debugging
   FString debug_type = madara::transport::types_to_string(
@@ -98,9 +114,10 @@ void UGamsGameInstance::Init()
   {
     for (size_t i = 0; i < karl_files.size(); ++i)
     {
-      std::string raw_string = karl_files[i];
+      std::string raw_string (karl_files[i]);
+      const std::string prefix("Scripts");
       FString path(raw_string.c_str());
-      if (madara::utility::begins_with(raw_string, "Scripts"))
+      if (madara::utility::begins_with(raw_string, prefix))
       {
         // if the karl file begins with Scripts, then we need
         // to reference the Contents/Scripts directory
@@ -112,53 +129,67 @@ void UGamsGameInstance::Init()
         filename = path;
       }
       UE_LOG(LogGamsGameInstance, Log,
-        TEXT("UGamsGameInstance: Init: reading karl init from file %s"),
+        TEXT("Init: reading karl init from file %s"),
         *filename);
 
-      FFileHelper::LoadFileToString(filecontents, *filename);
-      std::string contents = TCHAR_TO_UTF8(*filecontents);
+      //const std::string filename_str(TCHAR_TO_UTF8(*filename));
+      //std::string contents = madara::utility::file_to_string(filename_str);
 
+      //UE_LOG(LogGamsGameInstance, Log,
+      //  TEXT("Init: evaluating %d byte karl logic on each platform"),
+      //  (int32)contents.length());
 
-      UE_LOG(LogGamsGameInstance, Log,
-        TEXT("UGamsGameInstance: Init: evaluating %d byte karl logic on each platform"),
-        (int32)filecontents.Len());
+      //controller.evaluate(contents);
 
-      controller.evaluate(contents);
+      if (FFileHelper::LoadFileToString(filecontents, *filename))
+      {
+        //std::string contents = TCHAR_TO_UTF8(*filecontents);
+
+        UE_LOG(LogGamsGameInstance, Log,
+          TEXT("Init: evaluating %d byte karl logic on each platform"),
+          (int32)filecontents.Len());
+
+        controller.evaluate(TCHAR_TO_UTF8(*filecontents));
+      }
+      else
+      {
+        UE_LOG(LogGamsGameInstance, Warning,
+          TEXT("Init: failed to load file. File %s did not exist."),
+          (int32)filecontents.Len());
+      }
     }
   }
 
-  //FString filename = FPaths::Combine(FPaths::ProjectContentDir(),
-  //  TEXT("Scripts"), TEXT("galois.mf"));
-  //FString filecontents;
-  //FFileHelper::LoadFileToString(filecontents, *filename);
-
-  //std::string filename_with_env =
-  //  "$(GAMS_ROOT)/scripts/simulation/unreal/move/line.mf";
-  //std::string filename = madara::utility::expand_envs(filename_with_env);
-  //FString filename_ue (filename.c_str());
-
-  //UE_LOG(LogGamsGameInstance, Log,
-  //  TEXT("UGamsGameInstance: Init: reading karl init from file %s"),
-  //  *filename);
-
-  //std::string contents = madara::utility::file_to_string(filename.s);
-
-  //std::string contents = TCHAR_TO_UTF8(*filecontents);
-  //controller.evaluate(contents);
-
-  FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UGamsGameInstance::OnPostLoadMap);
+  // setup a delegate for changing maps (happens automatically on game start)
+  FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(
+    this, &UGamsGameInstance::OnPostLoadMap);
 
   UnrealAgentPlatform::load_platform_classes();
 
-  threader_.set_data_plane(kb);
-  threader_.run(2.0f, "controller", new GamsControllerThread(controller), true);
+  // run GAMS multicontroller at 2hz, unless user overrides with controller.hz
+  double controller_hz = 2.0f;
 
+  if (kb.exists("controller.hz"))
+  {
+    // because of STL funkiness in UE4, we try to be safe with memory
+    containers::Double temp_hz("controller.hz", kb);
+    controller_hz = *temp_hz;
+  }
+
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("Init: starting GAMS controller at %f hz"), controller_hz);
+
+  threader_.set_data_plane(kb);
+  threader_.run(controller_hz, "controller",
+    new GamsControllerThread(controller), true);
+
+  // editor requires explicit call to change the world
 #if UE_EDITOR
   OnPostLoadMap(gams_current_world);
 #endif
 
   UE_LOG (LogGamsGameInstance, Log,
-    TEXT ("UGamsGameInstance: Init: leaving"));
+    TEXT ("Init: leaving"));
 
 }
 
@@ -187,13 +218,38 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
 
   controller.init_platform("unreal_agent", args);
 
+  madara::knowledge::safe_clear(args);
+
   kb.send_modifieds();
   last_send_time_ = gams_current_world->UnpausedTimeSeconds;
 
   threader_.resume("controller");
 
+  // defaults are 60hz game loop and a 5 second delay.
+  float delta_time = 0.06f;
+  float delay = 5.0f;
+
+  // allow overrides for game hertz and delay
+  if (kb.exists("game.hz"))
+  {
+    // because of STL funkiness in UE4, we try to be safe with memory
+    containers::Double temp_hz("game.hz", kb);
+    delta_time = (float)(*temp_hz / 1000.0f);
+  }
+
+  if (kb.exists("game.delay"))
+  {
+    // because of STL funkiness in UE4, we try to be safe with memory
+    containers::Double temp_delay("game.delay", kb);
+    delay = (float)(*temp_delay);
+  }
+
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("Init: starting game loop with delta_time=%f after %fs"),
+    delta_time, delay);
+
   GetTimerManager().SetTimer(run_timer_handler_, this,
-    &UGamsGameInstance::ControllerRun, gams_delta_time, true, 5.0f);
+    &UGamsGameInstance::ControllerRun, delta_time, true, delay);
 }
 
 void UGamsGameInstance::Shutdown ()

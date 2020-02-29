@@ -1,5 +1,8 @@
 karl_files.size=1;
-karl_files.0="Scripts/line.mf";
+karl_files.0="Scripts/Move/line.mf";
 
-swarm.size=10;
-controller_thread.hz = 2.0;
+swarm.size=100;
+controller.hz = 1.0;
+
+game.hz = 30.0;
+game.delay = 3.0;

@@ -1,0 +1,25 @@
+
+// number of allies in the group
+group.allies.members.size=swarm.size;
+
+// build the group from 0 to n-1
+.i[0 -> swarm.size)
+(
+  group.allies.members.{.i} = "agent." + .i;
+);
+
+// the formation is based on the square root of the swarm size
+.row_num = #integer(#sqrt(swarm.size));
+.row_num == 0 => (.row_num = 1);
+
+// if no one has set origin, then set it to [5 * agent id, 5 * agent id, 0] as origin
+!.origin => (.origin = [.id % .row_num * 2, .id / .row_num * 2, 2 + .id / 8]);
+!.initial_pose => (.initial_pose = .origin);
+
+// initialize each agent
+{.prefix}.algorithm="formation sync";
+{.prefix}.algorithm.args.start = [0, 0, 2];
+{.prefix}.algorithm.args.end = [0, 50, 2];
+{.prefix}.algorithm.args.buffer = 1.0;
+{.prefix}.algorithm.args.group = "group.allies";
+{.prefix}.algorithm.args.formation = "rectangle";
