@@ -49,6 +49,8 @@ public:
 
   madara::knowledge::KnowledgeBase kb;
 
+  madara::transport::QoSTransportSettings transport_settings;
+
 private:
 
   UnrealAgentPlatformFactory * agent_factory_;
@@ -56,6 +58,8 @@ private:
   madara::threads::Threader threader_;
 
   FTimerHandle run_timer_handler_;
+
+  float last_send_time_;
 };
 
 extern UWorld* gams_current_world;

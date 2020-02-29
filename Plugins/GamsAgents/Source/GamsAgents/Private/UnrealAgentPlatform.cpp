@@ -512,6 +512,8 @@ UnrealAgentPlatform::sense(void)
 
     loc.to_container(self_->agent.location);
     rot.to_container(self_->agent.orientation);
+    loc.to_container(actor_->location);
+    loc.to_container(actor_->orientation);
 
     FString loc_str(loc.to_string().c_str());
     FString orient_str(rot.to_string().c_str());

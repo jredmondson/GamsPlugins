@@ -37,9 +37,18 @@ void UGamsGameInstance::Init()
 
   gams::platforms::global_platform_factory()->add(aliases, agent_factory_);
 
+  transport_settings.type = madara::transport::MULTICAST;
+
+  //madara::transport::QoSTransportSettings transport_settings;
+  //FString multicast_address("239.255.0.1:4150");
+  //transport_settings.hosts.push_back(TCHAR_TO_UTF8(*multicast_address));
+  transport_settings.add_host("239.255.0.1:4150");
+
+  kb.attach_transport("GamsPluginsGameInstance", transport_settings);
+
   // seed the current world
   gams_current_world = GetWorld();
-  size_t num_controllers = 500;
+  size_t num_controllers = 18;
 
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("UGamsGameInstance: Init: resizing controller to %d agents"),
@@ -49,7 +58,7 @@ void UGamsGameInstance::Init()
   controller.resize(num_controllers);
 
   FString filename = FPaths::Combine(FPaths::ProjectContentDir(),
-    TEXT("Scripts"), TEXT("line.mf"));
+    TEXT("Scripts"), TEXT("galois.mf"));
   FString filecontents;
   FFileHelper::LoadFileToString(filecontents, *filename);
 
@@ -112,6 +121,9 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
 
   controller.init_platform("unreal_agent", args);
 
+  kb.send_modifieds();
+  last_send_time_ = gams_current_world->UnpausedTimeSeconds;
+
   threader_.resume("controller");
 
   GetTimerManager().SetTimer(run_timer_handler_, this,
@@ -167,6 +179,12 @@ void UGamsGameInstance::ControllerRun()
       *diff.ToString(), *next.ToString());
 
     actor->SetActorLocation(next, false, nullptr, ETeleportType::None);
+  }
+
+  if (temp_world->UnpausedTimeSeconds > last_send_time_ + 1.0f)
+  {
+    kb.send_modifieds();
+    last_send_time_ = temp_world->UnpausedTimeSeconds;
   }
 }
 
