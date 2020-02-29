@@ -1,0 +1,3 @@
+transport.type=5; // multicast
+transport.hosts.size=1;
+transport.hosts.0="239.255.0.1:4150";

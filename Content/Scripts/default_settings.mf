@@ -1,4 +1,0 @@
-.load_files.size=1
-.load_files.0="Scripts/line.mf"
-
-.agents=100

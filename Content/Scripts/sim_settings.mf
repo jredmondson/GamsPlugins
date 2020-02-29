@@ -1,0 +1,5 @@
+karl_files.size=1;
+karl_files.0="Scripts/line.mf";
+
+swarm.size=10;
+controller_thread.hz = 2.0;

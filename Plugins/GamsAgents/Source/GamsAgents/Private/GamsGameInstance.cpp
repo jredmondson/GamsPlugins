@@ -15,11 +15,22 @@
 #include "UnrealAgentPlatform.h"
 #include "GamsVehicle.h"
 #include "MadaraUnrealUtility.h"
+#include "madara/knowledge/containers/Integer.h"
+#include "madara/knowledge/containers/String.h"
+#include "madara/knowledge/containers/StringVector.h"
+
+namespace knowledge = madara::knowledge;
+namespace transport = madara::transport;
+namespace threads = madara::threads;
+namespace containers = knowledge::containers;
 
 void UGamsGameInstance::Init()
 {
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("UGamsGameInstance: Init: entering"));
+
+  FString filename;
+  FString filecontents;
 
   gams_game_instance = this;
 
@@ -37,48 +48,103 @@ void UGamsGameInstance::Init()
 
   gams::platforms::global_platform_factory()->add(aliases, agent_factory_);
 
-  transport_settings.type = madara::transport::MULTICAST;
+  FString sim_settings_file = FPaths::Combine(
+    FPaths::ProjectContentDir(),
+    TEXT("Scripts"), TEXT("sim_settings.mf"));
 
-  //madara::transport::QoSTransportSettings transport_settings;
-  //FString multicast_address("239.255.0.1:4150");
-  //transport_settings.hosts.push_back(TCHAR_TO_UTF8(*multicast_address));
-  transport_settings.add_host("239.255.0.1:4150");
+  FString transport_settings_file = FPaths::Combine(
+    FPaths::ProjectContentDir(),
+    TEXT("Scripts"), TEXT("transport_settings.mf"));
+
+  transport_settings.load_text(TCHAR_TO_UTF8(*transport_settings_file));
+
+  FFileHelper::LoadFileToString(filecontents, *sim_settings_file);
+  kb.evaluate(TCHAR_TO_UTF8(*filecontents));
+
+  // log the transport settings to help with debugging
+  FString debug_type = madara::transport::types_to_string(
+    transport_settings.type).c_str();
+  FString hosts;
+  for (auto host : transport_settings.hosts)
+  {
+    hosts += ", ";
+    hosts += host.c_str();
+  }
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("Init: transport settings: type=%s, hosts=[%s]"),
+    *debug_type, *hosts);
 
   kb.attach_transport("GamsPluginsGameInstance", transport_settings);
 
   // seed the current world
   gams_current_world = GetWorld();
-  size_t num_controllers = 18;
+  containers::Integer swarm_size ("swarm.size", kb);
+  if (*swarm_size == 0)
+  {
+    // if no swarm.size is specified, initialize 100
+    swarm_size = 100;
+  }
 
   UE_LOG (LogGamsGameInstance, Log,
-    TEXT ("UGamsGameInstance: Init: resizing controller to %d agents"),
-    num_controllers);
+    TEXT ("Init: resizing controller to %d agents"),
+    (int)*swarm_size);
 
   // create 100 agents
-  controller.resize(num_controllers);
+  controller.resize((size_t)*swarm_size);
 
-  FString filename = FPaths::Combine(FPaths::ProjectContentDir(),
-    TEXT("Scripts"), TEXT("galois.mf"));
-  FString filecontents;
-  FFileHelper::LoadFileToString(filecontents, *filename);
+  containers::StringVector karl_files("karl_files", kb);
+
+  if (karl_files.size() > 0)
+  {
+    for (size_t i = 0; i < karl_files.size(); ++i)
+    {
+      std::string raw_string = karl_files[i];
+      FString path(raw_string.c_str());
+      if (madara::utility::begins_with(raw_string, "Scripts"))
+      {
+        // if the karl file begins with Scripts, then we need
+        // to reference the Contents/Scripts directory
+        filename = FPaths::Combine(FPaths::ProjectContentDir(),
+          *path);
+      }
+      else
+      {
+        filename = path;
+      }
+      UE_LOG(LogGamsGameInstance, Log,
+        TEXT("UGamsGameInstance: Init: reading karl init from file %s"),
+        *filename);
+
+      FFileHelper::LoadFileToString(filecontents, *filename);
+      std::string contents = TCHAR_TO_UTF8(*filecontents);
+
+
+      UE_LOG(LogGamsGameInstance, Log,
+        TEXT("UGamsGameInstance: Init: evaluating %d byte karl logic on each platform"),
+        (int32)filecontents.Len());
+
+      controller.evaluate(contents);
+    }
+  }
+
+  //FString filename = FPaths::Combine(FPaths::ProjectContentDir(),
+  //  TEXT("Scripts"), TEXT("galois.mf"));
+  //FString filecontents;
+  //FFileHelper::LoadFileToString(filecontents, *filename);
 
   //std::string filename_with_env =
   //  "$(GAMS_ROOT)/scripts/simulation/unreal/move/line.mf";
   //std::string filename = madara::utility::expand_envs(filename_with_env);
   //FString filename_ue (filename.c_str());
 
-  UE_LOG(LogGamsGameInstance, Log,
-    TEXT("UGamsGameInstance: Init: reading karl init from file %s"),
-    *filename);
+  //UE_LOG(LogGamsGameInstance, Log,
+  //  TEXT("UGamsGameInstance: Init: reading karl init from file %s"),
+  //  *filename);
 
   //std::string contents = madara::utility::file_to_string(filename.s);
 
-  UE_LOG(LogGamsGameInstance, Log,
-    TEXT("UGamsGameInstance: Init: evaluating %d byte karl logic on each platform"),
-      (int32)filecontents.Len());
-
-  std::string contents = TCHAR_TO_UTF8(*filecontents);
-  controller.evaluate(contents);
+  //std::string contents = TCHAR_TO_UTF8(*filecontents);
+  //controller.evaluate(contents);
 
   FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UGamsGameInstance::OnPostLoadMap);
 
