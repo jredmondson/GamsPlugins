@@ -51,6 +51,8 @@ public:
 
   madara::transport::QoSTransportSettings transport_settings;
 
+  bool should_animate;
+
 private:
 
   UnrealAgentPlatformFactory * agent_factory_;

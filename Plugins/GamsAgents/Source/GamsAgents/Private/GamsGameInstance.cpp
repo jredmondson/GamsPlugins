@@ -96,12 +96,16 @@ void UGamsGameInstance::Init()
 
   // seed the current world
   gams_current_world = GetWorld();
-  containers::Integer swarm_size ("swarm.size", kb);
+  containers::Integer swarm_size("swarm.size", kb);
+  containers::Integer platform_animate("platform.animate", kb);
   if (*swarm_size == 0)
   {
     // if no swarm.size is specified, initialize 100
     swarm_size = 100;
   }
+
+  // note that the default behavior is to not animate platforms
+  should_animate = platform_animate.is_true();
 
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("Init: resizing controller to %d agents"),
@@ -308,7 +312,11 @@ void UGamsGameInstance::GameRun()
       *diff.ToString(), *next.ToString());
 
     actor->SetActorLocation(next, false, nullptr, ETeleportType::None);
-    actor->animate(temp_world->DeltaTimeSeconds);
+
+    if (should_animate)
+    {
+      actor->animate(temp_world->DeltaTimeSeconds);
+    }
   }
 
   if (temp_world->UnpausedTimeSeconds > last_send_time_ + 1.0f)
