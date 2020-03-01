@@ -1,3 +1,4 @@
+
 #pragma once
 
 #pragma warning(push)
@@ -107,8 +108,7 @@ namespace madara
       dest.set(1, source.Y * multiple);
     }
 
-
-    void calculate_delta(
+    inline void calculate_delta(
       const FVector & total_diff, FVector & local_diff,
       float speed, float delta_time)
     {

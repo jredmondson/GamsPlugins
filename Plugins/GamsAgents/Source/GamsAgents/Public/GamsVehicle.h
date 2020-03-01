@@ -63,10 +63,25 @@ public:
   UPROPERTY(VisibleAnywhere, Category = Movement)
   float acceleration;
 
+  /**
+   * Animates the vehicle over the change in time
+   * @param  delta_time the time to animate to from current pose
+   **/
+  virtual void animate(float delta_time);
+
+  /**
+   * Initialize the containers for the agent to communicate with threads
+   * @param  knowledge the game knowledge base
+   * @param  prefix    the agent prefix in the knowledge base
+   **/
   void init_knowledge(
     madara::knowledge::KnowledgeBase & knowledge,
     const std::string& prefix);
 
+  /**
+   * Initialize the containers for the agent to communicate with threads
+   * @param  prefix    the agent prefix in the game knowledge base
+   **/
   void init_knowledge(const std::string& prefix);
 
   /// for checkpointing and interacting with main render loop,

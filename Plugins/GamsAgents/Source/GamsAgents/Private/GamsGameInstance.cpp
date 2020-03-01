@@ -18,7 +18,9 @@
 #include "madara/knowledge/containers/Double.h"
 #include "madara/knowledge/containers/Integer.h"
 #include "madara/knowledge/containers/String.h"
-#include "madara/knowledge/containers/StringVector.h"
+#include "madara/knowledge/containers/StringVector.h" 	
+
+#include "GenericPlatform/GenericPlatformProcess.h"
 
 namespace knowledge = madara::knowledge;
 namespace transport = madara::transport;
@@ -151,12 +153,12 @@ void UGamsGameInstance::Init()
 
         controller.evaluate(TCHAR_TO_UTF8(*filecontents));
       }
-      else
-      {
-        UE_LOG(LogGamsGameInstance, Warning,
-          TEXT("Init: failed to load file. File %s did not exist."),
-          (int32)filecontents.Len());
-      }
+      //else
+      //{
+      //  UE_LOG(LogGamsGameInstance, Warning,
+      //    TEXT("Init: failed to load file. File %s did not exist."),
+      //    (int32)filecontents.Len());
+      //}
     }
   }
 
@@ -191,6 +193,8 @@ void UGamsGameInstance::Init()
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("Init: leaving"));
 
+  // Try to sleep so UE4 cleans up its memory issues
+  FPlatformProcess::Sleep(3.0f);
 }
 
 void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
@@ -206,19 +210,22 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("UGamsGameInstance: post_level_load: creating args knowledge map"));
 
+  std::string platform_prefix("platform");
+
   // assign dynamic unreal platforms to the agents
-  madara::knowledge::KnowledgeMap args;
-  args["blueprint"] = "random";
+  //madara::knowledge::KnowledgeMap args = kb.to_map_stripped(platform_prefix);
+  //args["blueprint"] = "random";
   //args["blueprints.size"] = madara::knowledge::KnowledgeRecord::Integer(3);
   //args["blueprints.0"] = "/Game/Quadcopters/Blueprints/BP_Quadcopter_A.BP_Quadcopter_A";
   //args["blueprints.1"] = "/Game/Quadcopters/Blueprints/BP_Quadcopter_B.BP_Quadcopter_B";
   //args["blueprints.2"] = "/Game/Quadcopters/Blueprints/BP_Quadcopter_C.BP_Quadcopter_C";
-  args["location"] = "random";
-  args["orientation"] = "random";
+  //args["location"] = "random";
+  //args["orientation"] = "random";
 
-  controller.init_platform("unreal_agent", args);
+  //controller.init_platform("unreal_agent", kb.to_map_stripped(platform_prefix));
+  controller.init_platform("unreal_agent");
 
-  madara::knowledge::safe_clear(args);
+  //madara::knowledge::safe_clear(args);
 
   kb.send_modifieds();
   last_send_time_ = gams_current_world->UnpausedTimeSeconds;
@@ -249,7 +256,7 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
     delta_time, delay);
 
   GetTimerManager().SetTimer(run_timer_handler_, this,
-    &UGamsGameInstance::ControllerRun, delta_time, true, delay);
+    &UGamsGameInstance::GameRun, delta_time, true, delay);
 }
 
 void UGamsGameInstance::Shutdown ()
@@ -262,7 +269,7 @@ void UGamsGameInstance::Shutdown ()
   agent_factory_ = 0;
 }
 
-void UGamsGameInstance::ControllerRun()
+void UGamsGameInstance::GameRun()
 {
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("UGamsGameInstance: controllerrun: calling"));
@@ -301,6 +308,7 @@ void UGamsGameInstance::ControllerRun()
       *diff.ToString(), *next.ToString());
 
     actor->SetActorLocation(next, false, nullptr, ETeleportType::None);
+    actor->animate(temp_world->DeltaTimeSeconds);
   }
 
   if (temp_world->UnpausedTimeSeconds > last_send_time_ + 1.0f)

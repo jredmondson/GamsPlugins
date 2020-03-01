@@ -30,6 +30,10 @@ void AGamsVehicle::init_knowledge(const std::string& prefix)
   init_knowledge(gams_game_instance->kb, prefix);
 }
 
+void AGamsVehicle::animate(float delta_time)
+{
+}
+
 void AGamsVehicle::init_knowledge(
   madara::knowledge::KnowledgeBase & knowledge, const std::string & prefix)
 {

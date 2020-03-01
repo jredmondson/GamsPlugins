@@ -8,6 +8,7 @@
 #include "Math/Vector.h"
 #include "GamsVehicle.h"
 #include "GamsDjiPhantom.h"
+#include "MadaraUnrealUtility.h"
 
 
 #pragma warning(push)
@@ -119,7 +120,7 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
     KnowledgeMap::const_iterator location = args.find("location");
     KnowledgeMap::const_iterator orientation = args.find("orientation");
-    KnowledgeMap::const_iterator blueprint = args.find ("blueprint");
+    KnowledgeMap::const_iterator blueprint = args.find ("type");
     //FString class_name;
 
     //UE_LOG (LogUnrealAgentPlatform, Log,
@@ -148,7 +149,7 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
     knowledge::KnowledgeRecord initial_pose = knowledge->get(".initial_pose");
 
-    is_created_ = knowledge->get(".osc.is_created").is_true();
+    is_created_ = true;
 
     if (!initial_pose.is_array_type())
     {
@@ -175,9 +176,8 @@ UnrealAgentPlatform::UnrealAgentPlatform(
       initial_pose.set_index(2, value);
     }
 
-    loiter_timeout_ = knowledge->get(".osc.loiter_timeout").to_double();
-
-    respawn_timeout_ = knowledge->get(".osc.respawn_timeout").to_double();
+    loiter_timeout_ = 0.0f;
+    respawn_timeout_ = 0.0f;
 
     if (loiter_timeout_ >= 0 && loiter_timeout_ < 5)
     {
@@ -220,6 +220,7 @@ UnrealAgentPlatform::UnrealAgentPlatform(
         float(initial_pose.retrieve_index(0).to_double()),
         float(initial_pose.retrieve_index(1).to_double()),
         float(initial_pose.retrieve_index(2).to_double()));
+
       FRotator ue_orientation(0.0f, 0.0f, 0.0f);
 
       FActorSpawnParameters spawn_parameters;
@@ -248,6 +249,9 @@ UnrealAgentPlatform::UnrealAgentPlatform(
         acceleration_ = actor_->acceleration;
 
         actor_->init_knowledge(gams_game_instance->kb, self_->agent.prefix);
+
+        madara::utility::from_vector_multiply(ue_location, self_->agent.dest);
+        madara::utility::from_vector_multiply(ue_location, actor_->dest);
 
         //max_speed_ = 200.0f;
         //acceleration_ = 500.0f;
@@ -341,87 +345,87 @@ UnrealAgentPlatform::calculate_diff(
   diff_rotator.Yaw = (target.rz() - current.rz()) * 100;
 }
 
-void UnrealAgentPlatform::calculate_delta(
-  const FVector & total_diff, FVector & local_diff,
-  float speed, float delta_time)
-{
-  // check if someone is supplying negative speed and make it positive
-  if (speed < 0)
-  {
-    speed = -speed;
-  }
-
-  float max_distance = speed * delta_time;
-  float x_abs = std::abs(total_diff.X);
-  float y_abs = std::abs(total_diff.Y);
-  float z_abs = std::abs(total_diff.Z);
-
-  local_diff.X = std::min<float>(max_distance, x_abs);
-  local_diff.Y = std::min<float>(max_distance, y_abs);
-  local_diff.Z = std::min<float>(max_distance, z_abs);
-
-  if (total_diff.X < 0)
-  {
-    local_diff.X = -local_diff.X;
-  }
-
-  if (total_diff.Y < 0)
-  {
-    local_diff.Y = -local_diff.Y;
-  }
-
-  if (total_diff.Z < 0)
-  {
-    local_diff.Z = -local_diff.Z;
-  }
-
-  UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::calculate_delta: total=[%s] to tar=[%s]"
-         " with speed=%f and time=%f"),
-    *agent_prefix_, *(total_diff.ToString()), *(local_diff.ToString()),
-      speed, delta_time);
-}
-
-void UnrealAgentPlatform::calculate_delta(
-  const FRotator & total_diff, FRotator & local_diff,
-  float speed, float delta_time)
-{
-  // this is a rotation, not a drag race!
-  if (speed > 180)
-  {
-    speed = 180;
-  }
-
-  float max_distance = speed * delta_time;
-  float roll_abs = std::abs(total_diff.Roll);
-  float pitch_abs = std::abs(total_diff.Pitch);
-  float yaw_abs = std::abs(total_diff.Yaw);
-
-  local_diff.Roll = std::min<float>(max_distance, roll_abs);
-  local_diff.Pitch = std::min<float>(max_distance, pitch_abs);
-  local_diff.Yaw = std::min<float>(max_distance, yaw_abs);
-
-  if (total_diff.Roll < 0)
-  {
-    local_diff.Roll = -local_diff.Roll;
-  }
-
-  if (total_diff.Pitch < 0)
-  {
-    local_diff.Pitch = -local_diff.Pitch;
-  }
-
-  if (total_diff.Yaw < 0)
-  {
-    local_diff.Yaw = -local_diff.Yaw;
-  }
-
-  UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::calculate_delta: total=[%s] to tar=[%s]"
-      " with speed=%f and time=%f"),
-      *agent_prefix_, *(total_diff.ToString()), *(local_diff.ToString()),
-      speed, delta_time);
-}
+//void UnrealAgentPlatform::calculate_delta(
+//  const FVector & total_diff, FVector & local_diff,
+//  float speed, float delta_time)
+//{
+//  // check if someone is supplying negative speed and make it positive
+//  if (speed < 0)
+//  {
+//    speed = -speed;
+//  }
+//
+//  float max_distance = speed * delta_time;
+//  float x_abs = std::abs(total_diff.X);
+//  float y_abs = std::abs(total_diff.Y);
+//  float z_abs = std::abs(total_diff.Z);
+//
+//  local_diff.X = std::min<float>(max_distance, x_abs);
+//  local_diff.Y = std::min<float>(max_distance, y_abs);
+//  local_diff.Z = std::min<float>(max_distance, z_abs);
+//
+//  if (total_diff.X < 0)
+//  {
+//    local_diff.X = -local_diff.X;
+//  }
+//
+//  if (total_diff.Y < 0)
+//  {
+//    local_diff.Y = -local_diff.Y;
+//  }
+//
+//  if (total_diff.Z < 0)
+//  {
+//    local_diff.Z = -local_diff.Z;
+//  }
+//
+//  UE_LOG(LogUnrealAgentPlatform, Log,
+//    TEXT("%s: UnrealAgentPlatform::calculate_delta: total=[%s] to tar=[%s]"
+//         " with speed=%f and time=%f"),
+//    *agent_prefix_, *(total_diff.ToString()), *(local_diff.ToString()),
+//      speed, delta_time);
+//}
+//
+//void UnrealAgentPlatform::calculate_delta(
+//  const FRotator & total_diff, FRotator & local_diff,
+//  float speed, float delta_time)
+//{
+//  // this is a rotation, not a drag race!
+//  if (speed > 180)
+//  {
+//    speed = 180;
+//  }
+//
+//  float max_distance = speed * delta_time;
+//  float roll_abs = std::abs(total_diff.Roll);
+//  float pitch_abs = std::abs(total_diff.Pitch);
+//  float yaw_abs = std::abs(total_diff.Yaw);
+//
+//  local_diff.Roll = std::min<float>(max_distance, roll_abs);
+//  local_diff.Pitch = std::min<float>(max_distance, pitch_abs);
+//  local_diff.Yaw = std::min<float>(max_distance, yaw_abs);
+//
+//  if (total_diff.Roll < 0)
+//  {
+//    local_diff.Roll = -local_diff.Roll;
+//  }
+//
+//  if (total_diff.Pitch < 0)
+//  {
+//    local_diff.Pitch = -local_diff.Pitch;
+//  }
+//
+//  if (total_diff.Yaw < 0)
+//  {
+//    local_diff.Yaw = -local_diff.Yaw;
+//  }
+//
+//  UE_LOG(LogUnrealAgentPlatform, Log,
+//    TEXT("%s: UnrealAgentPlatform::calculate_delta: total=[%s] to tar=[%s]"
+//      " with speed=%f and time=%f"),
+//      *agent_prefix_, *(total_diff.ToString()), *(local_diff.ToString()),
+//      speed, delta_time);
+//}
 
 std::vector<double>
 UnrealAgentPlatform::calculate_thrust(
@@ -677,7 +681,6 @@ UnrealAgentPlatform::orient(const gams::pose::Orientation & target,
         const gams::pose::OrientationBounds &bounds)
 {
   // update variables
-  gams::platforms::BasePlatform::orient(target, bounds);
   int result = gams::platforms::PLATFORM_MOVING;
 
   UE_LOG(LogUnrealAgentPlatform, Log,
@@ -690,27 +693,26 @@ UnrealAgentPlatform::orient(const gams::pose::Orientation & target,
     gams::pose::Orientation new_target(get_frame(), target);
     gams::pose::Orientation cur_orient = get_orientation();
 
-    bool finished = false;
-    FRotator diff_rotator, delta_rotator;
-
-    calculate_diff(cur_orient, new_target, diff_rotator, finished);
-    calculate_delta(diff_rotator, delta_rotator, 180.0f, gams_delta_time);
-
-    actor_->AddActorWorldRotation(delta_rotator);
-
-    if (finished)
+    // are we moving to a new location? If so, start an acceleration timer
+    if (!last_orient_.approximately_equal(new_target, 1.0f))
     {
-      UE_LOG(LogUnrealAgentPlatform, Log,
-        TEXT("%s: UnrealAgentPlatform::orient: arrived at orientation."),
-        *agent_prefix_);
-
-      result = gams::platforms::PLATFORM_ARRIVED;
+      // update variables
+      gams::platforms::BasePlatform::orient(target, bounds);
+      new_target.to_container(actor_->dest_orientation);
+      last_orient_ = new_target;
     }
-
-    last_orient_ = new_target;
   }
 
-  return result;
+  if (ue_orientation_.Equals(last_ue_target_orientation_, 1.0f))
+  {
+    UE_LOG(LogUnrealAgentPlatform, Log,
+      TEXT("%s: UnrealAgentPlatform::orient: arrived at target."),
+      *agent_prefix_);
+
+    result = gams::platforms::PLATFORM_ARRIVED;
+  }
+
+  return gams::platforms::PLATFORM_ARRIVED;
 }
 
 // Pauses movement, keeps source and dest at current values. Optional.

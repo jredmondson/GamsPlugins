@@ -43,7 +43,7 @@ public:
 
   void OnPostLoadMap(UWorld * new_world);
 
-  void ControllerRun();
+  void GameRun();
 
   gams::controllers::Multicontroller controller;
 

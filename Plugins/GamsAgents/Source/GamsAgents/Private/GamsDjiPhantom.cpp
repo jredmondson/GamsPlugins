@@ -12,6 +12,7 @@
 #include "GameFramework/MovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Math/UnrealMathUtility.h"
 
 AGamsDjiPhantom::AGamsDjiPhantom()
   : AGamsAerialVehicle()
@@ -43,6 +44,10 @@ AGamsDjiPhantom::AGamsDjiPhantom()
 
   if (mesh_asset.Succeeded())
   {
+    FRotator rotation;
+    rotation.Roll = 0.0f;
+    rotation.Pitch = 0.0f;
+
     UE_LOG(LogUnrealAgentPlatform, Log,
       TEXT("DjiPhantom: constr: loaded root mesh"));
 
@@ -61,34 +66,46 @@ AGamsDjiPhantom::AGamsDjiPhantom()
     // setup the rotors
     if (rotor_asset.Succeeded())
     {
-      UStaticMeshComponent* rotor1 =
-        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor1"));
-      UStaticMeshComponent* rotor2 =
-        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor2"));
-      UStaticMeshComponent* rotor3 =
-        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor3"));
-      UStaticMeshComponent* rotor4 =
-        CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor4"));
+      rotor1 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor1"));
+      rotor2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor2"));
+      rotor3 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor3"));
+      rotor4 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Rotor4"));
 
       rotor1->SetupAttachment(mesh);
       rotor2->SetupAttachment(mesh);
       rotor3->SetupAttachment(mesh);
       rotor4->SetupAttachment(mesh);
 
+      rotation.Yaw = -45.0f;
       rotor1->SetStaticMesh(rotor_asset.Object);
-      rotor1->SetRelativeLocation(FVector(-12.106963f, 11.918432f, 16.028538f));
+      rotor1->SetMobility(EComponentMobility::Movable);
+      rotor1->SetRelativeLocationAndRotation(
+        FVector(-12.106963f, 11.918432f, 16.028538f),
+        rotation);
       rotor1->SetWorldScale3D(FVector(1.0f));
 
+      rotation.Yaw = 45.0f;
       rotor2->SetStaticMesh(rotor_asset.Object);
-      rotor2->SetRelativeLocation(FVector(-12.096648f, -11.978424f, 16.028538f));
+      rotor2->SetMobility(EComponentMobility::Movable);
+      rotor2->SetRelativeLocationAndRotation(
+        FVector(-12.096648f, -11.978424f, 16.028538f),
+        rotation);
       rotor2->SetWorldScale3D(FVector(1.0f));
 
+      rotation.Yaw = -45.0f;
       rotor3->SetStaticMesh(rotor_asset.Object);
-      rotor3->SetRelativeLocation(FVector(12.108811f, -11.961754f, 16.028538f));
+      rotor3->SetMobility(EComponentMobility::Movable);
+      rotor3->SetRelativeLocationAndRotation(
+        FVector(12.108811f, -11.961754f, 16.028538f),
+        rotation);
       rotor3->SetWorldScale3D(FVector(1.0f));
 
+      rotation.Yaw = 45.0f;
       rotor4->SetStaticMesh(rotor_asset.Object);
-      rotor4->SetRelativeLocation(FVector(12.097581f, 11.974735f, 16.028526f));
+      rotor4->SetMobility(EComponentMobility::Movable);
+      rotor4->SetRelativeLocationAndRotation(
+        FVector(12.097581f, 11.974735f, 16.028526f),
+        rotation);
       rotor4->SetWorldScale3D(FVector(1.0f));
 
       if (rotor_mat.Succeeded())
@@ -155,4 +172,22 @@ AGamsDjiPhantom::AGamsDjiPhantom()
 
 void AGamsDjiPhantom::BeginPlay()
 {
+}
+
+void AGamsDjiPhantom::animate(float delta_time)
+{
+  FRotator rotation;
+  rotation.Roll = 0.0f;
+  rotation.Pitch = 0.0f;
+  rotation.Yaw = FMath::FRandRange(1.0f, 90.0f);
+  rotor1->AddRelativeRotation(rotation);
+
+  rotation.Yaw = FMath::FRandRange(-1.0f, -90.0f);
+  rotor2->AddRelativeRotation(rotation);
+
+  rotation.Yaw = FMath::FRandRange(1.0f, 90.0f);
+  rotor3->AddRelativeRotation(rotation);
+
+  rotation.Yaw = FMath::FRandRange(-1.0f, -90.0f);
+  rotor4->AddRelativeRotation(rotation);
 }
