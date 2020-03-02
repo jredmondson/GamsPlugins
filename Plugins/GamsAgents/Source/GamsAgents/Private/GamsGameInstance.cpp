@@ -8,6 +8,7 @@
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GamsControllerThread.h"
@@ -94,6 +95,8 @@ void UGamsGameInstance::Init()
 
   kb.attach_transport("GamsPluginsGameInstance", transport_settings);
 
+  //UGameplayStatics::OpenLevel(this, "Plains");
+
   // seed the current world
   gams_current_world = GetWorld();
   containers::Integer swarm_size("swarm.size", kb);
@@ -115,6 +118,9 @@ void UGamsGameInstance::Init()
   controller.resize((size_t)*swarm_size);
 
   containers::StringVector karl_files("karl_files", kb);
+
+  // Try to sleep so UE4 cleans up its memory issues
+  FPlatformProcess::Sleep(3.0f);
 
   if (karl_files.size() > 0)
   {
@@ -165,6 +171,9 @@ void UGamsGameInstance::Init()
       //}
     }
   }
+
+  // Try to sleep so UE4 cleans up its memory issues
+  FPlatformProcess::Sleep(3.0f);
 
   // setup a delegate for changing maps (happens automatically on game start)
   FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(

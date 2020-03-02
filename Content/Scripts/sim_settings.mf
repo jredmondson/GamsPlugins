@@ -3,6 +3,7 @@ karl_files.0="Scripts/Move/line.mf";
 
 swarm.size=100;
 controller.hz = 1.0;
+level="Maps/Ocean";
 
 game.hz = 30.0;
 game.delay = 3.0;
