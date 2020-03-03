@@ -8,7 +8,10 @@
 #include "Math/Vector.h"
 #include "GamsVehicle.h"
 #include "GamsDjiPhantom.h"
+#include "GamsDjiMavic.h"
+#include "GamsArDrone.h"
 #include "MadaraUnrealUtility.h"
+#include <algorithm>
 
 
 #pragma warning(push)
@@ -72,7 +75,7 @@ UnrealAgentPlatformFactory::create(
 
   if (knowledge && sensors && self)
   {
-    result = new UnrealAgentPlatform(knowledge, sensors, self, args);
+    result = new UnrealAgentPlatform(knowledge, sensors, self, platform_type);
   }
 
   return result;
@@ -83,8 +86,8 @@ UnrealAgentPlatform::UnrealAgentPlatform(
   madara::knowledge::KnowledgeBase * knowledge,
   gams::variables::Sensors * sensors,
   gams::variables::Self * self,
-  const madara::knowledge::KnowledgeMap & args)
-: gams::platforms::BasePlatform(knowledge, sensors, self)
+  const FString & type)
+: gams::platforms::BasePlatform(knowledge, sensors, self), platform_type(type)
 {
   // as an example of what to do here, create a coverage sensor
   if (knowledge && sensors)
@@ -118,9 +121,10 @@ UnrealAgentPlatform::UnrealAgentPlatform(
       TEXT ("%s: constr: searching for relevant args"),
       *agent_prefix_);
 
-    KnowledgeMap::const_iterator location = args.find("location");
-    KnowledgeMap::const_iterator orientation = args.find("orientation");
-    KnowledgeMap::const_iterator blueprint = args.find ("type");
+    UClass * actor_class (0);
+    //KnowledgeMap::const_iterator location = args.find("location");
+    //KnowledgeMap::const_iterator orientation = args.find("orientation");
+    /*KnowledgeMap::const_iterator platform_type = args.find ("type");*/
     //FString class_name;
 
     //UE_LOG (LogUnrealAgentPlatform, Log,
@@ -227,12 +231,64 @@ UnrealAgentPlatform::UnrealAgentPlatform(
       spawn_parameters.SpawnCollisionHandlingOverride =
         ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+      /**
+       * because UE4 completely messes up the STL, we have to avoid all
+       * instances of classes like std::string, vector, etc. where we
+       * allocate memory from the lib and reference it from our plugins.
+       * Consequently, we have to revert to the early days of C where
+       * every programmer had to manually track their null characters in
+       * strings, hunt their own food, build houses with mud and feces,
+       * etc.
+       **/
+
+      UE_LOG(LogUnrealAgentPlatform, Log,
+        TEXT("%s: handling platform.type=%s"),
+        *agent_prefix_, *platform_type);
+
+      if (!platform_type.IsEmpty())
+      {
+        // convert the type to lowercase to reduce human error
+        platform_type = platform_type.ToLower();
+
+        if (platform_type.Equals("djiphantom"))
+        {
+          UE_LOG(LogUnrealAgentPlatform, Log,
+            TEXT("%s: detected AGamsDjiPhantom type. Assigning static class"),
+            *agent_prefix_);
+
+          actor_class = AGamsDjiPhantom::StaticClass();
+        }
+        else if (platform_type.Equals("djimavic"))
+        {
+          UE_LOG(LogUnrealAgentPlatform, Log,
+            TEXT("%s: detected AGamsDjiMavic type. Assigning static class"),
+            *agent_prefix_);
+
+          actor_class = AGamsDjiMavic::StaticClass();
+        }
+        else if (platform_type.Equals("ardrone"))
+        {
+          UE_LOG(LogUnrealAgentPlatform, Log,
+            TEXT("%s: detected AGamsArDrone type. Assigning static class"),
+            *agent_prefix_);
+
+          actor_class = AGamsArDrone::StaticClass();
+        }
+      }
+
+      if (actor_class == 0)
+      {
+        UE_LOG(LogUnrealAgentPlatform, Log,
+          TEXT("%s: random type detected. Assigning static class"),
+          *agent_prefix_);
+
+        actor_class =
+          platform_classes[FMath::Rand() % platform_classes.size()];
+      }
+
       UE_LOG(LogUnrealAgentPlatform, Log,
         TEXT("%s: spawning actor at %s, rotation=%s."),
         *agent_prefix_, *ue_location.ToString(), *ue_orientation.ToString());
-
-      UClass * actor_class =
-        platform_classes[FMath::Rand() % platform_classes.size()];
 
       actor_ = gams_current_world->SpawnActor<AGamsVehicle>(
         actor_class,
@@ -752,6 +808,8 @@ UnrealAgentPlatform::get_frame(void) const
 void UnrealAgentPlatform::load_platform_classes(void)
 {
   platform_classes.push_back(AGamsDjiPhantom::StaticClass());
+  platform_classes.push_back(AGamsDjiMavic::StaticClass());
+  platform_classes.push_back(AGamsArDrone::StaticClass());
 }
 
 void UnrealAgentPlatform::unload_platform_classes(void)

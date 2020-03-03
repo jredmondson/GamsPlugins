@@ -52,6 +52,22 @@ namespace madara
       dest.Z = multiple * source[2];
     }
 
+    inline size_t to_c_str(const knowledge::KnowledgeRecord & record,
+      char * buf, size_t buf_size)
+    {
+      size_t actual_size = 0;
+
+      if (buf_size > 0)
+      {
+        actual_size = record.to_managed_buffer(buf, 128);
+        // add a null delimiter at the end
+        actual_size = std::min(actual_size, (size_t)buf_size - 1);
+        buf[actual_size] = 0;
+      }
+
+      return actual_size;
+    }
+
     /**
      * Converts a MADARA container to a UE4 vector 
      * @param source the source container to take values from

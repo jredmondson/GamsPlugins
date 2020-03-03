@@ -8,5 +8,5 @@ level="Maps/Ocean";
 game.hz = 30.0;
 game.delay = 3.0;
 
-platform.type="random";
+platform.type="djimavic";
 platform.animate=1;

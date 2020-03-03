@@ -6,7 +6,10 @@ public class GamsPlugins : ModuleRules
 {
   public GamsPlugins(ReadOnlyTargetRules Target) : base(Target)
   {
-    PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+    //PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+    PCHUsage = PCHUsageMode.NoSharedPCHs;
+    PrivatePCHHeaderFile = "GamsPlugins.h";
+    CppStandard = CppStandardVersion.Cpp14;
 
     PublicDependencyModuleNames.AddRange(new string[] {
       "Core", "CoreUObject",

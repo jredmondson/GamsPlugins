@@ -3,6 +3,7 @@
 #define   _GAMS_UNREALAGENTPLATFORM_H_
 
 #include "GamsVehicle.h"
+#include "Containers/UnrealString.h"
 
 #pragma warning(push)
 #pragma warning(disable:4005)
@@ -59,7 +60,7 @@ class AGamsVehicle;
       madara::knowledge::KnowledgeBase * knowledge = 0,
       gams::variables::Sensors * sensors = 0,
       gams::variables::Self * self = 0,
-      const madara::knowledge::KnowledgeMap & args = {});
+      const FString & platform_type = "random");
 
     /**
      * Destructor
@@ -271,6 +272,8 @@ class AGamsVehicle;
     /// world actor to keep track of whether our actor is still valid
     UWorld* world_;
 
+    FString platform_type;
+
     /// actor's max speed in engine (cm/s)
     float max_speed_;
 
@@ -328,6 +331,8 @@ class AGamsVehicle;
       gams::variables::Platforms * platforms,
       gams::variables::Self * self);
 
+    // the platform type that should be initialized with each create
+    FString platform_type;
   };
 
 #endif // _GAMS_UNREALAGENTPLATFORM_H_

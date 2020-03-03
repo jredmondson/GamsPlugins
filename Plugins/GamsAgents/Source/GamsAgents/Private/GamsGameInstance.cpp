@@ -19,7 +19,8 @@
 #include "madara/knowledge/containers/Double.h"
 #include "madara/knowledge/containers/Integer.h"
 #include "madara/knowledge/containers/String.h"
-#include "madara/knowledge/containers/StringVector.h" 	
+#include "madara/knowledge/containers/Vector.h" 
+#include <algorithm>	
 
 #include "GenericPlatform/GenericPlatformProcess.h"
 
@@ -117,19 +118,34 @@ void UGamsGameInstance::Init()
   // create 100 agents
   controller.resize((size_t)*swarm_size);
 
-  containers::StringVector karl_files("karl_files", kb);
+  containers::Vector karl_files("karl_files", kb);
 
-  // Try to sleep so UE4 cleans up its memory issues
-  FPlatformProcess::Sleep(3.0f);
+  size_t buf_size(0);
+  char buf[128];
+
+  /**
+   * because UE4 completely messes up the STL, we have to avoid all
+   * instances of classes like std::string, vector, etc. where we
+   * allocate memory from the lib and reference it from our plugins.
+   * Consequently, we have to revert to the early days of C where
+   * every programmer had to manually track their null characters in
+   * strings, hunt their own food, build houses with mud and feces,
+   * etc.
+   **/
+  madara::utility::to_c_str(kb.get("platform.type"), (char*)buf, 128);
+
+  agent_factory_->platform_type = buf;
 
   if (karl_files.size() > 0)
   {
     for (size_t i = 0; i < karl_files.size(); ++i)
     {
-      std::string raw_string (karl_files[i]);
-      const std::string prefix("Scripts");
-      FString path(raw_string.c_str());
-      if (madara::utility::begins_with(raw_string, prefix))
+      madara::utility::to_c_str(karl_files[i], (char*)buf, 128);
+
+      const FString prefix("Scripts");
+      FString path(buf);
+
+      if (path.StartsWith(prefix, ESearchCase::CaseSensitive))
       {
         // if the karl file begins with Scripts, then we need
         // to reference the Contents/Scripts directory
@@ -140,40 +156,21 @@ void UGamsGameInstance::Init()
       {
         filename = path;
       }
+
       UE_LOG(LogGamsGameInstance, Log,
         TEXT("Init: reading karl init from file %s"),
         *filename);
 
-      //const std::string filename_str(TCHAR_TO_UTF8(*filename));
-      //std::string contents = madara::utility::file_to_string(filename_str);
-
-      //UE_LOG(LogGamsGameInstance, Log,
-      //  TEXT("Init: evaluating %d byte karl logic on each platform"),
-      //  (int32)contents.length());
-
-      //controller.evaluate(contents);
-
       if (FFileHelper::LoadFileToString(filecontents, *filename))
       {
-        //std::string contents = TCHAR_TO_UTF8(*filecontents);
-
         UE_LOG(LogGamsGameInstance, Log,
           TEXT("Init: evaluating %d byte karl logic on each platform"),
           (int32)filecontents.Len());
 
         controller.evaluate(TCHAR_TO_UTF8(*filecontents));
       }
-      //else
-      //{
-      //  UE_LOG(LogGamsGameInstance, Warning,
-      //    TEXT("Init: failed to load file. File %s did not exist."),
-      //    (int32)filecontents.Len());
-      //}
     }
   }
-
-  // Try to sleep so UE4 cleans up its memory issues
-  FPlatformProcess::Sleep(3.0f);
 
   // setup a delegate for changing maps (happens automatically on game start)
   FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(
@@ -205,9 +202,6 @@ void UGamsGameInstance::Init()
 
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("Init: leaving"));
-
-  // Try to sleep so UE4 cleans up its memory issues
-  FPlatformProcess::Sleep(3.0f);
 }
 
 void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
@@ -223,10 +217,10 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("UGamsGameInstance: post_level_load: creating args knowledge map"));
 
-  std::string platform_prefix("platform");
+  std::string platform_prefix("platform.");
 
   // assign dynamic unreal platforms to the agents
-  //madara::knowledge::KnowledgeMap args = kb.to_map_stripped(platform_prefix);
+  //madara::knowledge::KnowledgeMap args (kb.to_map_stripped(platform_prefix));
   //args["blueprint"] = "random";
   //args["blueprints.size"] = madara::knowledge::KnowledgeRecord::Integer(3);
   //args["blueprints.0"] = "/Game/Quadcopters/Blueprints/BP_Quadcopter_A.BP_Quadcopter_A";
@@ -235,7 +229,7 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   //args["location"] = "random";
   //args["orientation"] = "random";
 
-  //controller.init_platform("unreal_agent", kb.to_map_stripped(platform_prefix));
+  //controller.init_platform("unreal_agent", args);
   controller.init_platform("unreal_agent");
 
   //madara::knowledge::safe_clear(args);
