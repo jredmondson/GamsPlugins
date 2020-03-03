@@ -1,12 +1,21 @@
+// files that each agent should load
 karl_files.size=1;
 karl_files.0="Scripts/Move/line.mf";
 
+// swarm control of GAMS agents
 swarm.size=100;
 controller.hz = 1.0;
-level="Ocean";
 
+// default level is "Plains"
+// level="Plains";
+// level="Ocean";
+// level="BasicOutdoors";
+// level="PrototypingHighBay";
+
+// variables for the game animation loop
 game.hz = 30.0;
 game.delay = 3.0;
 
+// platform-specific variables
 platform.type="djimavic";
 platform.animate=1;

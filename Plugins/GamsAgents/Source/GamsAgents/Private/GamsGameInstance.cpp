@@ -197,11 +197,10 @@ void UGamsGameInstance::Init()
   threader_.run(controller_hz, "controller",
     new GamsControllerThread(controller), true);
 
+  // check if level variables exists and if so, load the level
   if (kb.exists("level"))
   {
     madara::utility::to_c_str(kb.get("level"), (char*)buf, 128);
-
-    //filename = madara::utility::create_path("Maps", buf);
 
     UGameplayStatics::OpenLevel(this, FName(buf));
   }
