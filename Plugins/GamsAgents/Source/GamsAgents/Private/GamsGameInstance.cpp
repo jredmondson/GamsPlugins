@@ -142,20 +142,22 @@ void UGamsGameInstance::Init()
     {
       madara::utility::to_c_str(karl_files[i], (char*)buf, 128);
 
-      const FString prefix("Scripts");
-      FString path(buf);
+      //const FString prefix("Scripts");
+      //FString path(buf);
 
-      if (path.StartsWith(prefix, ESearchCase::CaseSensitive))
-      {
-        // if the karl file begins with Scripts, then we need
-        // to reference the Contents/Scripts directory
-        filename = FPaths::Combine(FPaths::ProjectContentDir(),
-          *path);
-      }
-      else
-      {
-        filename = path;
-      }
+      //if (path.StartsWith(prefix, ESearchCase::CaseSensitive))
+      //{
+      //  // if the karl file begins with Scripts, then we need
+      //  // to reference the Contents/Scripts directory
+      //  filename = FPaths::Combine(FPaths::ProjectContentDir(),
+      //    *path);
+      //}
+      //else
+      //{
+      //  filename = path;
+      //}
+
+      filename = madara::utility::create_path("Scripts", buf);
 
       UE_LOG(LogGamsGameInstance, Log,
         TEXT("Init: reading karl init from file %s"),
@@ -195,11 +197,21 @@ void UGamsGameInstance::Init()
   threader_.run(controller_hz, "controller",
     new GamsControllerThread(controller), true);
 
-  // editor requires explicit call to change the world
-#if UE_EDITOR
-  OnPostLoadMap(gams_current_world);
-#endif
+  if (kb.exists("level"))
+  {
+    madara::utility::to_c_str(kb.get("level"), (char*)buf, 128);
 
+    //filename = madara::utility::create_path("Maps", buf);
+
+    UGameplayStatics::OpenLevel(this, FName(buf));
+  }
+  else
+  {
+    // editor requires explicit call to change the world
+#if UE_EDITOR
+    OnPostLoadMap(gams_current_world);
+#endif
+  }
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("Init: leaving"));
 }

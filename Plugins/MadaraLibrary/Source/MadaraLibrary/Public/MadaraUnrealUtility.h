@@ -124,6 +124,26 @@ namespace madara
       dest.set(1, source.Y * multiple);
     }
 
+    inline FString create_path(FString expected_prefix, char * buf)
+    {
+      FString filename;
+      FString path(buf);
+
+      if (path.StartsWith(expected_prefix, ESearchCase::CaseSensitive))
+      {
+        // if the karl file begins with Scripts, then we need
+        // to reference the Contents/Scripts directory
+        filename = FPaths::Combine(FPaths::ProjectContentDir(),
+          *path);
+      }
+      else
+      {
+        filename = path;
+      }
+
+      return filename;
+    }
+
     inline void calculate_delta(
       const FVector & total_diff, FVector & local_diff,
       float speed, float delta_time)
