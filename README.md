@@ -93,6 +93,7 @@ UE.sln (this should open in VS 2017)
   * Modify your build.cs files to include the GamsLibrary, GamsLibraryLibrary, and MadaraLibraryLibrary modules
 
 ### For Repository Developers
+  * Downlaod git for Windows (https://git-scm.com/download/win or https://gitforwindows.org/)
   * Download cmake for Windows (https://cmake.org/download/)
   * Download perl for Windows (http://strawberryperl.com/). Enable options that allow using `perl` from command line (i.e., add to PATH).
   * Download and install GAMS and MADARA via the following
