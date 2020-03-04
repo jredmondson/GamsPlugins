@@ -110,7 +110,7 @@ gams\scripts\windows\base_build.bat vs2017 forceboost forceosc forcecapnp madara
 :: solution files for MADARA and GAMS, you can run:
 :: gams\scripts\windows\base_build.bat vs2017 madara gams
 ```
-  * Set your environment variables to the contents of the file %USERPROFILE%\.gams\env.bat
+  * Set your environment variables to the contents of the file %USERPROFILE%\\.gams\env.bat
 ```
 type %USERPROFILE%\.gams\env.bat
 :: note that the above commands only displays the contents of the file.
