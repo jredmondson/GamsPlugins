@@ -9,7 +9,7 @@ public class GamsPlugins : ModuleRules
     //PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
     PCHUsage = PCHUsageMode.NoSharedPCHs;
     PrivatePCHHeaderFile = "GamsPlugins.h";
-    CppStandard = CppStandardVersion.Cpp14;
+    //CppStandard = CppStandardVersion.Cpp14;
 
     PublicDependencyModuleNames.AddRange(new string[] {
       "Core", "CoreUObject",
