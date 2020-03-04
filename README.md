@@ -102,7 +102,7 @@ mkdir \code
 cd \code
 git clone -b windows_fixes https://github.com/jredmondson/gams
 git clone -b windows_fixes https://github.com/jredmondson/madara
-gams\scripts\windows\base_build.bat vs2017 forceboost forceosc forcecapnp
+gams\scripts\windows\base_build.bat vs2017 forceboost forceosc forcecapnp madara gams
 ```
   * Set your environment variables to the contents of the file %USERPROFILE%\.gams\env.bat
 ```
