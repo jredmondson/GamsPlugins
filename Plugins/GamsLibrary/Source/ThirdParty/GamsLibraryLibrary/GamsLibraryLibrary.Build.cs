@@ -43,44 +43,29 @@ public class GamsLibraryLibrary : ModuleRules
     if (Target.Platform == UnrealTargetPlatform.Win64)
     {
       string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
-      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.lib"));
 
-      if (Target.Type == TargetType.Game)
-      {
-        System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dll"),
-          Path.Combine(BinariesDir, "GAMS.dll"), true);
-        PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
-      }
-      else
-      {
-        PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
-        if (System.IO.File.Exists(Path.Combine(BinariesDir, "GAMS.dll")))
-        {
-          System.IO.File.Delete(Path.Combine(BinariesDir, "GAMS.dll"));
-        }
-      }
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dll"),
+        Path.Combine(BinariesDir, "GAMS.dll"), true);
+
+      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.lib"));
+      PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.dylib"));
-      if (Target.Type == TargetType.Game)
-      {
-        string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Mac");
 
-        System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dylib"),
-          Path.Combine(BinariesDir, "GAMS.dylib"), true);
-      }
+      string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Mac");
+
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dylib"),
+        Path.Combine(BinariesDir, "GAMS.dylib"), true);
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libGAMS.so"));
-      if (Target.Type == TargetType.Game)
-      {
-        string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Linux");
 
-        System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
-          Path.Combine(BinariesDir, "libGAMS.so"), true);
-      }
+      string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Linux");
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
+        Path.Combine(BinariesDir, "libGAMS.so"), true);
     }
   }
 }
