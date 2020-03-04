@@ -93,6 +93,22 @@ UE.sln (this should open in VS 2017)
   * Modify your build.cs files to include the GamsLibrary, GamsLibraryLibrary, and MadaraLibraryLibrary modules
 
 ### For Repository Developers
+  * Downlaod git for Windows (https://git-scm.com/download/win or https://gitforwindows.org/)
+  * Download cmake for Windows (https://cmake.org/download/)
+  * Download perl for Windows (http://strawberryperl.com/). Enable options that allow using `perl` from command line (i.e., add to PATH).
+  * Download and install GAMS and MADARA via the following
+```
+mkdir \code
+cd \code
+git clone -b windows_fixes https://github.com/jredmondson/gams
+git clone -b windows_fixes https://github.com/jredmondson/madara
+gams\scripts\windows\base_build.bat vs2017 forceboost forceosc forcecapnp
+```
+  * Set your environment variables to the contents of the file %USERPROFILE%\.gams\env.bat
+```
+type %USERPROFILE%\.gams\env.bat
+(note that the above commands only displays the contents of the file. If you want to apply the local variables
+```
   * Clone this repository to your computer (e.g., "git clone https://github.com/jredmondson/GamsPlugins.git")
   * Right click on GamsPlugins.uproject and select "Generate VS Studio project files"
   * Open GamsPlugins.sln and build project (Ctrl+Shift+B)
