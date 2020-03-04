@@ -2,3 +2,9 @@
 
 #include "GamsAerialVehicle.h"
 
+
+AGamsAerialVehicle::AGamsAerialVehicle()
+  : AGamsVehicle()
+{
+  can_fly = true;
+}

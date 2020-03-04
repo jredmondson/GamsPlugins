@@ -10,6 +10,7 @@
 #include "GamsDjiPhantom.h"
 #include "GamsDjiMavic.h"
 #include "GamsArDrone.h"
+#include "GamsF16.h"
 #include "MadaraUnrealUtility.h"
 #include <algorithm>
 
@@ -53,6 +54,10 @@ const std::vector <std::string> unreal_platforms = {
 //};
 
 std::vector <UClass *> platform_classes;
+
+std::vector <UClass *> quad_platform_classes;
+
+std::vector <UClass *> jet_platform_classes;
 
 UnrealAgentPlatformFactory::UnrealAgentPlatformFactory()
 {
@@ -273,6 +278,32 @@ UnrealAgentPlatform::UnrealAgentPlatform(
             *agent_prefix_);
 
           actor_class = AGamsArDrone::StaticClass();
+        }
+        else if (platform_type.Equals("f16"))
+        {
+          UE_LOG(LogUnrealAgentPlatform, Log,
+            TEXT("%s: detected AGamsF16 type. Assigning static class"),
+            *agent_prefix_);
+
+          actor_class = AGamsF16::StaticClass();
+        }
+        else if (platform_type.Equals("random_jet"))
+        {
+          UE_LOG(LogUnrealAgentPlatform, Log,
+            TEXT("%s: random jet type detected. Assigning static class"),
+            *agent_prefix_);
+
+          actor_class =
+            platform_classes[FMath::Rand() % jet_platform_classes.size()];
+        }
+        else if (platform_type.Equals("random_quad"))
+        {
+          UE_LOG(LogUnrealAgentPlatform, Log,
+            TEXT("%s: random quadcopter type detected. Assigning static class"),
+            *agent_prefix_);
+
+          actor_class =
+            platform_classes[FMath::Rand() % quad_platform_classes.size()];
         }
       }
 
@@ -679,6 +710,9 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
       // update variables
       gams::platforms::BasePlatform::move(target, bounds);
       new_target.to_container(actor_->dest);
+
+      madara::utility::from_vector_multiply(ue_location_,
+        actor_->source);
       last_move_ = new_target;
 
       last_ue_target_location_.X = new_target.x() * 100;
@@ -810,6 +844,13 @@ void UnrealAgentPlatform::load_platform_classes(void)
   platform_classes.push_back(AGamsDjiPhantom::StaticClass());
   platform_classes.push_back(AGamsDjiMavic::StaticClass());
   platform_classes.push_back(AGamsArDrone::StaticClass());
+  platform_classes.push_back(AGamsF16::StaticClass());
+
+  quad_platform_classes.push_back(AGamsDjiPhantom::StaticClass());
+  quad_platform_classes.push_back(AGamsDjiMavic::StaticClass());
+  quad_platform_classes.push_back(AGamsArDrone::StaticClass());
+
+  jet_platform_classes.push_back(AGamsF16::StaticClass());
 }
 
 void UnrealAgentPlatform::unload_platform_classes(void)

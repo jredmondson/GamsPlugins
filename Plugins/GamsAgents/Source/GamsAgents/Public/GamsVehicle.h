@@ -95,4 +95,10 @@ public:
   madara::knowledge::containers::NativeDoubleArray velocity;
 
   std::string agent_prefix;
+
+  bool can_fly;
+
+  bool is_fixed_wing;
+
+  bool is_jet;
 };

@@ -12,6 +12,7 @@
 UCLASS()
 class GAMSAGENTS_API AGamsAerialVehicle : public AGamsVehicle
 {
-	GENERATED_BODY()
-	
+  GENERATED_BODY()
+public:
+    AGamsAerialVehicle();
 };
