@@ -103,11 +103,17 @@ cd \code
 git clone -b windows_fixes https://github.com/jredmondson/gams
 git clone -b windows_fixes https://github.com/jredmondson/madara
 gams\scripts\windows\base_build.bat vs2017 forceboost forceosc forcecapnp madara gams
+:: note that Windows scripting is a bit rough. Parts of the base_build.bat may fail.
+:: check the boost, osc, madara, and gams directories for libraries (should be .lib or .dll)
+:: if these libs have been built, you can remove the keywords to run fewer build tasks.
+:: for instance, if you have built boost, OSC, and capnp and just want to regenerate the
+:: solution files for MADARA and GAMS, you can run:
+:: gams\scripts\windows\base_build.bat vs2017 madara gams
 ```
   * Set your environment variables to the contents of the file %USERPROFILE%\.gams\env.bat
 ```
 type %USERPROFILE%\.gams\env.bat
-:: (note that the above commands only displays the contents of the file.
+:: note that the above commands only displays the contents of the file.
 :: If you want to apply the local variables, you can either run the above
 :: script, which will only set them in your current terminal window, or you
 :: can set each one of these through your Start Menu by searching for
