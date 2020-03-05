@@ -1,3 +1,5 @@
+#pragma once
+
 #include "CoreMinimal.h"
 #include "Camera/CameraComponent.h"
 #include "GamsCameraComponent.generated.h"

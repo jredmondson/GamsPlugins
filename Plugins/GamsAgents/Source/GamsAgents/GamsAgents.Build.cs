@@ -29,10 +29,19 @@ public class GamsAgents : ModuleRules
       new string[]
       {
         "Core",
+        "CoreUObject",
+        "Engine",
+        "Slate",
+        "SlateCore",
         "GamsLibrary",
         "GamsLibraryLibrary",
         "MadaraLibraryLibrary",
-        "MoviePlayer"
+        "MoviePlayer",
+        "InputCore",
+        "RenderCore",
+        "ImageWrapper",
+        "CinematicCamera",
+        "Projects", // Support IPluginManager
         // ... add other public dependencies that you statically link with here ...
       }
     );
@@ -41,10 +50,6 @@ public class GamsAgents : ModuleRules
     PrivateDependencyModuleNames.AddRange(
       new string[]
       {
-        "CoreUObject",
-        "Engine",
-        "Slate",
-        "SlateCore",
         // ... add private dependencies that you statically link with here ...  
       }
     );
@@ -53,7 +58,7 @@ public class GamsAgents : ModuleRules
     DynamicallyLoadedModuleNames.AddRange(
       new string[]
       {
-        // ... add any modules that your module loads dynamically here ...
+        "Renderer"
       }
     );
   }

@@ -29,7 +29,7 @@ public class MadaraLibraryLibrary : ModuleRules
               SourceDirectory,
       });
 
-    PublicLibraryPaths.Add(MadaraLibDirectory);
+    //PublicLibraryPaths.Add(MadaraLibDirectory);
 
     PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
     PublicDefinitions.Add("MADARA_NO_THREAD_LOCAL=1");

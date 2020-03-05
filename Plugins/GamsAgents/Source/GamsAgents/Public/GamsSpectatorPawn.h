@@ -1,3 +1,5 @@
+#pragma once
+
 #include "CoreMinimal.h"
 #include "GameFramework/SpectatorPawn.h"
 #include "GamsSpectatorPawn.generated.h"

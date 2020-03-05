@@ -1,6 +1,8 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "GamsAgents.h"
+#include "GameFramework/Actor.h"
+#include "Engine/AssetManager.h"
 
 #define LOCTEXT_NAMESPACE "FGamsAgentsModule"
 
