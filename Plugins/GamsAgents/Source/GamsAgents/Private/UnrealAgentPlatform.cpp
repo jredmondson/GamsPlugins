@@ -375,6 +375,11 @@ UnrealAgentPlatform::UnrealAgentPlatform(
 
     status_.movement_available = 1;
   }
+
+  if (gams_game_instance)
+  {
+    ++(gams_game_instance->agents_loaded);
+  }
 }
 
 

@@ -4,11 +4,11 @@ karl_files.0="Scripts/Move/line.mf";
 
 // swarm control of GAMS agents
 swarm.size=100;
-controller.hz = 1.0;
+controller.hz = 5.0;
 
 // default level is "Plains"
-// level="Plains";
-// level="Ocean";
+level="Plains";
+//level="Ocean";
 // level="BasicOutdoors";
 // level="PrototypingHighBay";
 
@@ -17,5 +17,5 @@ game.hz = 30.0;
 game.delay = 3.0;
 
 // platform-specific variables
-platform.type="djimavic";
+platform.type="ardrone";
 platform.animate=1;

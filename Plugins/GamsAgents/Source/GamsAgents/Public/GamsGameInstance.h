@@ -21,6 +21,7 @@
 #pragma warning(disable:4668)
 #pragma warning(disable:4996)
 #include "madara/threads/Threader.h"
+#include "madara/knowledge/containers/Integer.h"
 #pragma warning(pop)
 
 #include "GamsGameInstance.generated.h"
@@ -41,6 +42,8 @@ public:
 
   virtual void Shutdown() override;
 
+  void OnPreLoadMap(const FString& map_name);
+
   void OnPostLoadMap(UWorld * new_world);
 
   void GameRun();
@@ -52,6 +55,16 @@ public:
   madara::transport::QoSTransportSettings transport_settings;
 
   bool should_animate;
+
+  UPROPERTY(VisibleAnywhere, Category = Map)
+    float minimap_height;
+
+  UFUNCTION(BlueprintPure, Category = Loading)
+    float LoadingPercentage() const;
+
+  madara::knowledge::containers::Integer  agents_loaded;
+
+  madara::knowledge::containers::Integer  swarm_size;
 
 private:
 

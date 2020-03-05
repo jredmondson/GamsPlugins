@@ -31,7 +31,8 @@ public class GamsAgents : ModuleRules
         "Core",
         "GamsLibrary",
         "GamsLibraryLibrary",
-        "MadaraLibraryLibrary"
+        "MadaraLibraryLibrary",
+        "MoviePlayer"
         // ... add other public dependencies that you statically link with here ...
       }
     );

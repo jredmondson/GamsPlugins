@@ -10,6 +10,7 @@
 #include "Misc/FileHelper.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "MoviePlayer.h"
 #include "EngineUtils.h"
 #include "GamsControllerThread.h"
 #include <stdlib.h>
@@ -19,7 +20,7 @@
 #include "madara/knowledge/containers/Double.h"
 #include "madara/knowledge/containers/Integer.h"
 #include "madara/knowledge/containers/String.h"
-#include "madara/knowledge/containers/Vector.h" 
+#include "madara/knowledge/containers/Vector.h"
 #include <algorithm>	
 
 #include "GenericPlatform/GenericPlatformProcess.h"
@@ -31,6 +32,8 @@ namespace containers = knowledge::containers;
 
 void UGamsGameInstance::Init()
 {
+  Super::Init();
+
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("Init: entering"));
 
@@ -96,11 +99,14 @@ void UGamsGameInstance::Init()
 
   kb.attach_transport("GamsPluginsGameInstance", transport_settings);
 
+  agents_loaded.set_name("swarm.loaded", kb);
+  agents_loaded = 0;
+
   //UGameplayStatics::OpenLevel(this, "Plains");
 
   // seed the current world
   gams_current_world = GetWorld();
-  containers::Integer swarm_size("swarm.size", kb);
+  swarm_size.set_name("swarm.size", kb);
   containers::Integer platform_animate("platform.animate", kb);
   if (*swarm_size == 0)
   {
@@ -174,7 +180,10 @@ void UGamsGameInstance::Init()
     }
   }
 
-  // setup a delegate for changing maps (happens automatically on game start)
+  // setup delegates for changing maps (happens automatically on game start)
+
+  FCoreUObjectDelegates::PreLoadMap.AddUObject(
+    this, &UGamsGameInstance::OnPreLoadMap);
   FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(
     this, &UGamsGameInstance::OnPostLoadMap);
 
@@ -215,11 +224,46 @@ void UGamsGameInstance::Init()
     TEXT ("Init: leaving"));
 }
 
+float UGamsGameInstance::LoadingPercentage() const
+{
+  float result = (float)*agents_loaded;
+
+  if (*swarm_size > 0)
+  {
+    result /= (float)*swarm_size;
+  }
+  else
+  {
+    result = 0;
+  }
+
+  return result;
+}
+
+void UGamsGameInstance::OnPreLoadMap(const FString& map_name)
+{
+  threader_.pause("controller");
+  agents_loaded = 0;
+
+  if (!GetTimerManager().IsTimerPaused(run_timer_handler_))
+  {
+    GetTimerManager().PauseTimer(run_timer_handler_);
+  }
+
+  if (!IsRunningDedicatedServer())
+  {
+    FLoadingScreenAttributes LoadingScreen;
+    LoadingScreen.bAutoCompleteWhenLoadingCompletes = false;
+    LoadingScreen.WidgetLoadingScreen = FLoadingScreenAttributes::NewTestLoadingScreenWidget();
+    //WidgetBlueprint'/Game/Blueprints/LoadingScreen.LoadingScreen'
+
+    GetMoviePlayer()->SetupLoadingScreen(LoadingScreen);
+  }
+}
+
 void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
 {
   gams_current_world = new_world;
-
-  threader_.pause("controller");
 
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("UGamsGameInstance: post_level_load: "
@@ -275,6 +319,12 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
 
   GetTimerManager().SetTimer(run_timer_handler_, this,
     &UGamsGameInstance::GameRun, delta_time, true, delay);
+
+  if (!GetTimerManager().IsTimerPaused(run_timer_handler_))
+  {
+    GetTimerManager().UnPauseTimer(run_timer_handler_);
+  }
+
 }
 
 void UGamsGameInstance::Shutdown ()
