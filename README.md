@@ -87,10 +87,17 @@ UE.sln (this should open in VS 2017)
 ```
 
 ### For Users
-  * Clone this repository to your computer (e.g., "git clone https://github.com/jredmondson/GamsPlugins.git")
-  * Open the GamsPlugins.uproject file
-  * Within UE4, migrate the Plugins directory contents to your new project
-  * Modify your build.cs files to include the GamsLibrary, GamsLibraryLibrary, and MadaraLibraryLibrary modules
+  * Install Unreal Engine 4.24 from the Launcher
+  * Download Visual Studio 2017 or Visual Studio 2019 and Add .NET and C++ support. The UE build system requires this.
+  * Compile and install the GamsPlugin via the following on your command line (prefer VS 2017 or VS 2019 command line through the Start Menu)
+```
+git clone https://github.com/jredmondson/GamsPlugins.git
+cd GamsPlugins
+Scripts/generate.bat
+Scripts/build.bat
+GamsPlugins.uproject
+```
+  * Once the editor loads, allow the compile shaders to finish and then press play
 
 ### For Repository Developers
   * Download git for Windows (https://git-scm.com/download/win or https://gitforwindows.org/)
