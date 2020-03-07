@@ -7,6 +7,11 @@
 
 const FPrimaryAssetType	UGamsAssetManager::VehicleType = TEXT("Vehicle");
 
+UGamsAssetManager::UGamsAssetManager()
+  : UAssetManager()
+{
+
+}
 //UGamsAssetManager& UGamsAssetManager::Get()
 //{
 //  UGamsAssetManager* manager = Cast<UGamsAssetManager>(GEngine->AssetManager);

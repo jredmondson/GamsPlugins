@@ -5,7 +5,7 @@
 #include "GamsCameraComponent.h"
 
 AGamsSpectatorPawn::AGamsSpectatorPawn(const FObjectInitializer& ObjectInitializer)
-  : Super(ObjectInitializer)
+  : ASpectatorPawn(ObjectInitializer)
 {
   PrimaryActorTick.bCanEverTick = false;
 

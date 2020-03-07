@@ -5,7 +5,8 @@
 
 // Sets default values
 AGamsVehicle::AGamsVehicle()
-  : mesh(0), movement(0), can_fly (false), is_fixed_wing(false), is_jet(false)
+  : AActor(), 
+  mesh(0), movement(0), can_fly (false), is_fixed_wing(false), is_jet(false)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;

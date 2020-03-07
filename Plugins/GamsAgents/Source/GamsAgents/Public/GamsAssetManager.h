@@ -18,7 +18,7 @@ class GAMSAGENTS_API UGamsAssetManager : public UAssetManager
 
 public:
   // Constructor and overrides
-  UGamsAssetManager () {}
+  UGamsAssetManager();
   virtual void StartInitialLoading () override;
 
   /** Static types for items */

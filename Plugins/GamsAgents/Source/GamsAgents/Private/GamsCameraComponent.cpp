@@ -11,6 +11,7 @@
 #include "Engine/Engine.h"
 
 UGamsCameraComponent::UGamsCameraComponent()
+  : UCameraComponent()
 {
   should_clamp_ = true;
 

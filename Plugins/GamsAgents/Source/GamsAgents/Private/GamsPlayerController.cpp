@@ -8,6 +8,7 @@
 #include "GamsSpectatorPawn.h"
 
 AGamsPlayerController::AGamsPlayerController()
+  : APlayerController()
 {
   PrimaryActorTick.bCanEverTick = true;
   SetHidden(false);

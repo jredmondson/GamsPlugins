@@ -329,6 +329,8 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
 
 void UGamsGameInstance::Shutdown ()
 {
+  Super::Shutdown();
+
   threader_.terminate();
   threader_.wait();
   UnrealAgentPlatform::unload_platform_classes();
