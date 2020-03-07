@@ -88,8 +88,9 @@ UE.sln (this should open in VS 2017)
 
 ### For Users
   * Install Unreal Engine 4.24 from the Launcher
+  * Download git for Windows (https://git-scm.com/download/win or https://gitforwindows.org/)
   * Download Visual Studio 2017 or Visual Studio 2019 and Add .NET and C++ support. The UE build system requires this.
-  * Compile and install the GamsPlugin via the following on your command line (prefer VS 2017 or VS 2019 command line through the Start Menu)
+  * Compile and install the GamsPlugin via the following on your command line ("cmd" in Start Menu)
 ```
 git clone https://github.com/jredmondson/GamsPlugins.git
 cd GamsPlugins
