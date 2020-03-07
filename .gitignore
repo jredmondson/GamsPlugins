@@ -35,9 +35,14 @@
 *.sln
 *.proj
 *.pdb
+GamsPlugins.code-workspace
 
 # Folders
 Binaries
 Intermediate
 .vs
+.vscode
 Saved
+
+# Makefiles
+Makefile
