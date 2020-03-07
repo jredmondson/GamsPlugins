@@ -25,6 +25,7 @@
 #pragma warning(disable:4583)
 #pragma warning(disable:4582)
 #pragma warning(disable:4668)
+#pragma warning(disable:4800)
 #pragma warning(disable:4996)
 #include "madara/knowledge/KnowledgeBase.h"
 #pragma warning(pop)

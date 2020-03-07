@@ -27,6 +27,7 @@
 #pragma warning(disable:4583)
 #pragma warning(disable:4582)
 #pragma warning(disable:4668)
+#pragma warning(disable:4800)
 #pragma warning(disable:4996)
 #include "gams/controllers/Multicontroller.h"
 #include "gams/controllers/BaseController.h"
