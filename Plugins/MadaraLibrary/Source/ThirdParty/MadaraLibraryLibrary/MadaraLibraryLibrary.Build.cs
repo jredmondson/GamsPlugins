@@ -39,7 +39,7 @@ public class MadaraLibraryLibrary : ModuleRules
     PublicDefinitions.Add("BOOST_ALL_NO_LIB=1");
     PublicDefinitions.Add("BOOST_DISABLE_ABI_HEADERS=1");
 
-    bUseRTTI = true;
+    bUseRTTI = false;
     bEnableExceptions = true;
 
     if (Target.Platform == UnrealTargetPlatform.Win64)

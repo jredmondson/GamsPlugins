@@ -8,7 +8,7 @@ public class GamsLibrary : ModuleRules
   {
     PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
-    bUseRTTI = true;
+    bUseRTTI = false;
     bEnableExceptions = true;
 
     PublicIncludePaths.AddRange(

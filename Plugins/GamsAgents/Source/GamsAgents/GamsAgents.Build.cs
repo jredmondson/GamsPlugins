@@ -8,7 +8,7 @@ public class GamsAgents : ModuleRules
   {
     PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
-    bUseRTTI = true;
+    bUseRTTI = false;
     bEnableExceptions = true;
 
     PublicIncludePaths.AddRange(

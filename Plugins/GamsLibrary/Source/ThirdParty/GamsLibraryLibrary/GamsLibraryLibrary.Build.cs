@@ -30,7 +30,7 @@ public class GamsLibraryLibrary : ModuleRules
     PublicDefinitions.Add("BOOST_ALL_NO_LIB=1");
     PublicDefinitions.Add("BOOST_DISABLE_ABI_HEADERS=1");
 
-    bUseRTTI = true;
+    bUseRTTI = false;
     bEnableExceptions = true;
 
     string BaseDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory,
