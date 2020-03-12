@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 SCRIPTS_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-echo "Copying MADARA and GAMS libs and dependencies to their respective dirs"
+echo ""
+echo "COPYING LIBS to GamsPlugins"
 echo "----------------------"
 echo "UE4_ROOT=$UE4_ROOT"
 echo "SCRIPTS_DIR=$SCRIPTS_DIR"
