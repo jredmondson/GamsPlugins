@@ -382,7 +382,7 @@ void UGamsGameInstance::GameRun()
     UE_LOG(LogGamsGameInstance, Log,
       TEXT("UGamsGameInstance: name=[%s], loc=[%s], dest=[%s], "
         "diff=[%s], next=[%s]"),
-      *AActor::GetDebugName(actor),
+      *actor->agent_prefix,
       *location.ToString(), *dest.ToString(),
       *diff.ToString(), *next.ToString());
 

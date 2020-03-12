@@ -38,7 +38,7 @@ void AGamsVehicle::animate(float delta_time)
 void AGamsVehicle::init_knowledge(
   madara::knowledge::KnowledgeBase & knowledge, const std::string & prefix)
 {
-  agent_prefix = prefix;
+  agent_prefix = prefix.c_str();
 
   // initialize the variable containers
   location.set_name(prefix + ".location", knowledge, 3);

@@ -94,7 +94,7 @@ public:
   madara::knowledge::containers::NativeDoubleVector source_orientation;
   madara::knowledge::containers::NativeDoubleArray velocity;
 
-  std::string agent_prefix;
+  FString agent_prefix;
 
   bool can_fly;
 
