@@ -4,6 +4,8 @@
 
 #include "CoreGlobals.h"
 
+#include "gams/loggers/GlobalLogger.h"
+
 //General Log
 DECLARE_LOG_CATEGORY_EXTERN (LogUnrealAgentPlatform, Log, All);
 

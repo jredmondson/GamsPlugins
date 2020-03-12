@@ -698,10 +698,11 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
   const gams::pose::PositionBounds & bounds)
 {
   int result = gams::platforms::PLATFORM_MOVING;
+  FString target_s = target.to_string().c_str();
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::move: beginning move to position"),
-    *agent_prefix_);
+    TEXT("%s: UnrealAgentPlatform::move: beginning move to position [%s]"),
+    *agent_prefix_, *target_s);
 
   if (world_ == gams_current_world)
   {
@@ -740,8 +741,8 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
     if (ue_location_.Equals(last_ue_target_location_, 1.0f))
     {
       UE_LOG(LogUnrealAgentPlatform, Log,
-        TEXT("%s: UnrealAgentPlatform::move: arrived at target."),
-        *agent_prefix_);
+        TEXT("%s: UnrealAgentPlatform::move: arrived at target [%s]."),
+        *agent_prefix_, *target_s);
 
       result = gams::platforms::PLATFORM_ARRIVED;
     }
@@ -765,6 +766,10 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
 
       //actor_->SetActorLocation(next_location,
       //  false, nullptr, ETeleportType::None);
+      
+      UE_LOG(LogUnrealAgentPlatform, Log,
+        TEXT("%s: UnrealAgentPlatform::move: still moving to target [%s]."),
+        *agent_prefix_, *target_s);
     }
   }
 

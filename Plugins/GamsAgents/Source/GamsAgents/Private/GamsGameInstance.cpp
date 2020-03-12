@@ -42,6 +42,10 @@ void UGamsGameInstance::Init()
 
   gams_game_instance = this;
 
+  gams::loggers::global_logger->clear();
+  gams::loggers::global_logger->add_file("gams_log.txt");
+  gams::loggers::global_logger->set_level(gams::loggers::LOG_MAJOR);
+
   agent_factory_ = new UnrealAgentPlatformFactory();
 
   // add the dynamic unreal agent platform factory
@@ -373,7 +377,9 @@ void UGamsGameInstance::GameRun()
     next += location;
 
     UE_LOG(LogGamsGameInstance, Log,
-      TEXT("UGamsGameInstance: loc=[%s], dest=[%s], diff=[%s], next=[%s]"),
+      TEXT("UGamsGameInstance: name=[%s], loc=[%s], dest=[%s], "
+        "diff=[%s], next=[%s]"),
+      *AActor::GetDebugName(actor),
       *location.ToString(), *dest.ToString(),
       *diff.ToString(), *next.ToString());
 
