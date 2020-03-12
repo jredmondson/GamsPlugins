@@ -39,7 +39,12 @@ GamsPlugins.code-workspace
 
 # Folders
 Binaries
+Build
 Intermediate
+out
+bin
+lib
+stage
 .vs
 .vscode
 Saved
