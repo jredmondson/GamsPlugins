@@ -41,6 +41,7 @@ GamsPlugins.code-workspace
 Binaries
 Build
 Intermediate
+DerivedDataCache
 out
 bin
 lib
