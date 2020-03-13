@@ -56,9 +56,9 @@ public class MadaraLibraryLibrary : ModuleRules
     {
       string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Mac");
 
-      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "MADARA.dylib"),
-        Path.Combine(BinariesDir, "MADARA.dylib"), true);
-      PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "MADARA.dylib"));
+      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "libMADARA.so"),
+        Path.Combine(BinariesDir, "libMADARA.so"), true);
+      PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "libMADARA.so"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {

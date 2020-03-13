@@ -52,12 +52,12 @@ public class GamsLibraryLibrary : ModuleRules
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
-      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.dylib"));
+      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libGAMS.so"));
 
       string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Mac");
 
-      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dylib"),
-        Path.Combine(BinariesDir, "GAMS.dylib"), true);
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
+        Path.Combine(BinariesDir, "libGAMS.so"), true);
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
