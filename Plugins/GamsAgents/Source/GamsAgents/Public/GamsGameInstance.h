@@ -75,6 +75,10 @@ private:
   FTimerHandle run_timer_handler_;
 
   float last_send_time_;
+
+  double controller_hz = 2.0f;
+
+  TArray<FString> filecontents_;
 };
 
 extern UWorld* gams_current_world;

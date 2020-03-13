@@ -4,8 +4,8 @@ karl_files.size=1;
 karl_files.0="Scripts/FormationSync/rectangle.mf";
 
 // swarm control of GAMS agents
-swarm.size=200;
-controller.hz = 5.0;
+swarm.size=400;
+controller.hz = 1.0;
 
 // default level is "Plains"
 level="Plains";
@@ -14,9 +14,9 @@ level="Ocean";
 // level="PrototypingHighBay";
 
 // variables for the game animation loop
-game.hz = 30.0;
-game.delay = 3.0;
+game.hz = 10.0;
+game.delay = 1.0;
 
 // platform-specific variables
 platform.type="ardrone";
-platform.animate=0;
+platform.animate=1;

@@ -38,13 +38,13 @@ void UGamsGameInstance::Init()
     TEXT ("Init: entering"));
 
   FString filename;
-  FString filecontents;
+  //FString filecontents;
 
   gams_game_instance = this;
 
-  gams::loggers::global_logger->clear();
-  gams::loggers::global_logger->add_file("gams_log.txt");
-  gams::loggers::global_logger->set_level(gams::loggers::LOG_MAJOR);
+  //gams::loggers::global_logger->clear();
+  //gams::loggers::global_logger->add_file("gams_log.txt");
+  //gams::loggers::global_logger->set_level(gams::loggers::LOG_MAJOR);
 
   agent_factory_ = new UnrealAgentPlatformFactory();
 
@@ -74,12 +74,14 @@ void UGamsGameInstance::Init()
 
   transport_settings.load_text(TCHAR_TO_UTF8(*transport_settings_file));
 
-  if (FFileHelper::LoadFileToString(filecontents, *sim_settings_file))
+  filecontents_.SetNum(1);
+
+  if (FFileHelper::LoadFileToString(filecontents_[0], *sim_settings_file))
   {
     UE_LOG(LogGamsGameInstance, Log,
       TEXT("Init: loading sim settings from file %s."),
       *sim_settings_file);
-    kb.evaluate(TCHAR_TO_UTF8(*filecontents));
+    kb.evaluate(TCHAR_TO_UTF8(*filecontents_[0]));
   }
   else
   {
@@ -146,6 +148,8 @@ void UGamsGameInstance::Init()
 
   agent_factory_->platform_type = buf;
 
+  filecontents_.SetNum(karl_files.size());
+
   if (karl_files.size() > 0)
   {
     for (size_t i = 0; i < karl_files.size(); ++i)
@@ -173,13 +177,14 @@ void UGamsGameInstance::Init()
         TEXT("Init: reading karl init from file %s"),
         *filename);
 
-      if (FFileHelper::LoadFileToString(filecontents, *filename))
+      if (FFileHelper::LoadFileToString(filecontents_[i], *filename))
       {
         UE_LOG(LogGamsGameInstance, Log,
           TEXT("Init: evaluating %d byte karl logic on each platform"),
-          (int32)filecontents.Len());
+          (int32)filecontents_[i].Len());
 
-        controller.evaluate(TCHAR_TO_UTF8(*filecontents));
+
+        controller.evaluate(TCHAR_TO_UTF8(*filecontents_[i]));
       }
     }
   }
@@ -194,7 +199,7 @@ void UGamsGameInstance::Init()
   UnrealAgentPlatform::load_platform_classes();
 
   // run GAMS multicontroller at 2hz, unless user overrides with controller.hz
-  double controller_hz = 2.0f;
+  controller_hz = 2.0f;
 
   if (kb.exists("controller.hz"))
   {
@@ -250,6 +255,8 @@ float UGamsGameInstance::LoadingPercentage() const
 void UGamsGameInstance::OnPreLoadMap(const FString& map_name)
 {
   threader_.pause("controller");
+  threader_.wait_for_paused("controller");
+
   agents_loaded = 0;
 
   if (!GetTimerManager().IsTimerPaused(run_timer_handler_))
@@ -291,6 +298,15 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   //args["location"] = "random";
   //args["orientation"] = "random";
 
+  //for (int32 i = 0; i != filecontents_.Num(); ++i)
+  //{
+  //  UE_LOG(LogGamsGameInstance, Log,
+  //    TEXT("Init: evaluating %d byte karl logic on each platform"),
+  //    (int32)filecontents_[i].Len());
+
+  //  controller.evaluate(TCHAR_TO_UTF8(*filecontents_[i]));
+  //}
+
   //controller.init_platform("unreal_agent", args);
   controller.init_platform("unreal_agent");
 
@@ -298,7 +314,7 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
 
   kb.send_modifieds();
   last_send_time_ = gams_current_world->UnpausedTimeSeconds;
-
+  
   threader_.resume("controller");
 
   // defaults are 60hz game loop and a 5 second delay.
