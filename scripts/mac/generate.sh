@@ -7,4 +7,4 @@ echo "UE4_ROOT=$UE4_ROOT"
 echo "SCRIPTS_DIR=$SCRIPTS_DIR"
 echo "----------------------"
 mkdir -p "$SCRIPTS_DIR/../../Binaries/Mac"
-"$UE4_ROOT"/GenerateProjectFiles.sh -project="$SCRIPTS_DIR/../../GamsPlugins.uproject" -game -engine -Makefile -xcode
+"$UE4_ROOT/Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh" -project="$SCRIPTS_DIR/../../GamsPlugins.uproject" -game

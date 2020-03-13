@@ -37,6 +37,9 @@
 *.pdb
 GamsPlugins.code-workspace
 
+# Xcode files
+*.xcworkspace
+
 # Folders
 Binaries
 Build
@@ -48,6 +51,8 @@ lib
 stage
 .vs
 .vscode
+.DS_Store
+scripts/.DS_Store
 Saved
 
 # Makefiles
