@@ -4,6 +4,8 @@
 
 DEFINE_LOG_CATEGORY (LogUnrealAgentPlatform);
 
+DEFINE_LOG_CATEGORY (LogGamsAgentManager);
+
 DEFINE_LOG_CATEGORY (LogGamsMulticontroller);
 
 DEFINE_LOG_CATEGORY (LogGamsGameInstance);

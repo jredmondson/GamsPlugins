@@ -15,6 +15,7 @@
 #include "GamsControllerThread.h"
 #include <stdlib.h>
 #include "UnrealAgentPlatform.h"
+#include "GamsAgentManager.h"
 #include "GamsVehicle.h"
 #include "MadaraUnrealUtility.h"
 #include "madara/knowledge/containers/Double.h"
@@ -298,17 +299,27 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   //args["location"] = "random";
   //args["orientation"] = "random";
 
-  //for (int32 i = 0; i != filecontents_.Num(); ++i)
-  //{
-  //  UE_LOG(LogGamsGameInstance, Log,
-  //    TEXT("Init: evaluating %d byte karl logic on each platform"),
-  //    (int32)filecontents_[i].Len());
+  controller.clear_knowledge();
+  controller.refresh_vars();
 
-  //  controller.evaluate(TCHAR_TO_UTF8(*filecontents_[i]));
-  //}
+  for (auto file : filecontents_)
+  {
+    controller.evaluate(TCHAR_TO_UTF8(*file));
+  }
 
-  //controller.init_platform("unreal_agent", args);
   controller.init_platform("unreal_agent");
+
+  FActorSpawnParameters spawn_parameters;
+  spawn_parameters.SpawnCollisionHandlingOverride =
+    ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+  FTransform transform(
+    FQuat(0.0f, 0.0f, 0.0f, 0.0f),
+    FVector::ZeroVector);
+
+  manager_ = gams_current_world->SpawnActor<AGamsAgentManager>(
+        AGamsAgentManager::StaticClass(), transform, spawn_parameters);
+
+  manager_->read(kb);
 
   //madara::knowledge::safe_clear(args);
 
@@ -378,7 +389,7 @@ void UGamsGameInstance::GameRun()
 
     gams_current_world = temp_world;
   }
-
+/*
   for (TActorIterator<AGamsVehicle> actor_it(gams_current_world);
       actor_it; ++actor_it)
   {
@@ -408,7 +419,7 @@ void UGamsGameInstance::GameRun()
     {
       actor->animate(temp_world->DeltaTimeSeconds);
     }
-  }
+  }*/
 
   if (temp_world->UnpausedTimeSeconds > last_send_time_ + 1.0f)
   {

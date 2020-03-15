@@ -184,6 +184,8 @@ class AGamsVehicle;
 
   private:
 
+    void init_agent(const gams::pose::Pose & init_pose);
+
     /**
      * Calculate velocity/thrust necessary to send in OSC
      * @param current  current location
@@ -252,10 +254,31 @@ class AGamsVehicle;
     gams::pose::Orientation last_orient_;
 
     // optimizations to remove function calls to get_location/orientation
-    FVector ue_location_;
-    FRotator ue_orientation_;
-    FVector last_ue_target_location_;
-    FRotator last_ue_target_orientation_;
+    //FVector ue_location_;
+    //FRotator ue_orientation_;
+    //FVector last_ue_target_location_;
+    //FRotator last_ue_target_orientation_;
+    
+    // communication variable with main game loop for agent home
+    madara::knowledge::containers::NativeDoubleVector home_;
+    
+    // communication variable with main game loop for agent location
+    madara::knowledge::containers::NativeDoubleVector location_;
+    
+    // communication variable with main game loop for agent orientation
+    madara::knowledge::containers::NativeDoubleVector orientation_;
+    
+    // communication variable with main game loop for agent source
+    madara::knowledge::containers::NativeDoubleVector source_;
+    
+    // communication variable with main game loop for agent source orientation
+    madara::knowledge::containers::NativeDoubleVector source_orientation_;
+
+    // communication variable with main game loop for agent dest
+    madara::knowledge::containers::NativeDoubleVector dest_;
+
+    // communication variable with main game loop for agent dest orientation
+    madara::knowledge::containers::NativeDoubleVector dest_orientation_;
 
     /// timer for checking last movement
     madara::utility::Timer<madara::utility::Clock> move_timer_;
@@ -265,12 +288,6 @@ class AGamsVehicle;
 
     /// timer for last updated position
     madara::utility::Timer<madara::utility::Clock> last_position_timer_;
-
-    /// actor being manipulated in the world
-    AGamsVehicle* actor_;
-
-    /// world actor to keep track of whether our actor is still valid
-    UWorld* world_;
 
     FString platform_type;
 

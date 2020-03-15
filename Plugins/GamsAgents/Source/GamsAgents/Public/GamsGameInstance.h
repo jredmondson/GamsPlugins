@@ -27,6 +27,7 @@
 #include "GamsGameInstance.generated.h"
 
 class UnrealAgentPlatformFactory;
+class AGamsAgentManager;
 
 /**
  * 
@@ -79,6 +80,8 @@ private:
   double controller_hz = 2.0f;
 
   TArray<FString> filecontents_;
+
+  AGamsAgentManager * manager_;
 };
 
 extern UWorld* gams_current_world;
