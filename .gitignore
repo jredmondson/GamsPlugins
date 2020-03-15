@@ -16,6 +16,9 @@
 *.dylib
 *.dll
 
+# Temporary files
+*.swp
+
 # Fortran module files
 *.mod
 *.smod
@@ -49,6 +52,8 @@ stage
 .vs
 .vscode
 Saved
+.DS_Store
+*.xcworkspace
 
 # Makefiles
 Makefile
