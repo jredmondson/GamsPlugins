@@ -2,6 +2,7 @@
 
 #include "GamsVehicle.h"
 #include "GamsGameInstance.h"
+#include "Components/InstancedStaticMeshComponent.h"
 
 // Sets default values
 AGamsVehicle::AGamsVehicle()
@@ -49,4 +50,3 @@ void AGamsVehicle::init_knowledge(
   dest.set_name(prefix + ".dest", knowledge, 3);
   velocity.set_name(prefix + ".velocity", knowledge, 3);
 }
-

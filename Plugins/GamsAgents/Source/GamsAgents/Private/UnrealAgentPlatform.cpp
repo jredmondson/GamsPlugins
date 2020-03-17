@@ -37,6 +37,7 @@
 
 #include "madara/knowledge/containers/NativeDoubleVector.h"
 #include "madara/utility/Utility.h"
+#include "gams/pose/Pose.h"
 #pragma warning(pop)
 
 namespace knowledge = madara::knowledge;
@@ -88,293 +89,59 @@ UnrealAgentPlatformFactory::create(
 
 // Constructor
 UnrealAgentPlatform::UnrealAgentPlatform(
-  madara::knowledge::KnowledgeBase * knowledge,
+  madara::knowledge::KnowledgeBase * kb,
   gams::variables::Sensors * sensors,
   gams::variables::Self * self,
   const FString & type)
-: gams::platforms::BasePlatform(knowledge, sensors, self), platform_type(type)
+: gams::platforms::BasePlatform(kb, sensors, self), platform_type(type)
 {
   // as an example of what to do here, create a coverage sensor
-  if (knowledge && sensors)
+  if (kb && sensors)
   {
     agent_prefix_ = self_->agent.prefix.c_str ();
 
     UE_LOG (LogUnrealAgentPlatform, Log,
-      TEXT ("%s: constr: entering"),
+      TEXT ("%s::constr: entering"),
       *agent_prefix_);
 
-    // create a coverage sensor
-    //gams::variables::Sensors::iterator it = sensors->find("coverage");
-    //if (it == sensors->end()) // create coverage sensor
-    //{
-    //  // get origin
-    //  gams::pose::Position origin(gams::pose::gps_frame());
-    //  madara::knowledge::containers::NativeDoubleArray origin_container;
-    //  origin_container.set_name("sensor.coverage.origin", *knowledge, 3);
-    //  origin.from_container(origin_container);
+    status_.init_vars(*kb, get_id());
 
-    //  // establish sensor
-    //  gams::variables::Sensor* coverage_sensor =
-    //    new gams::variables::Sensor("coverage", knowledge, 2.5, origin);
-    //  (*sensors)["coverage"] = coverage_sensor;
-    //}
-
-    //(*sensors_)["coverage"] = (*sensors)["coverage"];
-    status_.init_vars(*knowledge, get_id());
-
-    UE_LOG (LogUnrealAgentPlatform, Log,
-      TEXT ("%s: constr: searching for relevant args"),
-      *agent_prefix_);
-
-    UClass * actor_class (0);
-    //KnowledgeMap::const_iterator location = args.find("location");
-    //KnowledgeMap::const_iterator orientation = args.find("orientation");
-    /*KnowledgeMap::const_iterator platform_type = args.find ("type");*/
-    //FString class_name;
-
-    //UE_LOG (LogUnrealAgentPlatform, Log,
-    //  TEXT ("%s: constr: checking for blueprint"),
-    //  *agent_prefix_);
-
-    //if (blueprint != args.end())
-    //{
-    //  if (blueprint->second.is_string_type() && blueprint->second == "random")
-    //  {
-    //    class_name = ANSI_TO_TCHAR(unreal_platforms[FMath::Rand() % 3].c_str());
-    //  }
-    //  else
-    //  {
-    //    class_name = ANSI_TO_TCHAR(blueprint->second.to_string().c_str());
-    //  }
-    //}
-    //else
-    //{
-    //  class_name = ANSI_TO_TCHAR(unreal_platforms[FMath::Rand () % 3].c_str ());
-    //}
-
-    //UE_LOG (LogUnrealAgentPlatform, Log,
-    //  TEXT("%s: selected agent class: %s"),
-    //  *agent_prefix_, *class_name);
-
-    knowledge::KnowledgeRecord initial_pose = knowledge->get(".initial_pose");
-
-    is_created_ = true;
-
-    if (!initial_pose.is_array_type())
+    madara::knowledge::containers::NativeDoubleVector init(
+      ".initial_pose", *kb);
+    
+    if (!init.to_record().is_array_type())
     {
+      // set a default position for agents if no initial_pose exists
       KnowledgeRecord::Integer id = self_->id.to_integer();
 
       float row = (float)((id / 10) % 10);
       float col = (float)(id % 10);
       float level = (float)(id / 100);
 
-      // by default initialize agents to [.id, .id, .id]
-      initial_pose.set_index(2, 50.0f + 100 * level);
-      //initial_pose.set_index(1, -2200.0f + 440 * (*(self_->id) % 10));
-      //initial_pose.set_index(0, -1200.0f + 240 * (*(self_->id) / 10));
-      initial_pose.set_index(1, -2200.0f + 140 * col);
-      initial_pose.set_index(0, -1200.0f + 140 * row);
-    }
-    else
-    {
-      double value = initial_pose.retrieve_index(0).to_double() * 100;
-      initial_pose.set_index(0, value);
-      value = initial_pose.retrieve_index(1).to_double() * 100;
-      initial_pose.set_index(1, value);
-      value = initial_pose.retrieve_index(2).to_double() * 100;
-      initial_pose.set_index(2, value);
-    }
-
-    loiter_timeout_ = 0.0f;
-    respawn_timeout_ = 0.0f;
-
-    if (loiter_timeout_ >= 0 && loiter_timeout_ < 5)
-    {
-      loiter_timeout_ = 5;
+      init.set(2, 0.5f + 1.0f * level);
+      init.set(1, -22.0f + 1.4f * col);
+      init.set(0, -12.0f + 1.4f * row);
     }
     
-    last_move_.frame(get_frame());
-    last_move_.x(0);
-    last_move_.y(0);
-    last_move_.z(0);
+    char buf[128];
 
-    last_orient_.frame(get_frame());
-    last_orient_.rx(0);
-    last_orient_.ry(0);
-    last_orient_.rz(0);
+    madara::utility::to_c_str(init.to_record(), (char*)buf, 128);
 
-    move_timer_.start();
-    last_thrust_timer_.start();
-    last_position_timer_.start();
+    FString init_s = buf;
+  
+    UE_LOG (LogUnrealAgentPlatform, Log,
+      TEXT ("%s::constr: init pos=[%s]"),
+      *agent_prefix_, *init_s);
 
-    // need to call GetWorld()->SpawnActor(type, loc, rot, spawnparameters)
-    // then save the actor into the platform class
+    gams::pose::Pose init_pose(get_frame());
+    init_pose.from_container(init);
 
-    //UE_LOG (LogUnrealAgentPlatform, Log,
-    //  TEXT ("%s: spawning %s from global world object"),
-    //  *agent_prefix_, *class_name);
+    init_agent(init_pose);
 
-    world_ = gams_current_world;
-
-    if (gams_current_world != 0)
-    {
-      UE_LOG (LogUnrealAgentPlatform, Log,
-        TEXT ("%s: global world object is not null"),
-        *agent_prefix_);
-
-      //UGamsAssetManager * manager = dynamic_cast<UGamsAssetManager*>(
-      //  UAssetManager::Get());
-
-      FVector ue_location(
-        float(initial_pose.retrieve_index(0).to_double()),
-        float(initial_pose.retrieve_index(1).to_double()),
-        float(initial_pose.retrieve_index(2).to_double()));
-
-      FRotator ue_orientation(0.0f, 0.0f, 0.0f);
-
-      FActorSpawnParameters spawn_parameters;
-      spawn_parameters.SpawnCollisionHandlingOverride =
-        ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-      /**
-       * because UE4 completely messes up the STL, we have to avoid all
-       * instances of classes like std::string, vector, etc. where we
-       * allocate memory from the lib and reference it from our plugins.
-       * Consequently, we have to revert to the early days of C where
-       * every programmer had to manually track their null characters in
-       * strings, hunt their own food, build houses with mud and feces,
-       * etc.
-       **/
-
-      UE_LOG(LogUnrealAgentPlatform, Log,
-        TEXT("%s: handling platform.type=%s"),
-        *agent_prefix_, *platform_type);
-
-      if (!platform_type.IsEmpty())
-      {
-        // convert the type to lowercase to reduce human error
-        platform_type = platform_type.ToLower();
-
-        if (platform_type.Equals("djiphantom"))
-        {
-          UE_LOG(LogUnrealAgentPlatform, Log,
-            TEXT("%s: detected AGamsDjiPhantom type. Assigning static class"),
-            *agent_prefix_);
-
-          actor_class = AGamsDjiPhantom::StaticClass();
-        }
-        else if (platform_type.Equals("djimavic"))
-        {
-          UE_LOG(LogUnrealAgentPlatform, Log,
-            TEXT("%s: detected AGamsDjiMavic type. Assigning static class"),
-            *agent_prefix_);
-
-          actor_class = AGamsDjiMavic::StaticClass();
-        }
-        else if (platform_type.Equals("ardrone"))
-        {
-          UE_LOG(LogUnrealAgentPlatform, Log,
-            TEXT("%s: detected AGamsArDrone type. Assigning static class"),
-            *agent_prefix_);
-
-          actor_class = AGamsArDrone::StaticClass();
-        }
-        else if (platform_type.Equals("f16"))
-        {
-          UE_LOG(LogUnrealAgentPlatform, Log,
-            TEXT("%s: detected AGamsF16 type. Assigning static class"),
-            *agent_prefix_);
-
-          actor_class = AGamsF16::StaticClass();
-        }
-        else if (platform_type.Equals("random_jet"))
-        {
-          UE_LOG(LogUnrealAgentPlatform, Log,
-            TEXT("%s: random jet type detected. Assigning static class"),
-            *agent_prefix_);
-
-          actor_class =
-            platform_classes[FMath::Rand() % jet_platform_classes.size()];
-        }
-        else if (platform_type.Equals("random_quad"))
-        {
-          UE_LOG(LogUnrealAgentPlatform, Log,
-            TEXT("%s: random quadcopter type detected. Assigning static class"),
-            *agent_prefix_);
-
-          actor_class =
-            platform_classes[FMath::Rand() % quad_platform_classes.size()];
-        }
-      }
-
-      if (actor_class == 0)
-      {
-        UE_LOG(LogUnrealAgentPlatform, Log,
-          TEXT("%s: random type detected. Assigning static class"),
-          *agent_prefix_);
-
-        actor_class =
-          platform_classes[FMath::Rand() % platform_classes.size()];
-      }
-
-      UE_LOG(LogUnrealAgentPlatform, Log,
-        TEXT("%s: spawning actor at %s, rotation=%s."),
-        *agent_prefix_, *ue_location.ToString(), *ue_orientation.ToString());
-
-      actor_ = gams_current_world->SpawnActor<AGamsVehicle>(
-        actor_class,
-        ue_location, ue_orientation,
-        spawn_parameters);
-
-      if (actor_)
-      {
-        UE_LOG(LogUnrealAgentPlatform, Log,
-          TEXT("%s: SUCCESS: actor spawned at %s, rotation=%s."),
-          *agent_prefix_, *ue_location.ToString(), *ue_orientation.ToString());
-
-        max_speed_ = actor_->max_speed;
-        acceleration_ = actor_->acceleration;
-
-        actor_->init_knowledge(gams_game_instance->kb, self_->agent.prefix);
-
-        madara::utility::from_vector_multiply(ue_location, self_->agent.dest);
-        madara::utility::from_vector_multiply(ue_location, actor_->dest);
-
-        //max_speed_ = 200.0f;
-        //acceleration_ = 500.0f;
-      }
-      else
-      {
-        UE_LOG(LogUnrealAgentPlatform, Warning,
-          TEXT("%s: FAILED: actor spawn returned null."),
-          *agent_prefix_);
-      }
-
-      //UBlueprint * actor_object = LoadObject<UBlueprint> (NULL, *class_name, NULL, LOAD_None, NULL);
-
-      //if (actor_object != 0)
-      //{
-      //  UE_LOG(LogUnrealAgentPlatform, Log,
-      //    TEXT("%s: actor class lookup %s succeeded! Actor can be spawned."),
-      //    *agent_prefix_, *class_name);
-
-      //}
-      //else
-      //{
-      //  UE_LOG (LogUnrealAgentPlatform, Warning,
-      //    TEXT ("%s: actor class lookup %s failed. No actor can be spawned."),
-      //    *agent_prefix_, *class_name);
-      //}
-    }
-    else
-    {
-      UE_LOG (LogUnrealAgentPlatform, Warning,
-        TEXT ("%s: global world object is null. No actor can be spawned."),
-        *agent_prefix_);
-    }
+    is_created_ = true;
 
     status_.movement_available = 1;
-  }
+  } // (knowledge && sensors)
 
   if (gams_game_instance)
   {
@@ -382,10 +149,40 @@ UnrealAgentPlatform::UnrealAgentPlatform(
   }
 }
 
-
 // Destructor
 UnrealAgentPlatform::~UnrealAgentPlatform()
 {
+}
+
+void
+UnrealAgentPlatform::init_agent(const gams::pose::Pose & init_pose)
+{
+  location_.set_name(
+    self_->agent.prefix + ".location", gams_game_instance->kb);
+  orientation_.set_name(
+    self_->agent.prefix + ".orientation", gams_game_instance->kb);
+  source_.set_name(
+    self_->agent.prefix + ".source", gams_game_instance->kb);
+  dest_.set_name(
+    self_->agent.prefix + ".dest", gams_game_instance->kb);
+  home_.set_name(
+    self_->agent.prefix + ".home", gams_game_instance->kb);
+
+  gams::pose::Position location(init_pose);
+  gams::pose::Orientation orientation(init_pose);
+
+  // update our local KB and the game KB
+  location.to_container(self_->agent.location);
+  location.to_container(location_);
+  orientation.to_container(self_->agent.orientation);
+  orientation.to_container(orientation_);
+  location.to_container(source_);
+  location.to_container(dest_);
+
+  if (home_.to_record().is_array_type())
+  {
+    location.to_container(home_);
+  }
 }
 
 void
@@ -402,7 +199,7 @@ UnrealAgentPlatform::calculate_diff(
   FString target_str(target.to_string().c_str());
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::calculate_diff: loc=[%s] to tar=[%s]"),
+    TEXT("%s::calculate_diff: loc=[%s] to tar=[%s]"),
     *agent_prefix_, *current_str, *target_str);
 
   finished = target.approximately_equal(current, 0.2);
@@ -426,7 +223,7 @@ UnrealAgentPlatform::calculate_diff(
   FString target_str(target.to_string().c_str());
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::calculate_diff: rot=[%s] to tar=[%s]"),
+    TEXT("%s::calculate_diff: rot=[%s] to tar=[%s]"),
     *agent_prefix_, *current_str, *target_str);
 
   finished = target.approximately_equal(current, 1.0f);
@@ -436,88 +233,6 @@ UnrealAgentPlatform::calculate_diff(
   diff_rotator.Pitch = (target.ry() - current.ry()) * 100;
   diff_rotator.Yaw = (target.rz() - current.rz()) * 100;
 }
-
-//void UnrealAgentPlatform::calculate_delta(
-//  const FVector & total_diff, FVector & local_diff,
-//  float speed, float delta_time)
-//{
-//  // check if someone is supplying negative speed and make it positive
-//  if (speed < 0)
-//  {
-//    speed = -speed;
-//  }
-//
-//  float max_distance = speed * delta_time;
-//  float x_abs = std::abs(total_diff.X);
-//  float y_abs = std::abs(total_diff.Y);
-//  float z_abs = std::abs(total_diff.Z);
-//
-//  local_diff.X = std::min<float>(max_distance, x_abs);
-//  local_diff.Y = std::min<float>(max_distance, y_abs);
-//  local_diff.Z = std::min<float>(max_distance, z_abs);
-//
-//  if (total_diff.X < 0)
-//  {
-//    local_diff.X = -local_diff.X;
-//  }
-//
-//  if (total_diff.Y < 0)
-//  {
-//    local_diff.Y = -local_diff.Y;
-//  }
-//
-//  if (total_diff.Z < 0)
-//  {
-//    local_diff.Z = -local_diff.Z;
-//  }
-//
-//  UE_LOG(LogUnrealAgentPlatform, Log,
-//    TEXT("%s: UnrealAgentPlatform::calculate_delta: total=[%s] to tar=[%s]"
-//         " with speed=%f and time=%f"),
-//    *agent_prefix_, *(total_diff.ToString()), *(local_diff.ToString()),
-//      speed, delta_time);
-//}
-//
-//void UnrealAgentPlatform::calculate_delta(
-//  const FRotator & total_diff, FRotator & local_diff,
-//  float speed, float delta_time)
-//{
-//  // this is a rotation, not a drag race!
-//  if (speed > 180)
-//  {
-//    speed = 180;
-//  }
-//
-//  float max_distance = speed * delta_time;
-//  float roll_abs = std::abs(total_diff.Roll);
-//  float pitch_abs = std::abs(total_diff.Pitch);
-//  float yaw_abs = std::abs(total_diff.Yaw);
-//
-//  local_diff.Roll = std::min<float>(max_distance, roll_abs);
-//  local_diff.Pitch = std::min<float>(max_distance, pitch_abs);
-//  local_diff.Yaw = std::min<float>(max_distance, yaw_abs);
-//
-//  if (total_diff.Roll < 0)
-//  {
-//    local_diff.Roll = -local_diff.Roll;
-//  }
-//
-//  if (total_diff.Pitch < 0)
-//  {
-//    local_diff.Pitch = -local_diff.Pitch;
-//  }
-//
-//  if (total_diff.Yaw < 0)
-//  {
-//    local_diff.Yaw = -local_diff.Yaw;
-//  }
-//
-//  UE_LOG(LogUnrealAgentPlatform, Log,
-//    TEXT("%s: UnrealAgentPlatform::calculate_delta: total=[%s] to tar=[%s]"
-//      " with speed=%f and time=%f"),
-//      *agent_prefix_, *(total_diff.ToString()), *(local_diff.ToString()),
-//      speed, delta_time);
-//}
 
 std::vector<double>
 UnrealAgentPlatform::calculate_thrust(
@@ -573,7 +288,7 @@ UnrealAgentPlatform::calculate_thrust(
   FString difference_str(record.to_string().c_str());
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::calculate_thrust: thrust is [%s]"),
+    TEXT("%s::calculate_thrust: thrust is [%s]"),
     *agent_prefix_, *difference_str);
 
   return difference;
@@ -583,42 +298,35 @@ UnrealAgentPlatform::calculate_thrust(
 int
 UnrealAgentPlatform::sense(void)
 {
-  // need to get actor position and rotation
-  // remember to convert to meters by dividing location parameters by 100
-  // as the UE system will return centimeters.
+  size_t buf_size(0);
+  char buf[128];
 
-  if (world_ == gams_current_world)
-  {
-    gams::pose::Position loc(get_frame());
-    gams::pose::Rotation rot(get_frame());
+  madara::utility::to_c_str(location_.to_record(), (char*)buf, 128);
 
-    ue_location_ = actor_->GetActorLocation();
-    ue_orientation_ = actor_->GetActorRotation();
-    FString is_init = FString(actor_->IsActorInitialized() ? "Init" : "Uninit");
-    FString in_world = FString(world_ == gams_current_world ? "Yes" : "No");
+  FString cur_loc_s = buf;
+  
+  madara::utility::to_c_str(orientation_.to_record(), (char*)buf, 128);
 
-    // UE provides location in centimeters. Convert to meters.
-    loc.x(ue_location_.X / 100);
-    loc.y(ue_location_.Y / 100);
-    loc.z(ue_location_.Z / 100);
+  FString cur_orient_s = buf;
 
-    rot.rx(ue_orientation_.Roll);
-    rot.ry(ue_orientation_.Pitch);
-    rot.rz(ue_orientation_.Yaw);
+  UE_LOG(LogUnrealAgentPlatform, Log,
+    TEXT("%s::sense: copying loc=%s and orient=%s from global kb."),
+    *agent_prefix_, *cur_loc_s, *cur_orient_s);
 
-    loc.to_container(self_->agent.location);
-    rot.to_container(self_->agent.orientation);
-    loc.to_container(actor_->location);
-    loc.to_container(actor_->orientation);
+  // copy pose information from game kb
+  //location_.transfer_to(self_->agent.location);
+  //orientation_.transfer_to(self_->agent.orientation);
 
-    FString loc_str(loc.to_string().c_str());
-    FString orient_str(rot.to_string().c_str());
-
-    UE_LOG(LogUnrealAgentPlatform, Log,
-      TEXT("%s: UnrealAgentPlatform::sense: location=[%s], orientation=[%s]"
-        ", init=%s, world=%s"),
-      *agent_prefix_, *loc_str, *orient_str, *is_init, *in_world);
-  }
+  knowledge::KnowledgeRecord location_r = location_.to_record();
+  knowledge::KnowledgeRecord orient_r = orientation_.to_record();
+  
+  self_->agent.location.set(2, location_r.retrieve_index(2).to_double());
+  self_->agent.location.set(1, location_r.retrieve_index(1).to_double());
+  self_->agent.location.set(0, location_r.retrieve_index(0).to_double());
+  
+  self_->agent.orientation.set(2, orient_r.retrieve_index(2).to_double());
+  self_->agent.orientation.set(1, orient_r.retrieve_index(1).to_double());
+  self_->agent.orientation.set(0, orient_r.retrieve_index(0).to_double());
 
   return gams::platforms::PLATFORM_OK;
 }
@@ -699,78 +407,49 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
 {
   int result = gams::platforms::PLATFORM_MOVING;
   FString target_s = target.to_string().c_str();
+  FString last_move_s = last_move_.to_string().c_str();
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::move: beginning move to position [%s]"),
+    TEXT("%s::move: move to position [%s]"),
     *agent_prefix_, *target_s);
 
-  if (world_ == gams_current_world)
+  // convert from input reference frame to vrep reference frame, if necessary
+  gams::pose::Position new_target(get_frame(), target);
+  gams::pose::Position cur_loc(get_frame());
+  cur_loc.from_container(self_->agent.location);
+  FString cur_loc_s = cur_loc.to_string().c_str();
+
+  // are we moving to a new location? If so, start an acceleration timer
+  if (!last_move_.approximately_equal(new_target, 0.1))
   {
-    // convert from input reference frame to vrep reference frame, if necessary
-    gams::pose::Position new_target(get_frame(), target);
+    UE_LOG(LogUnrealAgentPlatform, Log,
+      TEXT("%s::move: last_move [%s] != target [%s]."
+        " New move."),
+      *agent_prefix_, *last_move_s, *target_s);
 
-    // are we moving to a new location? If so, start an acceleration timer
-    if (!last_move_.approximately_equal(new_target, 0.1))
-    {
-      move_timer_.start();
-      // update variables
-      gams::platforms::BasePlatform::move(target, bounds);
-      new_target.to_container(actor_->dest);
+    move_timer_.start();
+    // update variables
+    gams::platforms::BasePlatform::move(target, bounds);
+    new_target.to_container(dest_);
+    cur_loc.to_container(source_);
 
-      madara::utility::from_vector_multiply(ue_location_,
-        actor_->source);
-      last_move_ = new_target;
+    last_move_ = new_target;
+  }
 
-      last_ue_target_location_.X = new_target.x() * 100;
-      last_ue_target_location_.Y = new_target.y() * 100;
-      last_ue_target_location_.Z = new_target.z() * 100;
-    }
+  if (cur_loc.approximately_equal(new_target, 0.5f))
+  {
+    UE_LOG(LogUnrealAgentPlatform, Log,
+      TEXT("%s::move: arrived at target [%s]."),
+      *agent_prefix_, *target_s);
 
-    //gams::pose::Position cur_loc = get_location();
-
-    //bool finished = false;
-
-    //FVector diff_location, delta_location;
-    //FRotator diff_rotator, delta_rotator;
-
-    //calculate_diff(cur_loc, new_target, diff_location, finished);
-    //calculate_delta(diff_location, delta_location, max_speed_, gams_delta_time);
-
-    //actor_->AddActorWorldOffset(delta_location, false, nullptr, ETeleportType::TeleportPhysics);
-
-    if (ue_location_.Equals(last_ue_target_location_, 1.0f))
-    {
-      UE_LOG(LogUnrealAgentPlatform, Log,
-        TEXT("%s: UnrealAgentPlatform::move: arrived at target [%s]."),
-        *agent_prefix_, *target_s);
-
-      result = gams::platforms::PLATFORM_ARRIVED;
-    }
-    else
-    {
-      //FVector next_location;
-
-      //next_location = FMath::VInterpTo(ue_location_, last_ue_target_location_,
-      //  world_->DeltaTimeSeconds, 3);
-
-      //calculate_delta(last_ue_target_location_ - ue_location_, next_location,
-      //  max_speed_, world_->DeltaTimeSeconds);
-      //next_location += ue_location_;
-
-      //UE_LOG(LogUnrealAgentPlatform, Log,
-      //  TEXT("%s: UnrealAgentPlatform::move: [%s] -> [%s]."
-      //       " next=[%s] with delta_t=%f and max_speed=%f"),
-      //  *agent_prefix_,
-      //  *ue_location_.ToString(), *last_ue_target_location_.ToString(),
-      //  *next_location.ToString(), world_->DeltaTimeSeconds, max_speed_);
-
-      //actor_->SetActorLocation(next_location,
-      //  false, nullptr, ETeleportType::None);
-      
-      UE_LOG(LogUnrealAgentPlatform, Log,
-        TEXT("%s: UnrealAgentPlatform::move: still moving to target [%s]."),
-        *agent_prefix_, *target_s);
-    }
+    result = gams::platforms::PLATFORM_ARRIVED;
+  }
+  else
+  {
+    UE_LOG(LogUnrealAgentPlatform, Log,
+      TEXT("%s::move: cur_loc[%s] != target."
+        " Still moving to target [%s]."),
+      *agent_prefix_, *cur_loc_s, *target_s);
   }
 
   return result;
@@ -784,29 +463,27 @@ UnrealAgentPlatform::orient(const gams::pose::Orientation & target,
   int result = gams::platforms::PLATFORM_MOVING;
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::move: beginning orient/rotate"),
+    TEXT("%s::orient: beginning orient/rotate"),
     *agent_prefix_);
 
-  if (world_ == gams_current_world)
-  {
-    // convert from input reference frame to vrep reference frame, if necessary
-    gams::pose::Orientation new_target(get_frame(), target);
-    gams::pose::Orientation cur_orient = get_orientation();
+  // convert from input reference frame to vrep reference frame, if necessary
+  gams::pose::Orientation new_target(get_frame(), target);
+  gams::pose::Orientation cur_orient = get_orientation();
 
-    // are we moving to a new location? If so, start an acceleration timer
-    if (!last_orient_.approximately_equal(new_target, 1.0f))
-    {
-      // update variables
-      gams::platforms::BasePlatform::orient(target, bounds);
-      new_target.to_container(actor_->dest_orientation);
-      last_orient_ = new_target;
-    }
+  // are we moving to a new location? If so, start an acceleration timer
+  if (!last_orient_.approximately_equal(new_target, 1.0f))
+  {
+    // update variables
+    gams::platforms::BasePlatform::orient(target, bounds);
+    new_target.to_container(dest_orientation_);
+    cur_orient.to_container(source_orientation_);
+    last_orient_ = new_target;
   }
 
-  if (ue_orientation_.Equals(last_ue_target_orientation_, 1.0f))
+  if (cur_orient.approximately_equal(new_target, 1.0f))
   {
     UE_LOG(LogUnrealAgentPlatform, Log,
-      TEXT("%s: UnrealAgentPlatform::orient: arrived at target."),
+      TEXT("%s::orient: arrived at target."),
       *agent_prefix_);
 
     result = gams::platforms::PLATFORM_ARRIVED;

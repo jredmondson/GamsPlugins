@@ -59,10 +59,10 @@ namespace madara
 
       if (buf_size > 0)
       {
-        actual_size = record.to_managed_buffer(buf, 128);
+        actual_size = record.to_managed_string(buf, 128);
         // add a null delimiter at the end
-        actual_size = std::min(actual_size, (size_t)buf_size - 1);
-        buf[actual_size] = 0;
+        //actual_size = std::min(actual_size, (size_t)buf_size - 1);
+        //buf[actual_size] = 0;
       }
 
       return actual_size;

@@ -24,9 +24,12 @@
 #include "madara/knowledge/containers/Integer.h"
 #pragma warning(pop)
 
+#include "Engine/EngineTypes.h"
+
 #include "GamsGameInstance.generated.h"
 
 class UnrealAgentPlatformFactory;
+class AGamsAgentManager;
 
 /**
  * 
@@ -66,6 +69,10 @@ public:
 
   madara::knowledge::containers::Integer  swarm_size;
 
+  bool enable_collisions;
+
+  ECollisionEnabled::Type collision_type;
+
 private:
 
   UnrealAgentPlatformFactory * agent_factory_;
@@ -79,6 +86,8 @@ private:
   double controller_hz = 2.0f;
 
   TArray<FString> filecontents_;
+
+  AGamsAgentManager * manager_;
 };
 
 extern UWorld* gams_current_world;

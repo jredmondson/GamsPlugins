@@ -16,6 +16,9 @@
 *.dylib
 *.dll
 
+# Temporary files
+*.swp
+
 # Fortran module files
 *.mod
 *.smod
@@ -54,6 +57,8 @@ stage
 .DS_Store
 scripts/.DS_Store
 Saved
+.DS_Store
+*.xcworkspace
 
 # Makefiles
 Makefile

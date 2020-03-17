@@ -15,6 +15,7 @@
 #include "GamsControllerThread.h"
 #include <stdlib.h>
 #include "UnrealAgentPlatform.h"
+#include "GamsAgentManager.h"
 #include "GamsVehicle.h"
 #include "MadaraUnrealUtility.h"
 #include "madara/knowledge/containers/Double.h"
@@ -201,6 +202,10 @@ void UGamsGameInstance::Init()
   // run GAMS multicontroller at 2hz, unless user overrides with controller.hz
   controller_hz = 2.0f;
 
+  enable_collisions = kb.get("platform.collisions").is_true();
+  collision_type = enable_collisions ?
+    ECollisionEnabled::PhysicsOnly : ECollisionEnabled::NoCollision;
+
   if (kb.exists("controller.hz"))
   {
     // because of STL funkiness in UE4, we try to be safe with memory
@@ -257,6 +262,19 @@ void UGamsGameInstance::OnPreLoadMap(const FString& map_name)
   threader_.pause("controller");
   threader_.wait_for_paused("controller");
 
+  if (manager_)
+  {
+    manager_->clear();
+
+    controller.clear_knowledge();
+    controller.refresh_vars();
+
+    for (auto file : filecontents_)
+    {
+      controller.evaluate(TCHAR_TO_UTF8(*file));
+    }
+  }
+
   agents_loaded = 0;
 
   if (!GetTimerManager().IsTimerPaused(run_timer_handler_))
@@ -280,11 +298,11 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   gams_current_world = new_world;
 
   UE_LOG(LogGamsGameInstance, Log,
-    TEXT("UGamsGameInstance: post_level_load: "
+    TEXT("post_level_load: "
       "initializing unreal_agent platforms"));
 
   UE_LOG(LogGamsGameInstance, Log,
-    TEXT("UGamsGameInstance: post_level_load: creating args knowledge map"));
+    TEXT("post_level_load: creating args knowledge map"));
 
   std::string platform_prefix("platform.");
 
@@ -298,17 +316,19 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   //args["location"] = "random";
   //args["orientation"] = "random";
 
-  //for (int32 i = 0; i != filecontents_.Num(); ++i)
-  //{
-  //  UE_LOG(LogGamsGameInstance, Log,
-  //    TEXT("Init: evaluating %d byte karl logic on each platform"),
-  //    (int32)filecontents_[i].Len());
-
-  //  controller.evaluate(TCHAR_TO_UTF8(*filecontents_[i]));
-  //}
-
-  //controller.init_platform("unreal_agent", args);
   controller.init_platform("unreal_agent");
+
+  FActorSpawnParameters spawn_parameters;
+  spawn_parameters.SpawnCollisionHandlingOverride =
+    ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+  FTransform transform(
+    FQuat(0.0f, 0.0f, 0.0f, 0.0f),
+    FVector::ZeroVector);
+
+  manager_ = gams_current_world->SpawnActor<AGamsAgentManager>(
+        AGamsAgentManager::StaticClass(), transform, spawn_parameters);
+
+  manager_->read(kb);
 
   //madara::knowledge::safe_clear(args);
 
@@ -318,7 +338,7 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   threader_.resume("controller");
 
   // defaults are 60hz game loop and a 5 second delay.
-  float delta_time = 0.06f;
+  float delta_time = gams_delta_time;
   float delay = 5.0f;
 
   // allow overrides for game hertz and delay
@@ -335,6 +355,8 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
     containers::Double temp_delay("game.delay", kb);
     delay = (float)(*temp_delay);
   }
+
+  gams_delta_time = delta_time;
 
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("Init: starting game loop with delta_time=%f after %fs"),
@@ -360,25 +382,31 @@ void UGamsGameInstance::Shutdown ()
   TimerManager->ClearTimer(run_timer_handler_);
   delete agent_factory_;
   agent_factory_ = 0;
+  manager_->clear();
+  //delete manager_;
+  //manager_ = 0;
 }
 
 void UGamsGameInstance::GameRun()
 {
   UE_LOG(LogGamsGameInstance, Log,
-    TEXT("UGamsGameInstance: controllerrun: calling"));
+    TEXT("controllerrun: calling"));
 
   UWorld * temp_world = GetWorld();
 
-  gams_delta_time = temp_world->DeltaTimeSeconds;
+ // gams_delta_time = temp_world->DeltaTimeSeconds;
 
   if (gams_current_world != temp_world)
   {
     UE_LOG(LogGamsGameInstance, Log,
-      TEXT("UGamsGameInstance: world has been changed"));
+      TEXT("world has been changed"));
 
     gams_current_world = temp_world;
   }
 
+  manager_->update(gams_delta_time);
+
+/*
   for (TActorIterator<AGamsVehicle> actor_it(gams_current_world);
       actor_it; ++actor_it)
   {
@@ -396,7 +424,7 @@ void UGamsGameInstance::GameRun()
     next += location;
 
     UE_LOG(LogGamsGameInstance, Log,
-      TEXT("UGamsGameInstance: name=[%s], loc=[%s], dest=[%s], "
+      TEXT("name=[%s], loc=[%s], dest=[%s], "
         "diff=[%s], next=[%s]"),
       *actor->agent_prefix,
       *location.ToString(), *dest.ToString(),
@@ -408,7 +436,7 @@ void UGamsGameInstance::GameRun()
     {
       actor->animate(temp_world->DeltaTimeSeconds);
     }
-  }
+  }*/
 
   if (temp_world->UnpausedTimeSeconds > last_send_time_ + 1.0f)
   {

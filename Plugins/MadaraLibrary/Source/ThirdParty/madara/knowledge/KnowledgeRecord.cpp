@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <iomanip>
 #include <iostream>
+#include <cstring>
 #include "madara/utility/IntTypes.h"
 
 namespace
@@ -17,7 +18,7 @@ namespace
 int madara_double_precision(-1);
 
 bool madara_use_scientific(false);
-}
+}  // namespace
 
 namespace madara
 {
@@ -325,14 +326,23 @@ std::vector<double> KnowledgeRecord::to_doubles(void) const
   return doubles;
 }
 
-size_t KnowledgeRecord::to_managed_buffer(
-  char * buffer, size_t buf_size) const
+size_t KnowledgeRecord::to_managed_string(char* buffer, size_t buf_size) const
+{
+  std::string contents = to_string();
+  size_t len = std::min(buf_size - 1, contents.length() + 1);
+  strncpy(buffer, contents.c_str(), len);
+  buffer[len] = 0;
+
+  return len + 1;
+}
+
+size_t KnowledgeRecord::to_managed_buffer(char* buffer, size_t buf_size) const
 {
   size_t actual_size = 0;
 
   if (is_string_type(type_))
   {
-    actual_size = std::min(str_value_->size() + 1, buf_size);
+    actual_size = std::min(str_value_->size(), buf_size);
     memcpy(buffer, str_value_->c_str(), actual_size);
   }
   else if (is_binary_file_type(type_))
@@ -399,11 +409,6 @@ std::string KnowledgeRecord::to_string(const std::string& delimiter) const
   if (has_history())
   {
     return ref_newest().to_string();
-  }
-
-  if (type_ == ANY)
-  {
-    return any_value_->to_json();
   }
 
   if (!is_string_type(type_))
@@ -1395,10 +1400,6 @@ bool KnowledgeRecord::is_true(void) const
   {
     return file_value_->size() >= 1;
   }
-  else if (is_any_type(type_))
-  {
-    return !any_value_->empty();
-  }
   else if (has_history())
   {
     return !buf_->empty() && ref_newest().is_true();
@@ -1409,12 +1410,12 @@ bool KnowledgeRecord::is_true(void) const
   }
 }
 
-void safe_clear(KnowledgeMap & map)
+void safe_clear(KnowledgeMap& map)
 {
   map.clear();
 }
 
-}
-}
+}  // namespace knowledge
+}  // namespace madara
 
 #endif  // _KNOWLEDGE_RECORD_CPP_

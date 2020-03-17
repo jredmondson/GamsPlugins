@@ -1,11 +1,14 @@
 // files that each agent should load
 karl_files.size=1;
 //karl_files.0="Scripts/Move/line.mf";
-karl_files.0="Scripts/FormationSync/rectangle.mf";
+//karl_files.0="Scripts/FormationSync/rectangle.mf";
+karl_files.0="Scripts/Follow/follow.mf";
+//karl_files.0="Scripts/Follow/follow_agent.mf";
+//karl_files.0="Scripts/Follow/follow_line.mf";
 
 // swarm control of GAMS agents
-swarm.size=100;
-controller.hz = 1.0;
+swarm.size=500;
+controller.hz = 5.0;
 
 // default level is "Plains"
 level="Plains";
@@ -20,3 +23,4 @@ game.delay = 1.0;
 // platform-specific variables
 platform.type="ardrone";
 platform.animate=1;
+platform.collisions=0;

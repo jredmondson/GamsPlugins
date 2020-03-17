@@ -27,6 +27,7 @@ class UStaticMeshComponent;
 class UMovementComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class UInstancedStaticMeshComponent;
 
 UCLASS()
 class GAMSAGENTS_API AGamsVehicle : public AActor
@@ -83,6 +84,11 @@ public:
    * @param  prefix    the agent prefix in the game knowledge base
    **/
   void init_knowledge(const std::string& prefix);
+  
+  /**
+   * Returns an instanced mesh for high performance rendering
+   **/
+  UInstancedStaticMeshComponent * get_mesh_instance(void);
 
   /// for checkpointing and interacting with main render loop,
   /// keep track of the actor location, orientation, and targets
@@ -95,6 +101,8 @@ public:
   madara::knowledge::containers::NativeDoubleArray velocity;
 
   FString agent_prefix;
+
+  
 
   bool can_fly;
 

@@ -24,7 +24,7 @@ public:
    * @param  delta_time the time to animate to from current pose
    **/
   virtual void animate(float delta_time) override;
-
+  
   //UPROPERTY(VisibleAnywhere, Category = Movement)
   //  UStaticMeshComponent* rotor1;
 
