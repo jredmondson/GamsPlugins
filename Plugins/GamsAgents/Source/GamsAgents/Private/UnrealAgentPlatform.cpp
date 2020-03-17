@@ -101,14 +101,10 @@ UnrealAgentPlatform::UnrealAgentPlatform(
     agent_prefix_ = self_->agent.prefix.c_str ();
 
     UE_LOG (LogUnrealAgentPlatform, Log,
-      TEXT ("%s: constr: entering"),
+      TEXT ("%s::constr: entering"),
       *agent_prefix_);
 
     status_.init_vars(*kb, get_id());
-
-    UE_LOG (LogUnrealAgentPlatform, Log,
-      TEXT ("%s: constr: searching for relevant args"),
-      *agent_prefix_);
 
     madara::knowledge::containers::NativeDoubleVector init(
       ".initial_pose", *kb);
@@ -126,6 +122,16 @@ UnrealAgentPlatform::UnrealAgentPlatform(
       init.set(1, -22.0f + 1.4f * col);
       init.set(0, -12.0f + 1.4f * row);
     }
+    
+    char buf[128];
+
+    madara::utility::to_c_str(init.to_record(), (char*)buf, 128);
+
+    FString init_s = buf;
+  
+    UE_LOG (LogUnrealAgentPlatform, Log,
+      TEXT ("%s::constr: init pos=[%s]"),
+      *agent_prefix_, *init_s);
 
     gams::pose::Pose init_pose(get_frame());
     init_pose.from_container(init);
@@ -193,7 +199,7 @@ UnrealAgentPlatform::calculate_diff(
   FString target_str(target.to_string().c_str());
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::calculate_diff: loc=[%s] to tar=[%s]"),
+    TEXT("%s::calculate_diff: loc=[%s] to tar=[%s]"),
     *agent_prefix_, *current_str, *target_str);
 
   finished = target.approximately_equal(current, 0.2);
@@ -217,7 +223,7 @@ UnrealAgentPlatform::calculate_diff(
   FString target_str(target.to_string().c_str());
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::calculate_diff: rot=[%s] to tar=[%s]"),
+    TEXT("%s::calculate_diff: rot=[%s] to tar=[%s]"),
     *agent_prefix_, *current_str, *target_str);
 
   finished = target.approximately_equal(current, 1.0f);
@@ -282,7 +288,7 @@ UnrealAgentPlatform::calculate_thrust(
   FString difference_str(record.to_string().c_str());
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::calculate_thrust: thrust is [%s]"),
+    TEXT("%s::calculate_thrust: thrust is [%s]"),
     *agent_prefix_, *difference_str);
 
   return difference;
@@ -292,9 +298,35 @@ UnrealAgentPlatform::calculate_thrust(
 int
 UnrealAgentPlatform::sense(void)
 {
+  size_t buf_size(0);
+  char buf[128];
+
+  madara::utility::to_c_str(location_.to_record(), (char*)buf, 128);
+
+  FString cur_loc_s = buf;
+  
+  madara::utility::to_c_str(orientation_.to_record(), (char*)buf, 128);
+
+  FString cur_orient_s = buf;
+
+  UE_LOG(LogUnrealAgentPlatform, Log,
+    TEXT("%s::sense: copying loc=%s and orient=%s from global kb."),
+    *agent_prefix_, *cur_loc_s, *cur_orient_s);
+
   // copy pose information from game kb
-  location_.transfer_to(self_->agent.location);
-  orientation_.transfer_to(self_->agent.orientation);
+  //location_.transfer_to(self_->agent.location);
+  //orientation_.transfer_to(self_->agent.orientation);
+
+  knowledge::KnowledgeRecord location_r = location_.to_record();
+  knowledge::KnowledgeRecord orient_r = orientation_.to_record();
+  
+  self_->agent.location.set(2, location_r.retrieve_index(2).to_double());
+  self_->agent.location.set(1, location_r.retrieve_index(1).to_double());
+  self_->agent.location.set(0, location_r.retrieve_index(0).to_double());
+  
+  self_->agent.orientation.set(2, orient_r.retrieve_index(2).to_double());
+  self_->agent.orientation.set(1, orient_r.retrieve_index(1).to_double());
+  self_->agent.orientation.set(0, orient_r.retrieve_index(0).to_double());
 
   return gams::platforms::PLATFORM_OK;
 }
@@ -375,19 +407,26 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
 {
   int result = gams::platforms::PLATFORM_MOVING;
   FString target_s = target.to_string().c_str();
+  FString last_move_s = last_move_.to_string().c_str();
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::move: beginning move to position [%s]"),
+    TEXT("%s::move: move to position [%s]"),
     *agent_prefix_, *target_s);
 
   // convert from input reference frame to vrep reference frame, if necessary
   gams::pose::Position new_target(get_frame(), target);
   gams::pose::Position cur_loc(get_frame());
   cur_loc.from_container(self_->agent.location);
+  FString cur_loc_s = cur_loc.to_string().c_str();
 
   // are we moving to a new location? If so, start an acceleration timer
   if (!last_move_.approximately_equal(new_target, 0.1))
   {
+    UE_LOG(LogUnrealAgentPlatform, Log,
+      TEXT("%s::move: last_move [%s] != target [%s]."
+        " New move."),
+      *agent_prefix_, *last_move_s, *target_s);
+
     move_timer_.start();
     // update variables
     gams::platforms::BasePlatform::move(target, bounds);
@@ -400,7 +439,7 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
   if (cur_loc.approximately_equal(new_target, 0.5f))
   {
     UE_LOG(LogUnrealAgentPlatform, Log,
-      TEXT("%s: UnrealAgentPlatform::move: arrived at target [%s]."),
+      TEXT("%s::move: arrived at target [%s]."),
       *agent_prefix_, *target_s);
 
     result = gams::platforms::PLATFORM_ARRIVED;
@@ -408,8 +447,9 @@ UnrealAgentPlatform::move(const gams::pose::Position & target,
   else
   {
     UE_LOG(LogUnrealAgentPlatform, Log,
-      TEXT("%s: UnrealAgentPlatform::move: still moving to target [%s]."),
-      *agent_prefix_, *target_s);
+      TEXT("%s::move: cur_loc[%s] != target."
+        " Still moving to target [%s]."),
+      *agent_prefix_, *cur_loc_s, *target_s);
   }
 
   return result;
@@ -423,7 +463,7 @@ UnrealAgentPlatform::orient(const gams::pose::Orientation & target,
   int result = gams::platforms::PLATFORM_MOVING;
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s: UnrealAgentPlatform::move: beginning orient/rotate"),
+    TEXT("%s::orient: beginning orient/rotate"),
     *agent_prefix_);
 
   // convert from input reference frame to vrep reference frame, if necessary
@@ -443,7 +483,7 @@ UnrealAgentPlatform::orient(const gams::pose::Orientation & target,
   if (cur_orient.approximately_equal(new_target, 1.0f))
   {
     UE_LOG(LogUnrealAgentPlatform, Log,
-      TEXT("%s: UnrealAgentPlatform::orient: arrived at target."),
+      TEXT("%s::orient: arrived at target."),
       *agent_prefix_);
 
     result = gams::platforms::PLATFORM_ARRIVED;

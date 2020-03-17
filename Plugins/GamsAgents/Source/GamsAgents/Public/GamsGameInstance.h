@@ -24,6 +24,8 @@
 #include "madara/knowledge/containers/Integer.h"
 #pragma warning(pop)
 
+#include "Engine/EngineTypes.h"
+
 #include "GamsGameInstance.generated.h"
 
 class UnrealAgentPlatformFactory;
@@ -66,6 +68,10 @@ public:
   madara::knowledge::containers::Integer  agents_loaded;
 
   madara::knowledge::containers::Integer  swarm_size;
+
+  bool enable_collisions;
+
+  ECollisionEnabled::Type collision_type;
 
 private:
 

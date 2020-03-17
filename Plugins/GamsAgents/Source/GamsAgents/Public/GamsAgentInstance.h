@@ -64,11 +64,6 @@ public:
     transform.SetRotation(rotator.Quaternion());
     transform.SetScale3D(FVector::OneVector);
   }
-  
-  inline void fill_current(void)
-  {
-    write_to(current);
-  }
 
   // communication variable with main game loop for agent home
   madara::knowledge::containers::NativeDoubleVector home;
@@ -92,6 +87,6 @@ public:
   madara::knowledge::containers::NativeDoubleVector dest_orientation;
 
   // the fast access for current position, orientation and scale
-  FTransform current;
+  //FTransform current;
 
 };

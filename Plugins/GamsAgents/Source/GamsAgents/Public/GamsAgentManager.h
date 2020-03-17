@@ -42,14 +42,20 @@ class GAMSAGENTS_API AGamsAgentManager : public AActor
 public:
 
 	AGamsAgentManager();
-
+  
+	virtual ~AGamsAgentManager();
+  
   void read(madara::knowledge::KnowledgeBase & kb);
   
   void spawn(void);
 
   void spawn(uint32 id, FTransform transform);
+  
+  void update(float delta_time);
 
-  void transform(uint32 id, FTransform transform);
+  void update(uint32 id, FTransform transform);
+
+  void clear(void);
 
   void destroy(uint32 id);
 
@@ -60,12 +66,15 @@ public:
 private:
   TMap<uint32, uint32> agent_id_to_instance_;
   
-  UHierarchicalInstancedStaticMeshComponent * actors;
+  UHierarchicalInstancedStaticMeshComponent * actors_;
 
   TArray<uint32> instances_;
   
   madara::knowledge::containers::Integer swarm_size_;
+
   FString platform_type_;
 
   TArray<GamsAgentInstance> gams_info_;
+
+  TArray<FTransform> transforms_;
 };
