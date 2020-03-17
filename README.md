@@ -6,11 +6,9 @@ More information on these AI middleware packages can be found on
 the GAMS (http://gams.ai) and MADARA (http://madara.ai) open source
 project sites.
 
-* [Wiki](https://github.com/jredmondson/GamsPlugins/wiki) | [Installation](https://github.com/jredmondson/GamsPlugins/wiki/Installation) | [Running](https://github.com/jredmondson/GamsPlugins/wiki/RunningSimulations)
-
----
-
+More info: [Wiki](https://github.com/jredmondson/GamsPlugins/wiki) | [Installation](https://github.com/jredmondson/GamsPlugins/wiki/Installation) | [Running](https://github.com/jredmondson/GamsPlugins/wiki/RunningSimulations)   
 Platforms: Windows | Linux | Mac
 
+---
 
 [![Quadcopters on the Ocean](https://imgur.com/noO5Ibm.png)](https://www.youtube.com/watch?v=7Y_-AExrVe8)
