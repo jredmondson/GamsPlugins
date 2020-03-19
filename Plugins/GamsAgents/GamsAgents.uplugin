@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "0.0.2",
+	"VersionName": "0.0.5",
 	"FriendlyName": "GAMS Agents",
 	"Description": "GAMS agent implementations for UE4. Currently supports quadcopters.",
 	"Category": "AI",
@@ -13,21 +13,22 @@
 	"EnabledByDefault": true,
 	"CanContainContent": true,
 	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
 	"Installed": false,
 	"Modules": [
-    {
-      "Name": "GamsAgents",
-      "Type": "Runtime",
-      "LoadingPhase": "Default",
-      "WhitelistPlatforms": [
-        "Win64",
-        "Mac",
-        "Linux"
-      ],
-      "AdditionalDependencies": [
-        "Engine"
-      ]
-    }
+		{
+			"Name": "GamsAgents",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Mac",
+				"Linux"
+			],
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		}
 	],
 	"Plugins": [
 		{
