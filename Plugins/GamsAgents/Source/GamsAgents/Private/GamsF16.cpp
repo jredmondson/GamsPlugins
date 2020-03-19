@@ -15,6 +15,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "MadaraUnrealUtility.h"
+#include "GamsGameInstance.h"
 
 
 AGamsF16::AGamsF16()
@@ -22,84 +23,41 @@ AGamsF16::AGamsF16()
 {
   is_fixed_wing = true;
 
-  PrimaryActorTick.bCanEverTick = false;
-  this->max_speed = 2000.0f;
-
-  mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-  //mesh->SetupAttachment(RootComponent);
-  RootComponent = mesh;
+  this->max_speed = 10000.0f;
 
   UE_LOG(LogUnrealAgentPlatform, Log,
     TEXT("F16: constr: entering"));
+  
+  actors_ = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(
+    TEXT("InstancedActors")); 
+  UStaticMesh* root_mesh =  Cast<UStaticMesh>(StaticLoadObject(
+    UStaticMesh::StaticClass(), NULL, TEXT("/Game/Aircraft/meshes/SM_F16_Main")));
 
-  static ConstructorHelpers::FObjectFinder<UStaticMesh> mesh_asset(
-    TEXT("/Game/Aircraft/meshes/SM_F16_Main.SM_F16_Main"));
+  actors_->SetStaticMesh(root_mesh);
+  actors_->SetFlags(RF_Transactional);
 
-  static ConstructorHelpers::FObjectFinder<UMaterialInstanceConstant> mesh_mat1(
-    TEXT("/Game/Aircraft/materials/M_wheels_Inst.M_wheels_Inst"));
-
-  static ConstructorHelpers::FObjectFinder<UMaterialInstanceConstant> mesh_mat2(
-    TEXT("/Game/Aircraft/materials/M_Jet_04.M_Jet_04"));
-
-  if (mesh_asset.Succeeded())
+  if (gams_game_instance != nullptr)
   {
-    FRotator rotation;
-    rotation.Roll = 0.0f;
-    rotation.Pitch = 0.0f;
-    rotation.Yaw = 90.0f;
-
-    UE_LOG(LogUnrealAgentPlatform, Log,
-      TEXT("F16: constr: loaded root mesh"));
-
-    mesh->SetStaticMesh(mesh_asset.Object);
-    mesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-    mesh->SetRelativeRotation(rotation);
-    mesh->SetWorldScale3D(FVector(1.0f));
-
-    if (mesh_mat1.Succeeded())
-    {
-      mesh->SetMaterial(0, mesh_mat1.Object);
-    }
-    else
-    {
-      UE_LOG(LogUnrealAgentPlatform, Warning,
-        TEXT("F16: constr: ERROR: couldn't load root mesh material"));
-    }
-
-    if (mesh_mat2.Succeeded())
-    {
-      mesh->SetMaterial(1, mesh_mat2.Object);
-    }
-    else
-    {
-      UE_LOG(LogUnrealAgentPlatform, Warning,
-        TEXT("F16: constr: ERROR: couldn't load root mesh material"));
-    }
-
-
-  } // end root mesh check
+    actors_->SetCollisionEnabled(gams_game_instance->collision_type);
+  }
   else
   {
-    UE_LOG(LogUnrealAgentPlatform, Warning,
-      TEXT("F16: constr: ERROR: couldn't load root mesh"));
+    actors_->SetCollisionEnabled(ECollisionEnabled::NoCollision);
   }
-}
-
-void AGamsF16::BeginPlay()
-{
+  this->AddInstanceComponent(actors_);
 }
 
 void AGamsF16::animate(float delta_time)
 {
-  FVector start, target;
+  //FVector start, target;
 
-  madara::utility::to_vector_multiply(this->source, start);
-  madara::utility::to_vector_multiply(this->dest, target);
+  //madara::utility::to_vector_multiply(this->source, start);
+  //madara::utility::to_vector_multiply(this->dest, target);
 
-  if (!start.Equals(target, 10.0f))
-  {
-    FRotator rotation = UKismetMathLibrary::FindLookAtRotation(start, target);
-    rotation.Yaw += 90.0f;
-    this->SetActorRotation(rotation);
-  }
+  //if (!start.Equals(target, 10.0f))
+  //{
+  //  FRotator rotation = UKismetMathLibrary::FindLookAtRotation(start, target);
+  //  rotation.Yaw += 90.0f;
+  //  this->SetActorRotation(rotation);
+  //}
 }

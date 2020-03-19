@@ -4,8 +4,6 @@
 
 #include "CoreGlobals.h"
 
-#include "gams/loggers/GlobalLogger.h"
-
 //General Log
 DECLARE_LOG_CATEGORY_EXTERN(LogUnrealAgentPlatform, Log, All);
 
@@ -20,5 +18,11 @@ DECLARE_LOG_CATEGORY_EXTERN(LogGamsAssetManager, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogGamsVehicle, Log, All);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGamsDjiPhantom, Log, All);
+
+DECLARE_LOG_CATEGORY_EXTERN(LogGamsDjiMavic, Log, All);
+
+DECLARE_LOG_CATEGORY_EXTERN(LogGamsArDrone, Log, All);
+
+DECLARE_LOG_CATEGORY_EXTERN(LogGamsF16, Log, All);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGamsControllerThread, Log, All);

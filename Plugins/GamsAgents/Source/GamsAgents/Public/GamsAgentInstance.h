@@ -53,16 +53,16 @@ public:
     init(buffer.str(), kb);
   }
 
-  inline void write_to(FTransform & transform)
+  inline void write_to(FTransform & new_transform)
   {
     FVector translation;
     madara::utility::to_vector_multiply(location, translation);
-    transform.SetLocation(translation);
+    new_transform.SetLocation(translation);
     
     FRotator rotator;
     madara::utility::to_rotator(orientation, rotator);
-    transform.SetRotation(rotator.Quaternion());
-    transform.SetScale3D(FVector::OneVector);
+    new_transform.SetRotation(rotator.Quaternion());
+    new_transform.SetScale3D(FVector::OneVector);
   }
 
   // communication variable with main game loop for agent home
@@ -86,7 +86,15 @@ public:
   // communication variable with main game loop for agent dest orientation
   madara::knowledge::containers::NativeDoubleVector dest_orientation;
 
-  // the fast access for current position, orientation and scale
-  //FTransform current;
+  // fast access for current position, orientation and scale
+  FTransform transform;
+  
+  // the platform index
+  uint32 platform_index;
 
+  // the instance within the platform index
+  uint32 instance;
+
+  // by default, should be set by agent actor. Can be overridden by user.
+  float platform_speed;
 };

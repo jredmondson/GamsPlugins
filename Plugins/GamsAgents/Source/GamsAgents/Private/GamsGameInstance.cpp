@@ -136,17 +136,9 @@ void UGamsGameInstance::Init()
   size_t buf_size(0);
   char buf[128];
 
-  /**
-   * because UE4 completely messes up the STL, we have to avoid all
-   * instances of classes like std::string, vector, etc. where we
-   * allocate memory from the lib and reference it from our plugins.
-   * Consequently, we have to revert to the early days of C where
-   * every programmer had to manually track their null characters in
-   * strings, hunt their own food, build houses with mud and feces,
-   * etc.
-   **/
   madara::utility::to_c_str(kb.get("platform.type"), (char*)buf, 128);
 
+  platform_type = buf;
   agent_factory_->platform_type = buf;
 
   filecontents_.SetNum(karl_files.size());
@@ -189,6 +181,36 @@ void UGamsGameInstance::Init()
       }
     }
   }
+  
+  // check if level variables exists and if so, load the level
+  if (kb.exists("platform.max_speed"))
+  {
+    // GAMS speed is in m/s. Convert it to cm/s
+    override_speed = true;
+    platform_speed = kb.get("platform.max_speed").to_double() * 100;
+    
+    UE_LOG(LogGamsGameInstance, Log,
+      TEXT("Init: platform speed overridden. speed=%f"), *FString(buf));
+
+  }
+
+  // check if level variables exists and if so, load the level
+  if (kb.exists("level"))
+  {
+    madara::utility::to_c_str(kb.get("level"), (char*)buf, 128);
+    
+    UE_LOG(LogGamsGameInstance, Log,
+      TEXT("Init: opening map %s"), *FString(buf));
+
+    UGameplayStatics::OpenLevel(this, FName(buf));
+  }
+  else
+  {
+    // editor requires explicit call to change the world
+#if UE_EDITOR
+    OnPostLoadMap(gams_current_world);
+#endif
+  }
 
   // setup delegates for changing maps (happens automatically on game start)
 
@@ -219,24 +241,7 @@ void UGamsGameInstance::Init()
   threader_.set_data_plane(kb);
   threader_.run(controller_hz, "controller",
     new GamsControllerThread(controller), true);
-
-  // check if level variables exists and if so, load the level
-  if (kb.exists("level"))
-  {
-    madara::utility::to_c_str(kb.get("level"), (char*)buf, 128);
-    
-    UE_LOG(LogGamsGameInstance, Log,
-      TEXT("Init: opening map %s"), *FString(buf));
-
-    UGameplayStatics::OpenLevel(this, FName(buf));
-  }
-  else
-  {
-    // editor requires explicit call to change the world
-#if UE_EDITOR
-    OnPostLoadMap(gams_current_world);
-#endif
-  }
+  
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("Init: leaving"));
 }
@@ -262,17 +267,12 @@ void UGamsGameInstance::OnPreLoadMap(const FString& map_name)
   threader_.pause("controller");
   threader_.wait_for_paused("controller");
 
-  if (manager_)
+  controller.clear_knowledge();
+  controller.refresh_vars();
+
+  for (auto file : filecontents_)
   {
-    manager_->clear();
-
-    controller.clear_knowledge();
-    controller.refresh_vars();
-
-    for (auto file : filecontents_)
-    {
-      controller.evaluate(TCHAR_TO_UTF8(*file));
-    }
+    controller.evaluate(TCHAR_TO_UTF8(*file));
   }
 
   agents_loaded = 0;

@@ -8,7 +8,7 @@ karl_files.0="Scripts/Follow/follow.mf";
 
 // swarm control of GAMS agents
 swarm.size=500;
-controller.hz = 5.0;
+controller.hz = 3.0;
 
 // default level is "Plains"
 level="Plains";
@@ -18,9 +18,12 @@ level="Ocean";
 
 // variables for the game animation loop
 game.hz = 10.0;
-game.delay = 1.0;
+game.delay = 10.0;
 
 // platform-specific variables
-platform.type="ardrone";
+platform.type="random_quad";
 platform.animate=1;
 platform.collisions=0;
+
+// override the platform's speed parameter
+platform.max_speed=5.0;

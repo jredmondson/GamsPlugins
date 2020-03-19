@@ -3,50 +3,134 @@
 #include "GamsAgentManager.h"
 #include "GamsGameInstance.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/World.h"
 #include "MadaraIncludes.h"
 #include "GamsAgentsLogs.h"
 #include "MadaraUnrealUtility.h"
 #include "GamsGameInstance.h"
+#include "GamsAllVehicles.h"
+#include "Math/UnrealMathUtility.h"
+
+#define GAMS_PLATFORM_RANDOM_ALL          -1
+#define GAMS_PLATFORM_RANDOM_QUAD         -2
+#define GAMS_PLATFORM_QUAD_MIN             0
+#define GAMS_PLATFORM_QUAD_MAX             2
+#define GAMS_PLATFORM_JET_MIN              3
+#define GAMS_PLATFORM_JET_MAX              3
+#define GAMS_PLATFORM_RANDOM_JET          -3
+#define GAMS_PLATFORM_RANDOM_BOAT         -4
+#define GAMS_PLATFORM_RANDOM_SUBMERSIBLE  -5
+
 
 AGamsAgentManager::AGamsAgentManager()
   : AActor()
 {
-  actors_ = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(
-    TEXT("InstancedActors")); 
-  UStaticMesh* root_mesh = 
-    Cast<UStaticMesh>(StaticLoadObject(
-      UStaticMesh::StaticClass(), NULL, TEXT("/Game/Quadcopters/Mesh/SM_QuadcopterB_Main")));
-
-  //actors_->RegisterComponent(); 
-  actors_->SetStaticMesh(root_mesh); 
-  actors_->SetFlags(RF_Transactional); 
-  //actors_->bDisableCollision = !gams_game_instance->enable_collisions;
+	PrimaryActorTick.bCanEverTick = false;
   
-  //actors_->SetGenerateOverlapEvents(false);
-  if (gams_game_instance != nullptr)
-  {
-    actors_->SetCollisionEnabled(gams_game_instance->collision_type);
-  }
-  else
-  {
-    actors_->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-  }
-  this->AddInstanceComponent(actors_);
+  //managers_.Add(CreateDefaultSubobject<AGamsArDrone>(TEXT("ArDrones")));
+  //managers_.Add(CreateDefaultSubobject<AGamsDjiMavic>(TEXT("DjiMavics")));
+  //managers_.Add(CreateDefaultSubobject<AGamsDjiPhantom>(TEXT("DjiPhantoms")));
+  //managers_.Add(CreateDefaultSubobject<AGamsF16>(TEXT("F16s")));
+
+  //managers_.Add(GetWorld()->SpawnActor<AGamsArDrone>(
+  //      AGamsArDrone::StaticClass(), transform, spawn_parameters));
+  //
+  //managers_.Add(GetWorld()->SpawnActor<AGamsDjiMavic>(
+  //      AGamsDjiMavic::StaticClass(), transform, spawn_parameters));
+  //
+  //managers_.Add(GetWorld()->SpawnActor<AGamsDjiPhantom>(
+  //      AGamsDjiPhantom::StaticClass(), transform, spawn_parameters));
+  //
+  //managers_.Add(GetWorld()->SpawnActor<AGamsF16>(
+  //      AGamsF16::StaticClass(), transform, spawn_parameters));
+
+  //for (auto manager : managers_)
+  //{
+  //  manager->init(gams_info_);
+  //}
 }
 
 AGamsAgentManager::~AGamsAgentManager()
 {
-  clear();
+  managers_.Empty();
+}
+
+void AGamsAgentManager::BeginPlay()
+{
+  FActorSpawnParameters spawn_parameters;
+  spawn_parameters.SpawnCollisionHandlingOverride =
+    ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+  spawn_parameters.Owner = this;
+  FTransform transform(
+    FQuat(0.0f, 0.0f, 0.0f, 0.0f),
+    FVector::ZeroVector);
+  
+  managers_.Add(GetWorld()->SpawnActor<AGamsArDrone>(
+        AGamsArDrone::StaticClass(), transform, spawn_parameters));
+  
+  managers_.Add(GetWorld()->SpawnActor<AGamsDjiMavic>(
+        AGamsDjiMavic::StaticClass(), transform, spawn_parameters));
+  
+  managers_.Add(GetWorld()->SpawnActor<AGamsDjiPhantom>(
+        AGamsDjiPhantom::StaticClass(), transform, spawn_parameters));
+  
+  managers_.Add(GetWorld()->SpawnActor<AGamsF16>(
+        AGamsF16::StaticClass(), transform, spawn_parameters));
+
+  for (auto manager : managers_)
+  {
+    manager->init(gams_info_);
+  }
 }
 
 void AGamsAgentManager::read(madara::knowledge::KnowledgeBase & kb)
 {
   swarm_size_.set_name("swarm.size", kb);
+  platform_type_str_ = gams_game_instance->platform_type;
+  
+  // convert the type to lowercase to reduce human error
+  platform_type_str_ = platform_type_str_.ToLower();
 
   uint32 num_instances = (uint32)(*swarm_size_ > 0 ? *swarm_size_ : 100);
 
+  // random_quad = -2
+  // 
+  int32 platform_index = GAMS_PLATFORM_RANDOM_QUAD;
+
+  //actors_->InstanceCountToRender = (int32)num_instances;
   gams_info_.SetNum(num_instances);
-  transforms_.SetNum(num_instances);
+  
+  if (!platform_type_str_.IsEmpty())
+  {
+    if (platform_type_str_.Equals("ardrone"))
+    {
+      platform_index = 0;
+    }
+    else if (platform_type_str_.Equals("djimavic"))
+    {
+      platform_index = 1;
+    }
+    else if (platform_type_str_.Equals("djiphantom"))
+    {
+      platform_index = 2;
+    }
+    else if (platform_type_str_.Equals("f16"))
+    {
+      platform_index = 3;
+    }
+    else if (platform_type_str_.Equals("random_quad"))
+    {
+      platform_index = GAMS_PLATFORM_RANDOM_QUAD;
+    }
+    else if (platform_type_str_.Equals("random_all"))
+    {
+      platform_index = GAMS_PLATFORM_RANDOM_ALL;
+    }
+    else if (platform_type_str_.Equals("random_jet"))
+    {
+      platform_index = GAMS_PLATFORM_RANDOM_JET;
+    }
+  }
 
   UE_LOG(LogGamsAgentManager, Log,
     TEXT("num_instances=%d"),
@@ -54,117 +138,87 @@ void AGamsAgentManager::read(madara::knowledge::KnowledgeBase & kb)
 
   for (uint32 i = 0; i < num_instances; ++i)
   {
+    uint32 manager = (uint32)platform_index;
+
     // initialize the agent variables
     gams_info_[i].init(i, kb);
 
     // write the position and orientation info from the kb
-    gams_info_[i].write_to(transforms_[i]);
+    gams_info_[i].write_to(gams_info_[i].transform);
 
     
     UE_LOG(LogGamsAgentManager, Log,
       TEXT("agent.%d: spawning at location=%s"),
-      (int)i, *transforms_[i].GetLocation().ToString());
+      (int)i, *gams_info_[i].transform.GetLocation().ToString());
 
+    if (platform_index < 0)
+    {
+      if (platform_index == GAMS_PLATFORM_RANDOM_JET)
+      {
+        const int32 min_manager(GAMS_PLATFORM_JET_MIN);
+        const int32 max_manager(GAMS_PLATFORM_JET_MAX);
+        manager = FMath::RandRange(min_manager, max_manager);
+      }
+      else if (platform_index == GAMS_PLATFORM_RANDOM_ALL)
+      {
+        // default is random any
+        const int32 min_manager(0);
+        const int32 max_manager(managers_.Num());
+        manager = FMath::RandRange(min_manager, max_manager);
+      }
+      else // default (platform_index == GAMS_PLATFORM_RANDOM_QUAD)
+      {
+        const int32 min_manager(GAMS_PLATFORM_QUAD_MIN);
+        const int32 max_manager(GAMS_PLATFORM_QUAD_MAX);
+        manager = FMath::RandRange(min_manager, max_manager);
+      }
+    } // if platform_index < some kind of random platform
+    
+    gams_info_[i].platform_index = manager;
+    managers_[manager]->spawn(i, gams_info_[i].transform);
 
-    spawn(i, transforms_[i]);
+    if (gams_game_instance->override_speed)
+    {
+      gams_info_[i].platform_speed = gams_game_instance->platform_speed;
+    }
+    else
+    {
+      gams_info_[i].platform_speed = managers_[manager]->max_speed;
+    }
   }
 }
 
 void AGamsAgentManager::clear(void)
 {
-  if (actors_ != nullptr)
-  {
-    //actors_->ClearInstances();
-    //agent_id_to_instance_.Empty();
-    //gams_info_.Empty();
-    //instances_.Empty();
-    //transforms_.Empty();
-  }
 }
 
 void AGamsAgentManager::update(float delta_time)
 {
-  FVector dest;
-  FVector diff;
-  FVector next;
-  FTransform transform(FRotator::ZeroRotator);
-
-  for (int32 i = 0; i < gams_info_.Num(); ++i)
+  for (int32 i = 0; i < managers_.Num(); ++i)
   {
-    madara::utility::to_vector_multiply(gams_info_[i].dest, dest);
-
-    diff = dest - transforms_[i].GetLocation();
-    madara::utility::calculate_delta(diff, next,
-      500.0f, delta_time);
-    next += transforms_[i].GetLocation();
-    
-    UE_LOG(LogGamsAgentManager, Log,
-      TEXT("agent.%d::update: setting next=%s from location=%s"),
-      (int)i, *next.ToString(),
-      *transforms_[i].GetLocation().ToString());
-
-    transform.SetLocation(next);
-    transforms_[i] = transform;
-    madara::utility::from_vector_multiply(next, gams_info_[i].location);
-    gams_info_[i].orientation.set(2, 0.0f);
-    gams_info_[i].orientation.set(0, 0.0f);
-    gams_info_[i].orientation.set(1, 0.0f);
-    
-    UE_LOG(LogGamsAgentManager, Log,
-      TEXT("agent.%d::update: setting current=%s"),
-      (int)i, *transforms_[i].GetLocation().ToString());
+    managers_[i]->update(delta_time);
   }
-
-  actors_->BatchUpdateInstancesTransforms(0, transforms_, true, false,
-    !gams_game_instance->enable_collisions);
-
   render();
-}
-
-void AGamsAgentManager::spawn(void)
-{
-
-}
-
-void AGamsAgentManager::spawn(uint32 id, FTransform transform)
-{     
-  int32 instance = actors_->AddInstanceWorldSpace(transform);
-  agent_id_to_instance_.Add(id, instance);
-  instances_.Add(id);
-}
-
-void AGamsAgentManager::update(uint32 id, FTransform transform)
-{
-  uint32 instance = agent_id_to_instance_[id];
-  UE_LOG(LogGamsAgentManager, Log,
-    TEXT("agent.%d::update: moving to transform[%s]"),
-    (int)id, *transform.GetLocation().ToString());
-
-  actors_->UpdateInstanceTransform(instance, transform, true, false,
-    !gams_game_instance->enable_collisions);
 }
 
 void AGamsAgentManager::destroy(uint32 id)
 {
   // move removes to end so we maintain sorted instance order
   // if speed becomes an issue, we can ignore/remove much of this
-  uint32 instance_to_remove = agent_id_to_instance_[id];
-  uint32 last_instance = instances_.Num() - 1;
-  uint32 instance_to_move = instances_[last_instance];
-  instances_[instance_to_remove] = instance_to_move;
-  agent_id_to_instance_[instance_to_move] = agent_id_to_instance_[id];
-  agent_id_to_instance_.Remove(id);
-  
-  actors_->RemoveInstance(instance_to_remove);
-  instances_.RemoveAt(last_instance);
+  uint32 manager = agent_id_to_manager_[id];
+
+  managers_[manager]->destroy(id);
 }
 
 void AGamsAgentManager::render(void)
 {
-  actors_->MarkRenderStateDirty();
+  for (auto manager : managers_)
+  {
+    manager->render();
+  }
 }
 
 uint32 AGamsAgentManager::size(void)
 {
-  return instances_.Num();
+  return gams_info_.Num();
 }

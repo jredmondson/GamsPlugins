@@ -72,6 +72,12 @@ public:
   bool enable_collisions;
 
   ECollisionEnabled::Type collision_type;
+  
+  FString platform_type;
+
+  bool override_speed = false;
+
+  float platform_speed = 500.0f;
 
 private:
 
@@ -82,6 +88,7 @@ private:
   FTimerHandle run_timer_handler_;
 
   float last_send_time_;
+  float end_loop_time_ = -1.0f;
 
   double controller_hz = 2.0f;
 

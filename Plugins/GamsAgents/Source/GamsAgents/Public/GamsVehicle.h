@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Containers/Array.h"
+#include "Math/TransformNonVectorized.h"
+#include "GamsAgentInstance.h"
 
 #pragma warning(push)
 #pragma warning(disable:4005)
@@ -23,7 +27,7 @@
 
 #include "GamsVehicle.generated.h"
 
-class UStaticMeshComponent;
+class UStaticMesh;
 class UMovementComponent;
 class USpringArmComponent;
 class UCameraComponent;
@@ -38,31 +42,31 @@ public:
 	// Sets default values for this actor's properties
 	AGamsVehicle();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+  void init(TArray<GamsAgentInstance> & gams_info);
 
-  UPROPERTY(VisibleAnywhere, Category = Vehicle)
-    UStaticMeshComponent* mesh;
+  void clear(void);
+  
+  void destroy(uint32 id);
+  
+  void render(void);
 
-  UPROPERTY(VisibleAnywhere, Category = Movement)
-    UMovementComponent* movement;
+  uint32 size(void);
 
-  UPROPERTY(VisibleAnywhere, Category = Camera)
-    USpringArmComponent* camera_boom;
-
-  UPROPERTY(VisibleAnywhere, Category = Camera)
-    UCameraComponent* camera;
+  void spawn(uint32 id, FTransform transform);
+  
+  void update(float delta_time);
+  
+  void update(uint32 id, FTransform transform);
 
   UPROPERTY(VisibleAnywhere, Category = Movement)
   float max_speed;
 
   UPROPERTY(VisibleAnywhere, Category = Movement)
   float acceleration;
+  
+  UPROPERTY(VisibleAnywhere, Category = Movement)
+  UHierarchicalInstancedStaticMeshComponent * actors_;
 
   /**
    * Animates the vehicle over the change in time
@@ -70,43 +74,19 @@ public:
    **/
   virtual void animate(float delta_time);
 
-  /**
-   * Initialize the containers for the agent to communicate with threads
-   * @param  knowledge the game knowledge base
-   * @param  prefix    the agent prefix in the knowledge base
-   **/
-  void init_knowledge(
-    madara::knowledge::KnowledgeBase & knowledge,
-    const std::string& prefix);
-
-  /**
-   * Initialize the containers for the agent to communicate with threads
-   * @param  prefix    the agent prefix in the game knowledge base
-   **/
-  void init_knowledge(const std::string& prefix);
-  
-  /**
-   * Returns an instanced mesh for high performance rendering
-   **/
-  UInstancedStaticMeshComponent * get_mesh_instance(void);
-
-  /// for checkpointing and interacting with main render loop,
-  /// keep track of the actor location, orientation, and targets
-  madara::knowledge::containers::NativeDoubleVector dest;
-  madara::knowledge::containers::NativeDoubleVector dest_orientation;
-  madara::knowledge::containers::NativeDoubleVector location;
-  madara::knowledge::containers::NativeDoubleVector orientation;
-  madara::knowledge::containers::NativeDoubleVector source;
-  madara::knowledge::containers::NativeDoubleVector source_orientation;
-  madara::knowledge::containers::NativeDoubleArray velocity;
-
-  FString agent_prefix;
-
-  
-
   bool can_fly;
 
   bool is_fixed_wing;
 
   bool is_jet;
+
+  TMap<uint32, uint32> agent_id_to_instance_;
+  
+  TArray<uint32> instances_;
+  
+  FString platform_type_;
+
+  TArray<GamsAgentInstance> * gams_info_;
+
+  TArray<FTransform> transforms_;
 };

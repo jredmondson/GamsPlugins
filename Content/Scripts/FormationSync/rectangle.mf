@@ -12,14 +12,22 @@ group.allies.members.size=swarm.size;
 .row_num = #integer(#sqrt(swarm.size));
 .row_num == 0 => (.row_num = 1);
 
+!.buffer => (.buffer = 1.0);
+
+.row = .id / .row_num;
+.col = .id % .row_num;
+.origin.x = .col * .buffer * 2 + .buffer * (.row % 2);
+.origin.y = .row * .buffer;
+
+
 // if no one has set origin, then set it to [5 * agent id, 5 * agent id, 0] as origin
-!.origin => (.origin = [.id % .row_num * 2, .id / .row_num * 2, 2 + .id / 8]);
+!.origin => (.origin = [.origin.x, .origin.y, 2]);
 !.initial_pose => (.initial_pose = .origin);
 
 // initialize each agent
 {.prefix}.algorithm="formation sync";
 {.prefix}.algorithm.args.start = [0, 0, 2];
 {.prefix}.algorithm.args.end = [50, 50, 50];
-{.prefix}.algorithm.args.buffer = 1.0;
+{.prefix}.algorithm.args.buffer = .buffer;
 {.prefix}.algorithm.args.group = "group.allies";
 {.prefix}.algorithm.args.formation = "rectangle";

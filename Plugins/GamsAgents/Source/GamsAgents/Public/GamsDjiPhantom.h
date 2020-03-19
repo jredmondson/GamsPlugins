@@ -19,23 +19,10 @@ class GAMSAGENTS_API AGamsDjiPhantom : public AGamsAerialVehicle
 public:
   AGamsDjiPhantom();
 
-  virtual void BeginPlay() override;
-
   /**
    * Animates the vehicle over the change in time
    * @param  delta_time the time to animate to from current pose
    **/
   virtual void animate(float delta_time) override;
-  
-  UPROPERTY(VisibleAnywhere, Category = Movement)
-  UStaticMeshComponent* rotor1;
 
-  UPROPERTY(VisibleAnywhere, Category = Movement)
-  UStaticMeshComponent* rotor2;
-
-  UPROPERTY(VisibleAnywhere, Category = Movement)
-  UStaticMeshComponent* rotor3;
-
-  UPROPERTY(VisibleAnywhere, Category = Movement)
-  UStaticMeshComponent* rotor4;
 };

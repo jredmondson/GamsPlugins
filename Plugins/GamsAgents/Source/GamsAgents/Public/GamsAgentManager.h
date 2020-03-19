@@ -33,6 +33,7 @@ class UStaticMeshComponent;
 class UMovementComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class AGamsVehicle;
 
 UCLASS()
 class GAMSAGENTS_API AGamsAgentManager : public AActor
@@ -45,15 +46,11 @@ public:
   
 	virtual ~AGamsAgentManager();
   
+  virtual void BeginPlay() override;
+
   void read(madara::knowledge::KnowledgeBase & kb);
   
-  void spawn(void);
-
-  void spawn(uint32 id, FTransform transform);
-  
   void update(float delta_time);
-
-  void update(uint32 id, FTransform transform);
 
   void clear(void);
 
@@ -64,17 +61,30 @@ public:
   void render(void);
 
 private:
-  TMap<uint32, uint32> agent_id_to_instance_;
+  /**
+   * agent.id to instance translations
+   **/
+  TMap<uint32, uint32> agent_id_to_manager_;
   
-  UHierarchicalInstancedStaticMeshComponent * actors_;
-
-  TArray<uint32> instances_;
+  /**
+   * Platform type instance managers that do all of the core work of tracking
+   * and updating platform instances and all subcomponents
+   **/
+  TArray<AGamsVehicle *> managers_;
   
+  /**
+   * Reference to swarm.size in the game knowledge base
+   **/
   madara::knowledge::containers::Integer swarm_size_;
 
-  FString platform_type_;
+  /**
+   * The platform.type argument, which currently is tied to the game instance
+   * value, but which may one day be allowed to change dynamically at runtime
+   **/
+  FString platform_type_str_;
 
+  /**
+   * Gams Agent information (e.g., location, orientation, dest, etc.)
+   **/
   TArray<GamsAgentInstance> gams_info_;
-
-  TArray<FTransform> transforms_;
 };
