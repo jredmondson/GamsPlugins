@@ -37,8 +37,21 @@ public class GamsLibraryLibrary : ModuleRules
       "..", "..", "..", "..", ".."));
     string BaseLibDirectory = Path.GetFullPath(Path.Combine(ModuleDirectory,
       "..", "..", ".."));
+    string SourceDirectory = Path.Combine(BaseLibDirectory, "Source",
+      "ThirdParty");
     string GamsLibDirectory = Path.Combine(BaseLibDirectory, "ThirdParty",
       "gams", Target.Platform.ToString());
+
+    System.Console.WriteLine("GamsLibrary paths ");
+    System.Console.WriteLine("BaseDir = " + BaseDirectory);
+    System.Console.WriteLine("Baselibdir = " + BaseLibDirectory);
+    System.Console.WriteLine("SourceDirectory = " + SourceDirectory);
+    System.Console.WriteLine("GamsLibDirectory = " + GamsLibDirectory);
+
+    System.Console.WriteLine("Target.Architecture  " + Target.Architecture);
+    System.Console.WriteLine("Target.Type  " + Target.Type);
+    System.Console.WriteLine("Target.Configuration  " + Target.Configuration);
+    System.Console.WriteLine("Target.Platform  " + Target.Platform);
 
     if (Target.Platform == UnrealTargetPlatform.Win64)
     {
@@ -49,6 +62,7 @@ public class GamsLibraryLibrary : ModuleRules
 
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.lib"));
       PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "GAMS.dll"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
@@ -58,14 +72,17 @@ public class GamsLibraryLibrary : ModuleRules
 
       System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
         Path.Combine(BinariesDir, "libGAMS.so"), true);
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libGAMS.so"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libGAMS.so"));
 
       string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Linux");
+
       System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
         Path.Combine(BinariesDir, "libGAMS.so"), true);
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libGAMS.so"));
     }
   }
 }

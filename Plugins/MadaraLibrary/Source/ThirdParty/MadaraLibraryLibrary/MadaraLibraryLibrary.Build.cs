@@ -18,11 +18,16 @@ public class MadaraLibraryLibrary : ModuleRules
     string MadaraLibDirectory = Path.Combine(BaseLibDirectory, "ThirdParty",
       "madara", Target.Platform.ToString());
 
+    System.Console.WriteLine("MadaraLibrary paths ");
     System.Console.WriteLine("BaseDir = " + BaseDirectory);
     System.Console.WriteLine("Baselibdir = " + BaseLibDirectory);
     System.Console.WriteLine("SourceDirectory = " + SourceDirectory);
     System.Console.WriteLine("MadaraLibDirectory = " + MadaraLibDirectory);
 
+    System.Console.WriteLine("Target.Architecture  " + Target.Architecture);
+    System.Console.WriteLine("Target.Type  " + Target.Type);
+    System.Console.WriteLine("Target.Configuration  " + Target.Configuration);
+    System.Console.WriteLine("Target.Platform  " + Target.Platform);
 
     PublicIncludePaths.AddRange(
       new string[] {
@@ -51,6 +56,7 @@ public class MadaraLibraryLibrary : ModuleRules
 
       PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "MADARA.lib"));
       PublicDelayLoadDLLs.Add(Path.Combine(MadaraLibDirectory, "MADARA.dll"));
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "MADARA.dll"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
@@ -59,6 +65,7 @@ public class MadaraLibraryLibrary : ModuleRules
       System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "libMADARA.so"),
         Path.Combine(BinariesDir, "libMADARA.so"), true);
       PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "libMADARA.so"));
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libMADARA.so"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
@@ -67,6 +74,7 @@ public class MadaraLibraryLibrary : ModuleRules
       System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "libMADARA.so"),
         Path.Combine(BinariesDir, "libMADARA.so"), true);
       PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "libMADARA.so"));
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libMADARA.so"));
     }
   }
 }

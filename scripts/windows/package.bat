@@ -13,7 +13,7 @@ echo PROJECT_ROOT=%PROJECT_ROOT%
 echo PROJECT_FILE=%PROJECT_FILE%
 echo ----------------------
 
-set /p VERSION=<"%PROJECT_ROOT%version.txt"
+set /p VERSION=<"%PROJECT_ROOT%\version.txt"
 
 setlocal enableextensions
 md "%SCRIPTS_DIR%\..\..\Binaries\Win64"
