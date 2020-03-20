@@ -198,11 +198,16 @@ void UGamsGameInstance::Init()
   if (kb.exists("level"))
   {
     madara::utility::to_c_str(kb.get("level"), (char*)buf, 128);
-    
-    UE_LOG(LogGamsGameInstance, Log,
-      TEXT("Init: opening map %s"), *FString(buf));
 
-    UGameplayStatics::OpenLevel(this, FName(buf));
+    FString current_level = GetWorld()->GetMapName();
+    FName level_name(*current_level);
+    if (level_name != FName(buf))
+    {
+      UE_LOG(LogGamsGameInstance, Log,
+        TEXT("Init: opening map %s"), *FString(buf));
+
+      UGameplayStatics::OpenLevel(this, FName(buf), true);
+    }
   }
   else
   {
