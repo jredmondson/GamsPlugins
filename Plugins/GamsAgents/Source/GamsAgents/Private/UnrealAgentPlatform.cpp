@@ -1,17 +1,12 @@
 
 #include "UnrealAgentPlatform.h"
-#include "Math/UnrealMathUtility.h"
 #include "GamsAgentsLogs.h"
 #include "GamsGameInstance.h"
-#include "Engine/World.h"
-#include "UObject/UObjectGlobals.h"
-#include "Math/Vector.h"
 #include "GamsVehicle.h"
 #include "GamsDjiPhantom.h"
 #include "GamsDjiMavic.h"
 #include "GamsArDrone.h"
 #include "GamsF16.h"
-#include "MadaraUnrealUtility.h"
 #include <algorithm>
 
 
@@ -43,22 +38,6 @@
 namespace knowledge = madara::knowledge;
 typedef knowledge::KnowledgeRecord  KnowledgeRecord;
 typedef knowledge::KnowledgeMap KnowledgeMap;
-
-const std::vector <std::string> unreal_platforms = {
-"/Game/Quadcopters/Blueprints/BP_Quadcopter_A.BP_Quadcopter_A",
-"/Game/Quadcopters/Blueprints/BP_Quadcopter_B.BP_Quadcopter_B",
-"/Game/Quadcopters/Blueprints/BP_Quadcopter_C.BP_Quadcopter_C"
-};
-
-//const std::vector <UClass *> platform_classes = {
-//  AGamsDjiPhantom::StaticClass()
-//};
-
-std::vector <UClass *> platform_classes;
-
-std::vector <UClass *> quad_platform_classes;
-
-std::vector <UClass *> jet_platform_classes;
 
 UnrealAgentPlatformFactory::UnrealAgentPlatformFactory()
 {
@@ -183,115 +162,6 @@ UnrealAgentPlatform::init_agent(const gams::pose::Pose & init_pose)
   {
     location.to_container(home_);
   }
-}
-
-void
-UnrealAgentPlatform::calculate_diff(
-  const gams::pose::Position& current, const gams::pose::Position& target,
-  FVector& diff_location,
-  bool& finished)
-{
-  finished = true;
-
-  last_thrust_timer_.start();
-
-  FString current_str(current.to_string().c_str());
-  FString target_str(target.to_string().c_str());
-
-  UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s::calculate_diff: loc=[%s] to tar=[%s]"),
-    *agent_prefix_, *current_str, *target_str);
-
-  finished = target.approximately_equal(current, 0.2);
-
-  // convert the distance vector to unreal engine unit (centimeters)
-  diff_location.X = (target.x() - current.x()) * 100;
-  diff_location.Y = (target.y() - current.y()) * 100;
-  diff_location.Z = (target.z() - current.z()) * 100;
-}
-
-void
-UnrealAgentPlatform::calculate_diff(
-  const gams::pose::Orientation& current, const gams::pose::Orientation& target,
-  FRotator& diff_rotator,
-  bool& finished)
-{
-  finished = true;
-
-  last_thrust_timer_.start();
-  FString current_str(current.to_string().c_str());
-  FString target_str(target.to_string().c_str());
-
-  UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s::calculate_diff: rot=[%s] to tar=[%s]"),
-    *agent_prefix_, *current_str, *target_str);
-
-  finished = target.approximately_equal(current, 1.0f);
-
-  // convert the distance vector to unreal engine unit (centimeters)
-  diff_rotator.Roll = (target.rx() - current.rx()) * 100;
-  diff_rotator.Pitch = (target.ry() - current.ry()) * 100;
-  diff_rotator.Yaw = (target.rz() - current.rz()) * 100;
-}
-
-std::vector<double>
-UnrealAgentPlatform::calculate_thrust(
-  const gams::pose::Position& current, const gams::pose::Position& target,
-  bool& finished)
-{
-  finished = true;
-  std::vector<double> difference(std::min(current.size(), target.size()));
-  
-  last_thrust_timer_.start();
-
-  madara_logger_ptr_log(gams::loggers::global_logger.get(),
-    gams::loggers::LOG_MAJOR,
-    "UnrealAgentPlatform::calculate_thrust: " \
-    "%s: current=[%s], target=[%s]\n",
-    self_->agent.prefix.c_str(),
-    current.to_string().c_str(), target.to_string().c_str());
-
-  for (size_t i = 0; i < difference.size(); ++i)
-  {
-    difference[i] = target.get(i) - current.get(i);
-
-    madara_logger_ptr_log(gams::loggers::global_logger.get(),
-      gams::loggers::LOG_TRACE,
-      "UnrealAgentPlatform::calculate_thrust: " \
-      "%s: difference[%zu]=[%f]\n",
-      self_->agent.prefix.c_str(), i, difference[i]);
-
-    if (difference[i] <= 0.3 && difference[i] >= -0.3)
-    {
-      difference[i] = 0;
-    }
-    else if (difference[i] <= 0.5 && difference[i] >= -0.5)
-    {
-      difference[i] /= fabs(difference[i]);
-      difference[i] *= 0.25;
-      finished ? finished = false : 0;
-    }
-    else if (difference[i] <= 1.5 && difference[i] >= -1.5)
-    {
-      difference[i] /= fabs(difference[i]);
-      difference[i] *= 0.5;
-      finished ? finished = false : 0;
-    }
-    else
-    {
-      difference[i] /= fabs(difference[i]);
-      finished ? finished = false : 0;
-    }
-  }
-  
-  madara::knowledge::KnowledgeRecord record(difference);
-  FString difference_str(record.to_string().c_str());
-
-  UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("%s::calculate_thrust: thrust is [%s]"),
-    *agent_prefix_, *difference_str);
-
-  return difference;
 }
 
 // Polls the sensor environment for useful information. Required.
@@ -528,19 +398,8 @@ UnrealAgentPlatform::get_frame(void) const
 
 void UnrealAgentPlatform::load_platform_classes(void)
 {
-  platform_classes.push_back(AGamsDjiPhantom::StaticClass());
-  platform_classes.push_back(AGamsDjiMavic::StaticClass());
-  platform_classes.push_back(AGamsArDrone::StaticClass());
-  platform_classes.push_back(AGamsF16::StaticClass());
-
-  quad_platform_classes.push_back(AGamsDjiPhantom::StaticClass());
-  quad_platform_classes.push_back(AGamsDjiMavic::StaticClass());
-  quad_platform_classes.push_back(AGamsArDrone::StaticClass());
-
-  jet_platform_classes.push_back(AGamsF16::StaticClass());
 }
 
 void UnrealAgentPlatform::unload_platform_classes(void)
 {
-  platform_classes.clear();
 }

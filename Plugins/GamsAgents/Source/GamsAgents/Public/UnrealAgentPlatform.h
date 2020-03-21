@@ -186,64 +186,6 @@ class AGamsVehicle;
 
     void init_agent(const gams::pose::Pose & init_pose);
 
-    /**
-     * Calculate velocity/thrust necessary to send in OSC
-     * @param current  current location
-     * @param target   target location
-     * @param finished indicates whether current == target
-     * @return  thrust vector to get from current to target according to
-     *          movement profile
-     **/
-    std::vector<double> calculate_thrust(
-      const gams::pose::Position & current, const gams::pose::Position & target,
-      bool & finished);
-
-    /**
-     * Calculate location necessary to add to UE actor
-     * @param current  current location
-     * @param target   target location
-     * @param diff_location  location offset of target - current
-     * @param finished indicates whether current == target
-     **/
-    void calculate_diff(
-      const gams::pose::Position& current, const gams::pose::Position& target,
-      FVector& diff_location,
-      bool& finished);
-
-    /**
-     * Calculate rotation necessary to add to UE actor
-     * @param current  current location
-     * @param target   target location
-     * @param diff_rotator   orientation offset of target - current
-     * @param finished indicates whether current == target
-     **/
-    void calculate_diff(
-    const gams::pose::Orientation& current, const gams::pose::Orientation& target,
-      FRotator& diff_rotator,
-      bool& finished);
-
-    /**
-     * Calculate local distance possible within delta_time to move actor
-     * @param total_diff  overall distance between cur and destination
-     * @param local_diff  distance to travel within delta_time
-     * @param speed       speed to travel over the time
-     * @param delta_time  time expected to travel toward destination
-     * @param finished indicates whether current == target
-     **/
-    void calculate_delta(const FVector& total_diff, FVector& local_diff,
-      float speed, float delta_time);
-
-    /**
-     * Calculate local rotation possible within delta_time to move actor
-     * @param total_diff  overall rotation between cur and destination
-     * @param local_diff  rotation to travel within delta_time
-     * @param speed       speed to travel over the time
-     * @param delta_time  time expected to travel toward destination
-     * @param finished indicates whether current == target
-     **/
-    void calculate_delta(const FRotator& total_diff, FRotator& local_diff,
-      float speed, float delta_time);
-
     /// holds whether the agent is known to exist in the simulator
     bool is_created_ = false;
 
@@ -253,12 +195,6 @@ class AGamsVehicle;
     /// last orient target
     gams::pose::Orientation last_orient_;
 
-    // optimizations to remove function calls to get_location/orientation
-    //FVector ue_location_;
-    //FRotator ue_orientation_;
-    //FVector last_ue_target_location_;
-    //FRotator last_ue_target_orientation_;
-    
     // communication variable with main game loop for agent home
     madara::knowledge::containers::NativeDoubleVector home_;
     
