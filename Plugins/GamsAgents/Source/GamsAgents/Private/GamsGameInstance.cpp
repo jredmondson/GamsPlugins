@@ -4,7 +4,6 @@
 #include "GamsAgentsLogs.h"
 #include "TimerManager.h"
 #include "UObject/UObjectGlobals.h"
-#include "madara/utility/Utility.h"
 #include "GenericPlatform/GenericPlatformMisc.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
@@ -18,11 +17,30 @@
 #include "GamsAgentManager.h"
 #include "GamsVehicle.h"
 #include "MadaraUnrealUtility.h"
+#include <algorithm>
+#include <stdio.h>
+
+#pragma warning(push)
+#pragma warning(disable:4005)
+#pragma warning(disable:4103)
+#pragma warning(disable:4191)
+#pragma warning(disable:4457)
+#pragma warning(disable:4458)
+#pragma warning(disable:4459)
+#pragma warning(disable:4530)
+#pragma warning(disable:4577)
+#pragma warning(disable:4583)
+#pragma warning(disable:4582)
+#pragma warning(disable:4668)
+#pragma warning(disable:4996)
+#include "madara/utility/Utility.h"
 #include "madara/knowledge/containers/Double.h"
 #include "madara/knowledge/containers/Integer.h"
 #include "madara/knowledge/containers/String.h"
 #include "madara/knowledge/containers/Vector.h"
-#include <algorithm>	
+#include "madara/logger/GlobalLogger.h"
+#include "gams/loggers/GlobalLogger.h"
+#pragma warning(pop)
 
 #include "GenericPlatform/GenericPlatformProcess.h"
 
@@ -37,15 +55,44 @@ void UGamsGameInstance::Init()
 
   UE_LOG (LogGamsGameInstance, Log,
     TEXT ("Init: entering"));
+  
+  size_t buf_size(0);
+  char buf[128];
 
   FString filename;
-  //FString filecontents;
 
   gams_game_instance = this;
 
-  //gams::loggers::global_logger->clear();
-  //gams::loggers::global_logger->add_file("gams_log.txt");
-  //gams::loggers::global_logger->set_level(gams::loggers::LOG_MAJOR);
+  // set default GAMS and MADARA logging to file only
+  FString log_location = FPaths::ConvertRelativePathToFull(FPaths::ProjectLogDir());
+  
+  FString gams_log_location = log_location + TEXT("/gams_log.txt");
+  FString madara_log_location = log_location + TEXT("/madara_log.txt");
+  FString gams_prev_log_location = log_location + TEXT("/gams_previous_log.txt");
+  FString madara_prev_log_location = log_location + TEXT("/madara_previous_log.txt");
+  
+  UE_LOG (LogGamsGameInstance, Log,
+    TEXT ("Init: deleting old MADARA/GAMS log"));
+  
+  remove(TCHAR_TO_UTF8(*gams_log_location));
+  remove(TCHAR_TO_UTF8(*madara_log_location));
+
+  gams::loggers::global_logger->clear();
+  gams::loggers::global_logger->add_file(TCHAR_TO_UTF8(*gams_log_location));
+  gams::loggers::global_logger->set_level(madara::logger::LOG_WARNING);
+  
+  madara::logger::global_logger.get()->set_timestamp_format(
+    "%x %X: ");
+  
+  gams::loggers::global_logger.get()->set_timestamp_format(
+    "%x %X: ");
+
+  madara::logger::global_logger->clear();
+  madara::logger::global_logger->add_file(TCHAR_TO_UTF8(*madara_log_location));
+  madara::logger::global_logger->set_level(madara::logger::LOG_WARNING);
+
+  UE_LOG (LogGamsGameInstance, Log,
+    TEXT ("Init: saving gams logs to "));
 
   agent_factory_ = new UnrealAgentPlatformFactory();
 
@@ -60,10 +107,8 @@ void UGamsGameInstance::Init()
     TEXT ("Init: adding aliases for agent factory"));
 
   gams::platforms::global_platform_factory()->add(aliases, agent_factory_);
-
-  FString sim_settings_file = FPaths::Combine(
-    FPaths::ProjectContentDir(),
-    TEXT("Scripts"), TEXT("sim_settings.mf"));
+  
+  // read the transports settings from the file
 
   FString transport_settings_file = FPaths::Combine(
     FPaths::ProjectContentDir(),
@@ -76,6 +121,12 @@ void UGamsGameInstance::Init()
   transport_settings.load_text(TCHAR_TO_UTF8(*transport_settings_file));
 
   filecontents_.SetNum(1);
+
+  // read the sim settings into the knowledge base
+
+  FString sim_settings_file = FPaths::Combine(
+    FPaths::ProjectContentDir(),
+    TEXT("Scripts"), TEXT("sim_settings.mf"));
 
   if (FFileHelper::LoadFileToString(filecontents_[0], *sim_settings_file))
   {
@@ -90,8 +141,29 @@ void UGamsGameInstance::Init()
       TEXT("Init: failed to load sim settings file. %s did not exist."),
       *sim_settings_file);
   }
+  
+  // check for MADARA log level change
+  if (kb.exists("madara.log.level"))
+  {
+    int level = kb.get("madara.log.level").to_integer();
+    madara::logger::global_logger->set_level(level);
 
+    UE_LOG(LogGamsGameInstance, Log,
+        TEXT("Init: setting MADARA log level to %d"), level);
+  }
+  
+  // check for GAMS log level change
+  if (kb.exists("gams.log.level"))
+  {
+    int level = kb.get("gams.log.level").to_integer();
+    gams::loggers::global_logger->set_level(level);
+
+    UE_LOG(LogGamsGameInstance, Log,
+        TEXT("Init: setting GAMS log level to %d"), level);
+  }
+  
   // log the transport settings to help with debugging
+
   FString debug_type = madara::transport::types_to_string(
     transport_settings.type).c_str();
   FString hosts;
@@ -104,18 +176,24 @@ void UGamsGameInstance::Init()
     TEXT("Init: transport settings: type=%s, hosts=[%s]"),
     *debug_type, *hosts);
 
+  // attach the transport to the main game knowledge base
+
   kb.attach_transport("GamsPluginsGameInstance", transport_settings);
+
+  // set agents loaded to 0. could be used in a loading screen
 
   agents_loaded.set_name("swarm.loaded", kb);
   agents_loaded = 0;
 
-  //UGameplayStatics::OpenLevel(this, "Plains");
 
   // seed the current world
   gams_current_world = GetWorld();
+
+  // obtain swarm size and platform animation setting
   swarm_size.set_name("swarm.size", kb);
   containers::Integer platform_animate("platform.animate", kb);
-  if (*swarm_size == 0)
+
+  if (*swarm_size <= 0)
   {
     // if no swarm.size is specified, initialize 100
     swarm_size = 100;
@@ -123,24 +201,23 @@ void UGamsGameInstance::Init()
 
   // note that the default behavior is to not animate platforms
   should_animate = platform_animate.is_true();
-
-  UE_LOG (LogGamsGameInstance, Log,
-    TEXT ("Init: resizing controller to %d agents"),
-    (int)*swarm_size);
-
-  // create 100 agents
-  controller.resize((size_t)*swarm_size);
-
-  containers::Vector karl_files("karl_files", kb);
-
-  size_t buf_size(0);
-  char buf[128];
+  
+  // set the platform type for agent platform creation
 
   madara::utility::to_c_str(kb.get("platform.type"), (char*)buf, 128);
 
   platform_type = buf;
   agent_factory_->platform_type = buf;
 
+  UE_LOG (LogGamsGameInstance, Log,
+    TEXT ("Init: resizing controller to %d agents"),
+    (int)*swarm_size);
+
+  // create swarm.size agent controllers
+  controller.resize((size_t)*swarm_size);
+
+  // read the karl files that should be evaluated on each agent controller
+  containers::Vector karl_files("karl_files", kb);
   filecontents_.SetNum(karl_files.size());
 
   if (karl_files.size() > 0)
@@ -148,21 +225,6 @@ void UGamsGameInstance::Init()
     for (size_t i = 0; i < karl_files.size(); ++i)
     {
       madara::utility::to_c_str(karl_files[i], (char*)buf, 128);
-
-      //const FString prefix("Scripts");
-      //FString path(buf);
-
-      //if (path.StartsWith(prefix, ESearchCase::CaseSensitive))
-      //{
-      //  // if the karl file begins with Scripts, then we need
-      //  // to reference the Contents/Scripts directory
-      //  filename = FPaths::Combine(FPaths::ProjectContentDir(),
-      //    *path);
-      //}
-      //else
-      //{
-      //  filename = path;
-      //}
 
       filename = madara::utility::create_path("Scripts", buf);
 
@@ -182,7 +244,7 @@ void UGamsGameInstance::Init()
     }
   }
   
-  // check if level variables exists and if so, load the level
+  // check if platform speed needs to be overridden
   if (kb.exists("platform.max_speed"))
   {
     // GAMS speed is in m/s. Convert it to cm/s
@@ -191,7 +253,6 @@ void UGamsGameInstance::Init()
     
     UE_LOG(LogGamsGameInstance, Log,
       TEXT("Init: platform speed overridden. speed=%f"), *FString(buf));
-
   }
 
   // check if level variables exists and if so, load the level
@@ -224,24 +285,26 @@ void UGamsGameInstance::Init()
   FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(
     this, &UGamsGameInstance::OnPostLoadMap);
 
-  UnrealAgentPlatform::load_platform_classes();
-
   // run GAMS multicontroller at 2hz, unless user overrides with controller.hz
   controller_hz = 2.0f;
 
+  // check if collisions should be enabled
   enable_collisions = kb.get("platform.collisions").is_true();
   collision_type = enable_collisions ?
     ECollisionEnabled::PhysicsOnly : ECollisionEnabled::NoCollision;
 
+  // check the hertz rate of the agent controllers
+
   if (kb.exists("controller.hz"))
   {
-    // because of STL funkiness in UE4, we try to be safe with memory
     containers::Double temp_hz("controller.hz", kb);
     controller_hz = *temp_hz;
   }
 
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("Init: starting GAMS controller at %f hz"), controller_hz);
+
+  // launch the controller thread
 
   threader_.set_data_plane(kb);
   threader_.run(controller_hz, "controller",
@@ -309,19 +372,18 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("post_level_load: creating args knowledge map"));
 
-  std::string platform_prefix("platform.");
 
-  // assign dynamic unreal platforms to the agents
-  //madara::knowledge::KnowledgeMap args (kb.to_map_stripped(platform_prefix));
-  //args["blueprint"] = "random";
-  //args["blueprints.size"] = madara::knowledge::KnowledgeRecord::Integer(3);
-  //args["blueprints.0"] = "/Game/Quadcopters/Blueprints/BP_Quadcopter_A.BP_Quadcopter_A";
-  //args["blueprints.1"] = "/Game/Quadcopters/Blueprints/BP_Quadcopter_B.BP_Quadcopter_B";
-  //args["blueprints.2"] = "/Game/Quadcopters/Blueprints/BP_Quadcopter_C.BP_Quadcopter_C";
-  //args["location"] = "random";
-  //args["orientation"] = "random";
+  // UE4 breaks STL like this. We could make a workaround if args to
+  // init_platform become necessary
+  // std::string prefix("platform.");
+  // madara::knowledge::KnowledgeMap args (kb.to_map_stripped(prefix));
+  // args["blueprint"] = "random";
+  // args["location"] = "random";
+  // args["orientation"] = "random";
 
   controller.init_platform("unreal_agent");
+
+  // spawn the Agent Manager (actor managing HISMs of the platforms)
 
   FActorSpawnParameters spawn_parameters;
   spawn_parameters.SpawnCollisionHandlingOverride =
@@ -333,16 +395,18 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   manager_ = gams_current_world->SpawnActor<AGamsAgentManager>(
         AGamsAgentManager::StaticClass(), transform, spawn_parameters);
 
-  manager_->read(kb);
+  // read platform settings from the KB to initialize KB bindings
+  // note that if we want to remove kb blocking semantics, this is
+  // where the variables are setup to the kb where context lock occurs
 
-  //madara::knowledge::safe_clear(args);
+  manager_->read(kb);
 
   kb.send_modifieds();
   last_send_time_ = gams_current_world->UnpausedTimeSeconds;
   
   threader_.resume("controller");
 
-  // defaults are 60hz game loop and a 5 second delay.
+  // game loop delta and the delay before starting game thread
   float delta_time = gams_delta_time;
   float delay = 5.0f;
 
@@ -388,8 +452,6 @@ void UGamsGameInstance::Shutdown ()
   delete agent_factory_;
   agent_factory_ = 0;
   manager_->clear();
-  //delete manager_;
-  //manager_ = 0;
 }
 
 void UGamsGameInstance::GameRun()
@@ -409,40 +471,10 @@ void UGamsGameInstance::GameRun()
     gams_current_world = temp_world;
   }
 
+  // this is essentially the agent inner loop(s)
   manager_->update(gams_delta_time);
 
-/*
-  for (TActorIterator<AGamsVehicle> actor_it(gams_current_world);
-      actor_it; ++actor_it)
-  {
-    AGamsVehicle* actor = *actor_it;
-    FVector dest;
-    FVector location = actor->GetActorLocation();
-    FVector diff;
-    FVector next;
-
-    madara::utility::to_vector_multiply(actor->dest, dest);
-
-    diff = dest - location;
-    madara::utility::calculate_delta(diff, next,
-      actor->max_speed, temp_world->DeltaTimeSeconds);
-    next += location;
-
-    UE_LOG(LogGamsGameInstance, Log,
-      TEXT("name=[%s], loc=[%s], dest=[%s], "
-        "diff=[%s], next=[%s]"),
-      *actor->agent_prefix,
-      *location.ToString(), *dest.ToString(),
-      *diff.ToString(), *next.ToString());
-
-    actor->SetActorLocation(next, false, nullptr, ETeleportType::None);
-
-    if (should_animate)
-    {
-      actor->animate(temp_world->DeltaTimeSeconds);
-    }
-  }*/
-
+  // send data from the kb at 1hz to any listeners
   if (temp_world->UnpausedTimeSeconds > last_send_time_ + 1.0f)
   {
     kb.send_modifieds();

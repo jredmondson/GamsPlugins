@@ -1,8 +1,8 @@
 // files that each agent should load
 karl_files.size=1;
 //karl_files.0="Scripts/Move/line.mf";
-//karl_files.0="Scripts/FormationSync/rectangle.mf";
-karl_files.0="Scripts/Follow/follow.mf";
+karl_files.0="Scripts/FormationSync/rectangle.mf";
+//karl_files.0="Scripts/Follow/follow.mf";
 //karl_files.0="Scripts/Follow/follow_agent.mf";
 //karl_files.0="Scripts/Follow/follow_line.mf";
 
@@ -18,7 +18,7 @@ level="Ocean";
 
 // variables for the game animation loop
 game.hz = 10.0;
-game.delay = 10.0;
+game.delay = 1.0;
 
 // platform-specific variables
 platform.type="random_quad";
@@ -27,3 +27,8 @@ platform.collisions=0;
 
 // override the platform's speed parameter
 platform.max_speed=5.0;
+
+// set logging levels for MADARA and GAMS global loggers
+// you can find the logs in Saved/Logs/madara|gams_log.txt
+madara.log.level = 2;
+gams.log.level = 2;
