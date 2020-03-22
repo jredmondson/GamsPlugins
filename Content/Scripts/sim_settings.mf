@@ -1,8 +1,8 @@
 // files that each agent should load
 karl_files.size=1;
 //karl_files.0="Scripts/Move/line.mf";
-karl_files.0="Scripts/FormationSync/rectangle.mf";
-//karl_files.0="Scripts/Follow/follow.mf";
+//karl_files.0="Scripts/FormationSync/rectangle.mf";
+karl_files.0="Scripts/Follow/follow.mf";
 //karl_files.0="Scripts/Follow/follow_agent.mf";
 //karl_files.0="Scripts/Follow/follow_line.mf";
 

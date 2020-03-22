@@ -68,11 +68,10 @@ void UGamsGameInstance::Init()
   
   FString gams_log_location = log_location + TEXT("/gams_log.txt");
   FString madara_log_location = log_location + TEXT("/madara_log.txt");
-  FString gams_prev_log_location = log_location + TEXT("/gams_previous_log.txt");
-  FString madara_prev_log_location = log_location + TEXT("/madara_previous_log.txt");
+  FString transport_settings_save = log_location + TEXT("/actual_transport_settings.mf");
   
   UE_LOG (LogGamsGameInstance, Log,
-    TEXT ("Init: deleting old MADARA/GAMS log"));
+    TEXT ("Init: deleting old MADARA|GAMS log at madara|gams_log.txt"));
   
   remove(TCHAR_TO_UTF8(*gams_log_location));
   remove(TCHAR_TO_UTF8(*madara_log_location));
@@ -90,10 +89,10 @@ void UGamsGameInstance::Init()
   madara::logger::global_logger->clear();
   madara::logger::global_logger->add_file(TCHAR_TO_UTF8(*madara_log_location));
   madara::logger::global_logger->set_level(madara::logger::LOG_WARNING);
-
+  
   UE_LOG (LogGamsGameInstance, Log,
-    TEXT ("Init: saving gams logs to "));
-
+    TEXT ("Init: logging MADARA|GAMS to madara|gams_log.txt"));
+  
   agent_factory_ = new UnrealAgentPlatformFactory();
 
   // add the dynamic unreal agent platform factory
@@ -119,6 +118,8 @@ void UGamsGameInstance::Init()
     *transport_settings_file);
 
   transport_settings.load_text(TCHAR_TO_UTF8(*transport_settings_file));
+  transport_settings.save_text(TCHAR_TO_UTF8(*transport_settings_save));
+  //transport_settings.queue_length = 64000;
 
   filecontents_.SetNum(1);
 
@@ -336,6 +337,13 @@ void UGamsGameInstance::OnPreLoadMap(const FString& map_name)
   threader_.wait_for_paused("controller");
 
   controller.clear_knowledge();
+
+  if (swarm_size != controller.get_num_controllers())
+  {
+    // create swarm.size agent controllers
+    controller.resize((size_t)*swarm_size);
+  }
+
   controller.refresh_vars();
 
   for (auto file : filecontents_)
