@@ -119,7 +119,6 @@ void UGamsGameInstance::Init()
 
   transport_settings.load_text(TCHAR_TO_UTF8(*transport_settings_file));
   transport_settings.save_text(TCHAR_TO_UTF8(*transport_settings_save));
-  //transport_settings.queue_length = 64000;
 
   filecontents_.SetNum(1);
 
