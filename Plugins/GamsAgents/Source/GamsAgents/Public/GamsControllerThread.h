@@ -18,6 +18,7 @@
 #pragma warning(disable:4668)
 #pragma warning(disable:4996)
 #include "madara/threads/BaseThread.h"
+#include "madara/utility/Timer.h"
 #pragma warning(pop)
 
 namespace gams
@@ -47,14 +48,18 @@ public:
   virtual void run()
   {
     UE_LOG(LogGamsControllerThread, Log,
-      TEXT("GamsControllerThread: calling controller::run_once"));
+      TEXT("calling controller::run_once"));
 
+    timer_.start();
     controller_->run_once();
+    timer_.stop();
 
     UE_LOG(LogGamsControllerThread, Log,
-      TEXT("GamsControllerThread: finished controller::run_once"));
+      TEXT("controller::run_once took %f seconds"),
+        (float)timer_.duration_s());
 
   }
-
+  
+  madara::utility::Timer<std::chrono::steady_clock> timer_;
   gams::controllers::Multicontroller * controller_;
 };

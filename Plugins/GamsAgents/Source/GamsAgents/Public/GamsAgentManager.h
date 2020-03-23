@@ -46,19 +46,60 @@ public:
   
 	virtual ~AGamsAgentManager();
   
+  /**
+   * Called on agent initialization
+   **/
   virtual void BeginPlay() override;
-
+  
+  /**
+   * Clears the agent instances
+   **/
+  void clear(void);
+  
+  /**
+   * Destroys a managed agent
+   * @param  id   Destroys the managed agent instance
+   **/
+  void destroy(uint32 id);
+  
+  /**
+   * Initializes the manager from the knowledge base information. This method
+   * reads swarm.size and spawns all associated managed agent instances
+   * @param  kb   the knowledge base to lock for thread-safe reading
+   **/
   void read(madara::knowledge::KnowledgeBase & kb);
   
-  void update(float delta_time);
-
-  void clear(void);
-
-  void destroy(uint32 id);
-
+  /**
+   * Updates the source and destinations being set by the GAMS multicontroller.
+   * This allows very controlled instances of locking the KB and prevents us
+   * constantly blocking on the KB mutex and frees us to spin without blocking
+   * @param  kb   the knowledge base to lock for thread-safe reading
+   **/
+  void read_source_dest(madara::knowledge::KnowledgeBase & kb);
+  
+  /**
+   * Renders all agent transforms
+   **/
+  void render(void);
+  
+  /**
+   * Returns the number of managed agent instances
+   * @return  the number of managed agent instances
+   **/
   uint32 size(void);
 
-  void render(void);
+  /**
+   * Updates all managed agent instances to move over the time delta
+   * @param  delta_time   the change in time expected for movement
+   **/
+  void update(float delta_time);
+  
+  /**
+   * Writes location and orientation back to the MADARA KB. This should not
+   * be done every game loop in order to prevent unnecessary blocking.
+   * @param  kb   the knowledge base to lock for thread-safe writing
+   **/
+  void write_location_orientation(madara::knowledge::KnowledgeBase & kb);
 
 private:
   /**

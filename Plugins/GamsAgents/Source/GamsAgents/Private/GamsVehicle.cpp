@@ -35,7 +35,6 @@ void AGamsVehicle::clear(void)
 
 void AGamsVehicle::update(float delta_time)
 {
-  FVector dest;
   FVector diff;
   FVector next;
   FTransform transform(FRotator::ZeroRotator);
@@ -44,11 +43,20 @@ void AGamsVehicle::update(float delta_time)
   {
     GamsAgentInstance & instance = (*gams_info_)[i.Key];
     
+    //UE_LOG(LogGamsVehicle, Log,
+    //  TEXT("agent.%d::update: @instance:%d, @dest_v:%d"),
+    //  (int)i.Key, (int64)&instance, (int64)&instance.dest_v);
+
     // grab the agent destination
-    madara::utility::to_vector_multiply(instance.dest, dest);
+    madara::utility::to_vector_multiply(instance.dest, instance.dest_v);
+    
+    UE_LOG(LogGamsVehicle, Log,
+      TEXT("agent.%d::update: moving from %s to %s"),
+      (int)i.Key, *instance.transform.GetLocation().ToString(),
+      *instance.dest_v.ToString());
 
     // calculate the total diff between current and dest
-    diff = dest - transforms_[i.Value].GetLocation();
+    diff = instance.dest_v - instance.transform.GetLocation();
     
     // calculate the delta that is accomplishable in the time given
     madara::utility::calculate_delta(diff, next,
@@ -58,14 +66,16 @@ void AGamsVehicle::update(float delta_time)
     next += transforms_[i.Value].GetLocation();
   
     // update the transform and agent location
-    // instance.transform.SetLocation(next);
+    instance.transform.SetLocation(next);
     transforms_[i.Value].SetLocation(next);
-    madara::utility::from_vector_multiply(next, instance.location);
+    //madara::utility::from_vector_multiply(next, instance.location);
 
     // update the orientation to vector of zero (not ideal, temporary)
-    instance.orientation.set(2, 0.0f);
-    instance.orientation.set(0, 0.0f);
-    instance.orientation.set(1, 0.0f);
+    //instance.orientation.set(2, 0.0f);
+    //instance.orientation.set(0, 0.0f);
+    //instance.orientation.set(1, 0.0f);
+    instance.transform.SetRotation(FRotator::ZeroRotator.Quaternion());
+    transforms_[i.Value].SetRotation(instance.transform.GetRotation());
     
     UE_LOG(LogGamsVehicle, Log,
       TEXT("agent.%d::update: setting current=%s"),

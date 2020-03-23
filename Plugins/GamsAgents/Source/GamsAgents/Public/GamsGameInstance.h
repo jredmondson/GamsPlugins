@@ -86,6 +86,11 @@ private:
   madara::threads::Threader threader_;
 
   FTimerHandle run_timer_handler_;
+  
+  float last_kb_read_time_;
+  float last_kb_write_time_;
+  float expected_kb_write_period_ = 1.0f / 3;
+  float expected_kb_read_period_ = 1.0f / 3;
 
   float last_send_time_;
   float end_loop_time_ = -1.0f;

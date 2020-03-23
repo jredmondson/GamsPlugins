@@ -422,6 +422,36 @@ template<> struct functor_traits<scalar_boolean_xor_op> {
   };
 };
 
+/** \internal
+  * \brief Template functor to compute the absolute difference of two scalars
+  *
+  * \sa class CwiseBinaryOp, MatrixBase::absolute_difference
+  */
+template<typename LhsScalar,typename RhsScalar>
+struct scalar_absolute_difference_op : binary_op_base<LhsScalar,RhsScalar>
+{
+  typedef typename ScalarBinaryOpTraits<LhsScalar,RhsScalar,scalar_absolute_difference_op>::ReturnType result_type;
+#ifndef EIGEN_SCALAR_BINARY_OP_PLUGIN
+  EIGEN_EMPTY_STRUCT_CTOR(scalar_absolute_difference_op)
+#else
+  scalar_absolute_difference_op() {
+    EIGEN_SCALAR_BINARY_OP_PLUGIN
+  }
+#endif
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const result_type operator() (const LhsScalar& a, const RhsScalar& b) const
+  { return numext::absdiff(a,b); }
+  template<typename Packet>
+  EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const Packet packetOp(const Packet& a, const Packet& b) const
+  { return internal::pabsdiff(a,b); }
+};
+template<typename LhsScalar,typename RhsScalar>
+struct functor_traits<scalar_absolute_difference_op<LhsScalar,RhsScalar> > {
+  enum {
+    Cost = (NumTraits<LhsScalar>::AddCost+NumTraits<RhsScalar>::AddCost)/2,
+    PacketAccess = is_same<LhsScalar,RhsScalar>::value && packet_traits<LhsScalar>::HasAbsDiff
+  };
+};
+
 
 
 //---------- binary functors bound to a constant, thus appearing as a unary functor ----------
@@ -436,7 +466,7 @@ template<typename BinaryOp> struct bind1st_op : BinaryOp {
   typedef typename BinaryOp::second_argument_type second_argument_type;
   typedef typename BinaryOp::result_type          result_type;
 
-  bind1st_op(const first_argument_type &val) : m_value(val) {}
+  EIGEN_DEVICE_FUNC explicit bind1st_op(const first_argument_type &val) : m_value(val) {}
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const result_type operator() (const second_argument_type& b) const { return BinaryOp::operator()(m_value,b); }
 
@@ -455,7 +485,7 @@ template<typename BinaryOp> struct bind2nd_op : BinaryOp {
   typedef typename BinaryOp::second_argument_type second_argument_type;
   typedef typename BinaryOp::result_type          result_type;
 
-  bind2nd_op(const second_argument_type &val) : m_value(val) {}
+  EIGEN_DEVICE_FUNC explicit bind2nd_op(const second_argument_type &val) : m_value(val) {}
 
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const result_type operator() (const first_argument_type& a) const { return BinaryOp::operator()(a,m_value); }
 

@@ -23,8 +23,7 @@ public class MadaraLibraryLibrary : ModuleRules
     System.Console.WriteLine("Baselibdir = " + BaseLibDirectory);
     System.Console.WriteLine("SourceDirectory = " + SourceDirectory);
     System.Console.WriteLine("MadaraLibDirectory = " + MadaraLibDirectory);
-
-    System.Console.WriteLine("Target.Architecture  " + Target.Architecture);
+    
     System.Console.WriteLine("Target.Type  " + Target.Type);
     System.Console.WriteLine("Target.Configuration  " + Target.Configuration);
     System.Console.WriteLine("Target.Platform  " + Target.Platform);
@@ -38,8 +37,6 @@ public class MadaraLibraryLibrary : ModuleRules
 
     PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
     PublicDefinitions.Add("MADARA_NO_THREAD_LOCAL=1");
-    //PublicDefinitions.Add("MADARA_BUILD_STATIC=1");
-    //PublicDefinitions.Add("GAMS_BUILD_STATIC=1");
     PublicDefinitions.Add("_USE_MATH_DEFINES=1");
     PublicDefinitions.Add("BOOST_ALL_NO_LIB=1");
     PublicDefinitions.Add("BOOST_DISABLE_ABI_HEADERS=1");

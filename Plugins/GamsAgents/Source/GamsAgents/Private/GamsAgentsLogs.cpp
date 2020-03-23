@@ -2,15 +2,21 @@
 
 #include "GamsAgentsLogs.h"
 
-DEFINE_LOG_CATEGORY (LogUnrealAgentPlatform);
+DEFINE_LOG_CATEGORY(LogUnrealAgentPlatform);
 
-DEFINE_LOG_CATEGORY (LogGamsAgentManager);
+DEFINE_LOG_CATEGORY(LogGamsAgentInstanceKbAction);
 
-DEFINE_LOG_CATEGORY (LogGamsMulticontroller);
+DEFINE_LOG_CATEGORY(LogGamsAgentManager);
 
-DEFINE_LOG_CATEGORY (LogGamsGameInstance);
+DEFINE_LOG_CATEGORY(LogGamsMulticontroller);
 
-DEFINE_LOG_CATEGORY (LogGamsAssetManager);
+DEFINE_LOG_CATEGORY(LogGamsGameInstance);
+
+DEFINE_LOG_CATEGORY(LogGamsGameInstanceInit);
+
+DEFINE_LOG_CATEGORY(LogGamsGameInstanceRun);
+
+DEFINE_LOG_CATEGORY(LogGamsAssetManager);
 
 DEFINE_LOG_CATEGORY(LogGamsVehicle);
 
