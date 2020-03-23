@@ -53,7 +53,7 @@ void UGamsGameInstance::Init()
 {
   Super::Init();
 
-  UE_LOG (LogGamsGameInstance, Log,
+  UE_LOG (LogGamsGameInstanceInit, Log,
     TEXT ("Init: entering"));
   
   size_t buf_size(0);
@@ -70,7 +70,7 @@ void UGamsGameInstance::Init()
   FString madara_log_location = log_location + TEXT("/madara_log.txt");
   FString transport_settings_save = log_location + TEXT("/actual_transport_settings.mf");
   
-  UE_LOG (LogGamsGameInstance, Log,
+  UE_LOG (LogGamsGameInstanceInit, Log,
     TEXT ("Init: deleting old MADARA|GAMS log at madara|gams_log.txt"));
   
   remove(TCHAR_TO_UTF8(*gams_log_location));
@@ -90,7 +90,7 @@ void UGamsGameInstance::Init()
   madara::logger::global_logger->add_file(TCHAR_TO_UTF8(*madara_log_location));
   madara::logger::global_logger->set_level(madara::logger::LOG_WARNING);
   
-  UE_LOG (LogGamsGameInstance, Log,
+  UE_LOG (LogGamsGameInstanceInit, Log,
     TEXT ("Init: logging MADARA|GAMS to madara|gams_log.txt"));
   
   agent_factory_ = new UnrealAgentPlatformFactory();
@@ -102,7 +102,7 @@ void UGamsGameInstance::Init()
   aliases[1] = "unreal_agent";
   aliases[2] = "dynamic_agent";
 
-  UE_LOG (LogGamsGameInstance, Log,
+  UE_LOG (LogGamsGameInstanceInit, Log,
     TEXT ("Init: adding aliases for agent factory"));
 
   gams::platforms::global_platform_factory()->add(aliases, agent_factory_);
@@ -113,7 +113,7 @@ void UGamsGameInstance::Init()
     FPaths::ProjectContentDir(),
     TEXT("Scripts"), TEXT("transport_settings.mf"));
 
-  UE_LOG(LogGamsGameInstance, Log,
+  UE_LOG(LogGamsGameInstanceInit, Log,
     TEXT("Init: loading transport settings from file %s."),
     *transport_settings_file);
 
@@ -130,14 +130,14 @@ void UGamsGameInstance::Init()
 
   if (FFileHelper::LoadFileToString(filecontents_[0], *sim_settings_file))
   {
-    UE_LOG(LogGamsGameInstance, Log,
+    UE_LOG(LogGamsGameInstanceInit, Log,
       TEXT("Init: loading sim settings from file %s."),
       *sim_settings_file);
     kb.evaluate(TCHAR_TO_UTF8(*filecontents_[0]));
   }
   else
   {
-    UE_LOG(LogGamsGameInstance, Warning,
+    UE_LOG(LogGamsGameInstanceInit, Warning,
       TEXT("Init: failed to load sim settings file. %s did not exist."),
       *sim_settings_file);
   }
@@ -148,7 +148,7 @@ void UGamsGameInstance::Init()
     int level = kb.get("madara.log.level").to_integer();
     madara::logger::global_logger->set_level(level);
 
-    UE_LOG(LogGamsGameInstance, Log,
+    UE_LOG(LogGamsGameInstanceInit, Log,
         TEXT("Init: setting MADARA log level to %d"), level);
   }
   
@@ -158,7 +158,7 @@ void UGamsGameInstance::Init()
     int level = kb.get("gams.log.level").to_integer();
     gams::loggers::global_logger->set_level(level);
 
-    UE_LOG(LogGamsGameInstance, Log,
+    UE_LOG(LogGamsGameInstanceInit, Log,
         TEXT("Init: setting GAMS log level to %d"), level);
   }
   
@@ -172,7 +172,7 @@ void UGamsGameInstance::Init()
     hosts += ", ";
     hosts += host.c_str();
   }
-  UE_LOG(LogGamsGameInstance, Log,
+  UE_LOG(LogGamsGameInstanceInit, Log,
     TEXT("Init: transport settings: type=%s, hosts=[%s]"),
     *debug_type, *hosts);
 
@@ -209,7 +209,7 @@ void UGamsGameInstance::Init()
   platform_type = buf;
   agent_factory_->platform_type = buf;
 
-  UE_LOG (LogGamsGameInstance, Log,
+  UE_LOG (LogGamsGameInstanceInit, Log,
     TEXT ("Init: resizing controller to %d agents"),
     (int)*swarm_size);
 
@@ -228,13 +228,13 @@ void UGamsGameInstance::Init()
 
       filename = madara::utility::create_path("Scripts", buf);
 
-      UE_LOG(LogGamsGameInstance, Log,
+      UE_LOG(LogGamsGameInstanceInit, Log,
         TEXT("Init: reading karl init from file %s"),
         *filename);
 
       if (FFileHelper::LoadFileToString(filecontents_[i], *filename))
       {
-        UE_LOG(LogGamsGameInstance, Log,
+        UE_LOG(LogGamsGameInstanceInit, Log,
           TEXT("Init: evaluating %d byte karl logic on each platform"),
           (int32)filecontents_[i].Len());
 
@@ -251,7 +251,7 @@ void UGamsGameInstance::Init()
     override_speed = true;
     platform_speed = kb.get("platform.max_speed").to_double() * 100;
     
-    UE_LOG(LogGamsGameInstance, Log,
+    UE_LOG(LogGamsGameInstanceInit, Log,
       TEXT("Init: platform speed overridden. speed=%f"), *FString(buf));
   }
 
@@ -264,7 +264,7 @@ void UGamsGameInstance::Init()
     FName level_name(*current_level);
     if (level_name != FName(buf))
     {
-      UE_LOG(LogGamsGameInstance, Log,
+      UE_LOG(LogGamsGameInstanceInit, Log,
         TEXT("Init: opening map %s"), *FString(buf));
 
       UGameplayStatics::OpenLevel(this, FName(buf), true);
@@ -301,7 +301,7 @@ void UGamsGameInstance::Init()
     controller_hz = *temp_hz;
   }
 
-  UE_LOG(LogGamsGameInstance, Log,
+  UE_LOG(LogGamsGameInstanceInit, Log,
     TEXT("Init: starting GAMS controller at %f hz"), controller_hz);
 
   // launch the controller thread
@@ -310,7 +310,7 @@ void UGamsGameInstance::Init()
   threader_.run(controller_hz, "controller",
     new GamsControllerThread(controller), true);
   
-  UE_LOG (LogGamsGameInstance, Log,
+  UE_LOG (LogGamsGameInstanceInit, Log,
     TEXT ("Init: leaving"));
 }
 
@@ -410,6 +410,8 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
 
   kb.send_modifieds();
   last_send_time_ = gams_current_world->UnpausedTimeSeconds;
+  last_kb_read_time_ = 0;
+  last_kb_write_time_ = 0;
   
   threader_.resume("controller");
 
@@ -463,7 +465,7 @@ void UGamsGameInstance::Shutdown ()
 
 void UGamsGameInstance::GameRun()
 {
-  UE_LOG(LogGamsGameInstance, Log,
+  UE_LOG(LogGamsGameInstanceRun, Log,
     TEXT("controllerrun: calling"));
 
   UWorld * temp_world = GetWorld();
@@ -472,18 +474,45 @@ void UGamsGameInstance::GameRun()
 
   if (gams_current_world != temp_world)
   {
-    UE_LOG(LogGamsGameInstance, Log,
+    UE_LOG(LogGamsGameInstanceRun, Log,
       TEXT("world has been changed"));
 
     gams_current_world = temp_world;
   }
 
+  // check to see if it's time to populate our source/dest info from KB
+  if (temp_world->UnpausedTimeSeconds >
+      last_kb_read_time_ + expected_kb_read_period_)
+  {
+    UE_LOG(LogGamsGameInstanceRun, Log,
+      TEXT("controllerrun: reading source/dest from KB at time %fs"),
+        temp_world->UnpausedTimeSeconds);
+
+    manager_->read_source_dest(kb);
+    last_kb_read_time_ = temp_world->UnpausedTimeSeconds;
+  }
+
   // this is essentially the agent inner loop(s)
   manager_->update(gams_delta_time);
+  
+  if (temp_world->UnpausedTimeSeconds >
+      last_kb_write_time_ + expected_kb_write_period_)
+  {
+    UE_LOG(LogGamsGameInstanceRun, Log,
+      TEXT("controllerrun: writing loc/orient to KB at time %fs"),
+        temp_world->UnpausedTimeSeconds);
+
+    manager_->write_location_orientation(kb);
+    last_kb_write_time_ = temp_world->UnpausedTimeSeconds;
+  }
 
   // send data from the kb at 1hz to any listeners
   if (temp_world->UnpausedTimeSeconds > last_send_time_ + 1.0f)
   {
+    UE_LOG(LogGamsGameInstanceRun, Log,
+      TEXT("controllerrun: sending modifieds at time %fs"),
+        temp_world->UnpausedTimeSeconds);
+
     kb.send_modifieds();
     last_send_time_ = temp_world->UnpausedTimeSeconds;
   }

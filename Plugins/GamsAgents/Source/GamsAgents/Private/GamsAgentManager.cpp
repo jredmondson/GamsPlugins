@@ -11,6 +11,22 @@
 #include "GamsAllVehicles.h"
 #include "Math/UnrealMathUtility.h"
 
+#pragma warning(push)
+#pragma warning(disable:4005)
+#pragma warning(disable:4103)
+#pragma warning(disable:4191)
+#pragma warning(disable:4457)
+#pragma warning(disable:4458)
+#pragma warning(disable:4459)
+#pragma warning(disable:4530)
+#pragma warning(disable:4577)
+#pragma warning(disable:4583)
+#pragma warning(disable:4582)
+#pragma warning(disable:4668)
+#pragma warning(disable:4996)
+#include "madara/knowledge/ContextGuard.h"
+#pragma warning(pop)
+
 #define GAMS_PLATFORM_RANDOM_ALL          -1
 #define GAMS_PLATFORM_RANDOM_QUAD         -2
 #define GAMS_PLATFORM_QUAD_MIN             0
@@ -26,28 +42,6 @@ AGamsAgentManager::AGamsAgentManager()
   : AActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-  
-  //managers_.Add(CreateDefaultSubobject<AGamsArDrone>(TEXT("ArDrones")));
-  //managers_.Add(CreateDefaultSubobject<AGamsDjiMavic>(TEXT("DjiMavics")));
-  //managers_.Add(CreateDefaultSubobject<AGamsDjiPhantom>(TEXT("DjiPhantoms")));
-  //managers_.Add(CreateDefaultSubobject<AGamsF16>(TEXT("F16s")));
-
-  //managers_.Add(GetWorld()->SpawnActor<AGamsArDrone>(
-  //      AGamsArDrone::StaticClass(), transform, spawn_parameters));
-  //
-  //managers_.Add(GetWorld()->SpawnActor<AGamsDjiMavic>(
-  //      AGamsDjiMavic::StaticClass(), transform, spawn_parameters));
-  //
-  //managers_.Add(GetWorld()->SpawnActor<AGamsDjiPhantom>(
-  //      AGamsDjiPhantom::StaticClass(), transform, spawn_parameters));
-  //
-  //managers_.Add(GetWorld()->SpawnActor<AGamsF16>(
-  //      AGamsF16::StaticClass(), transform, spawn_parameters));
-
-  //for (auto manager : managers_)
-  //{
-  //  manager->init(gams_info_);
-  //}
 }
 
 AGamsAgentManager::~AGamsAgentManager()
@@ -81,6 +75,19 @@ void AGamsAgentManager::BeginPlay()
   {
     manager->init(gams_info_);
   }
+}
+
+void AGamsAgentManager::clear(void)
+{
+}
+
+void AGamsAgentManager::destroy(uint32 id)
+{
+  // move removes to end so we maintain sorted instance order
+  // if speed becomes an issue, we can ignore/remove much of this
+  uint32 manager = agent_id_to_manager_[id];
+
+  managers_[manager]->destroy(id);
 }
 
 void AGamsAgentManager::read(madara::knowledge::KnowledgeBase & kb)
@@ -188,26 +195,15 @@ void AGamsAgentManager::read(madara::knowledge::KnowledgeBase & kb)
   }
 }
 
-void AGamsAgentManager::clear(void)
+void AGamsAgentManager::read_source_dest(
+  madara::knowledge::KnowledgeBase & kb)
 {
-}
+  madara::knowledge::ContextGuard guard(kb);
 
-void AGamsAgentManager::update(float delta_time)
-{
-  for (int32 i = 0; i < managers_.Num(); ++i)
+  for (auto instance : gams_info_)
   {
-    managers_[i]->update(delta_time);
+    instance.read_source_dest();
   }
-  render();
-}
-
-void AGamsAgentManager::destroy(uint32 id)
-{
-  // move removes to end so we maintain sorted instance order
-  // if speed becomes an issue, we can ignore/remove much of this
-  uint32 manager = agent_id_to_manager_[id];
-
-  managers_[manager]->destroy(id);
 }
 
 void AGamsAgentManager::render(void)
@@ -221,4 +217,24 @@ void AGamsAgentManager::render(void)
 uint32 AGamsAgentManager::size(void)
 {
   return gams_info_.Num();
+}
+
+void AGamsAgentManager::update(float delta_time)
+{
+  for (int32 i = 0; i < managers_.Num(); ++i)
+  {
+    managers_[i]->update(delta_time);
+  }
+  render();
+}
+
+void AGamsAgentManager::write_location_orientation(
+  madara::knowledge::KnowledgeBase & kb)
+{
+  madara::knowledge::ContextGuard guard(kb);
+
+  for (auto instance : gams_info_)
+  {
+    instance.write_location_orientation();
+  }
 }
