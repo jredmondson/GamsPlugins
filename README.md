@@ -7,6 +7,7 @@ the GAMS (http://gams.ai) and MADARA (http://madara.ai) open source
 project sites.
 
 More info: [Wiki](https://github.com/jredmondson/GamsPlugins/wiki) | [Installation](https://github.com/jredmondson/GamsPlugins/wiki/Installation) | [Running](https://github.com/jredmondson/GamsPlugins/wiki/RunningSimulations)   
+Explore Libraries: [MADARA](http://madara.ai) | [GAMS](http://gams.ai)   
 Platforms: Windows | Linux | Mac
 
 ---
