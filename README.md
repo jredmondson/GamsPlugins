@@ -6,7 +6,8 @@ More information on these AI middleware packages can be found on
 the GAMS (http://gams.ai) and MADARA (http://madara.ai) open source
 project sites.
 
-More info: [Wiki](https://github.com/jredmondson/GamsPlugins/wiki) | [Installation](https://github.com/jredmondson/GamsPlugins/wiki/Installation) | [Running](https://github.com/jredmondson/GamsPlugins/wiki/RunningSimulations)   
+More info: [Wiki](https://github.com/jredmondson/GamsPlugins/wiki) | [Installation](https://github.com/jredmondson/GamsPlugins/wiki/Installation) | [Running](https://github.com/jredmondson/GamsPlugins/wiki/RunningSimulations) | [Architecture](https://github.com/jredmondson/GamsPlugins/wiki/Architecture)   
+Explore Libraries: [MADARA](http://madara.ai) | [GAMS](http://gams.ai)   
 Platforms: Windows | Linux | Mac
 
 ---
