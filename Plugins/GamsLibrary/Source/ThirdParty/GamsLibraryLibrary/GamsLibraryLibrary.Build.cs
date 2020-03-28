@@ -24,6 +24,7 @@ public class GamsLibraryLibrary : ModuleRules
 
     PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
     PublicDefinitions.Add("MADARA_NO_THREAD_LOCAL=1");
+    PublicDefinitions.Add("MADARA_FEATURE_SIMTIME=1");
     PublicDefinitions.Add("_USE_MATH_DEFINES=1");
     PublicDefinitions.Add("BOOST_ALL_NO_LIB=1");
     PublicDefinitions.Add("BOOST_DISABLE_ABI_HEADERS=1");
@@ -54,12 +55,12 @@ public class GamsLibraryLibrary : ModuleRules
     {
       string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
 
-      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "GAMS.dll"),
-        Path.Combine(BinariesDir, "GAMS.dll"), true);
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "gams.dll"),
+        Path.Combine(BinariesDir, "gams.dll"), true);
 
-      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "GAMS.lib"));
-      PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "GAMS.dll"));
-      RuntimeDependencies.Add(Path.Combine(BinariesDir, "GAMS.dll"));
+      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "gams.lib"));
+      PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "gams.dll"));
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "gams.dll"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {

@@ -37,6 +37,7 @@ public class MadaraLibraryLibrary : ModuleRules
 
     PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS=1");
     PublicDefinitions.Add("MADARA_NO_THREAD_LOCAL=1");
+    PublicDefinitions.Add("MADARA_FEATURE_SIMTIME=1");
     PublicDefinitions.Add("_USE_MATH_DEFINES=1");
     PublicDefinitions.Add("BOOST_ALL_NO_LIB=1");
     PublicDefinitions.Add("BOOST_DISABLE_ABI_HEADERS=1");
@@ -48,12 +49,12 @@ public class MadaraLibraryLibrary : ModuleRules
     {
       string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Win64");
 
-      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "MADARA.dll"),
-        Path.Combine(BinariesDir, "MADARA.dll"), true);
+      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "madara.dll"),
+        Path.Combine(BinariesDir, "madara.dll"), true);
 
-      PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "MADARA.lib"));
-      PublicDelayLoadDLLs.Add(Path.Combine(MadaraLibDirectory, "MADARA.dll"));
-      RuntimeDependencies.Add(Path.Combine(BinariesDir, "MADARA.dll"));
+      PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "madara.lib"));
+      PublicDelayLoadDLLs.Add(Path.Combine(MadaraLibDirectory, "madara.dll"));
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "madara.dll"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
