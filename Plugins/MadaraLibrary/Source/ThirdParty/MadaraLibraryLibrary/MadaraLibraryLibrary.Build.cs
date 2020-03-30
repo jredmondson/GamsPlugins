@@ -69,10 +69,10 @@ public class MadaraLibraryLibrary : ModuleRules
     {
       string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Linux");
 
-      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "libMADARA.so"),
-        Path.Combine(BinariesDir, "libMADARA.so"), true);
-      PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "libMADARA.so"));
-      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libMADARA.so"));
+      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "libmadara.so"),
+        Path.Combine(BinariesDir, "libmadara.so"), true);
+      PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "libmadara.so"));
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libmadara.so"));
     }
   }
 }

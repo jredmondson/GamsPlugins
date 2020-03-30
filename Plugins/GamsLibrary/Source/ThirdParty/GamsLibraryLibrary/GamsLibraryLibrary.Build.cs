@@ -74,13 +74,13 @@ public class GamsLibraryLibrary : ModuleRules
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
-      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libGAMS.so"));
+      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libgams.so"));
 
       string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Linux");
 
-      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
-        Path.Combine(BinariesDir, "libGAMS.so"), true);
-      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libGAMS.so"));
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libgams.so"),
+        Path.Combine(BinariesDir, "libgams.so"), true);
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libgams.so"));
     }
   }
 }
