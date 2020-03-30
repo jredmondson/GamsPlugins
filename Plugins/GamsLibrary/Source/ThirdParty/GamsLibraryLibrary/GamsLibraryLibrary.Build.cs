@@ -64,13 +64,13 @@ public class GamsLibraryLibrary : ModuleRules
     }
     else if (Target.Platform == UnrealTargetPlatform.Mac)
     {
-      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libGAMS.so"));
+      PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "libgams.dylib"));
 
       string BinariesDir = Path.Combine(BaseDirectory, "Binaries", "Mac");
 
-      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libGAMS.so"),
-        Path.Combine(BinariesDir, "libGAMS.so"), true);
-      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libGAMS.so"));
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "libgams.dylib"),
+        Path.Combine(BinariesDir, "libgams.dylib"), true);
+      RuntimeDependencies.Add(Path.Combine(BinariesDir, "libgams.dylib"));
     }
     else if (Target.Platform == UnrealTargetPlatform.Linux)
     {
