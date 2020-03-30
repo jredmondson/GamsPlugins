@@ -1,3 +1,5 @@
+ #ifdef _GAMS_OSC_
+
 #include <algorithm>
 #include <math.h>
 #include <sstream>
@@ -490,7 +492,7 @@ gams::platforms::OscJoystickPlatform::calculate_thrust(
       difference[i] *= 0.25;
       finished ? finished = false : 0;
     }
-    else if (difference[i] <= 1.5 && difference[i] >= -1,5)
+    else if (difference[i] <= 1.5 && difference[i] >= -1.5)
     {
       difference[i] /= fabs(difference[i]);
       difference[i] *= 0.5;
@@ -931,3 +933,5 @@ gams::platforms::OscJoystickPlatform::get_frame(void) const
   // For cartesian, replace with gams::pose::default_frame()
   return gams::pose::default_frame();
 }
+
+#endif //  #ifdef _GAMS_OSC_
