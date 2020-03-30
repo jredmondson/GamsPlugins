@@ -27,8 +27,5 @@ mkdir $PROJECT_ROOT/Plugins/MadaraLibrary/ThirdParty/madara/Linux/
 echo "Copying GAMS lib"
 cp $GAMS_ROOT/install/lib/libgams.so.$GAMS_SOVERSION $PROJECT_ROOT/Plugins/GamsLibrary/ThirdParty/gams/Linux/libgams.so
 
-echo "Copying oscpack lib"
-cp $OSC_ROOT/liboscpack.so.1.1.0 $PROJECT_ROOT/Plugins/GamsLibrary/ThirdParty/gams/Linux/liboscpack.so
-
 echo "Copying MADARA lib"
 cp $MADARA_ROOT/install/lib/libmadara.so.$MADARA_SOVERSION $PROJECT_ROOT/Plugins/MadaraLibrary/ThirdParty/madara/Linux/libmadara.so

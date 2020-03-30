@@ -27,9 +27,6 @@ echo "Copying GAMS dll and lib"
 copy "%GAMS_ROOT%\install\lib\gams.lib" "%PROJECT_ROOT%\Plugins\GamsLibrary\ThirdParty\gams\Win64"
 copy "%GAMS_ROOT%\install\lib\gams.dll" "%PROJECT_ROOT%\Plugins\GamsLibrary\ThirdParty\gams\Win64"
 
-echo "Copying oscpack dll"
-copy %OSC_ROOT%\Release\oscpack.lib "%PROJECT_ROOT%\Plugins\GamsLibrary\ThirdParty\gams\Win64"
-
 echo "Copying MADARA lib and lib"
 copy "%MADARA_ROOT%\install\lib\madara.lib" "%PROJECT_ROOT%\Plugins\MadaraLibrary\ThirdParty\madara\Win64"
 copy "%MADARA_ROOT%\install\lib\madara.dll" "%PROJECT_ROOT%\Plugins\MadaraLibrary\ThirdParty\madara\Win64"
