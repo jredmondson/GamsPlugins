@@ -1,7 +1,7 @@
 # Overview
 
-The GamsPlugins project aims to provide deterministic, scalable
-simualtions that will aid research into emergent systems, self-healing
+The GamsPlugins project aims to provide deterministic, scalable, portable,
+extensible simulations that will aid research into emergent systems, self-healing
 systems-of-systems, advanced machine learning, and the application
 of formal methods (e.g., software model checking and statistical model
 checking) into multi-agent systems. Importing these plugins into your
