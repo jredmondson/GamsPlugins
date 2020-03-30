@@ -1,7 +1,13 @@
 # Overview
 
-Importing these plugins into your project allows you to create
-GAMS agents or use MADARA knowledge bases within Unreal projects.
+The GamsPlugins project aims to provide deterministic, scalable
+simualtions that will aid research into emergent systems, self-healing
+systems-of-systems, advanced machine learning, and the application
+of formal methods (e.g., software model checking and statistical model
+checking) into multi-agent systems. Importing these plugins into your
+project allows you to create GAMS agents or use MADARA knowledge bases
+within Unreal projects.
+
 More information on these AI middleware packages can be found on
 the GAMS (http://gams.ai) and MADARA (http://madara.ai) open source
 project sites.
