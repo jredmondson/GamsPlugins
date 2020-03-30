@@ -30,13 +30,13 @@ mkdir $PROJECT_ROOT/Plugins/GamsLibrary/ThirdParty/gams/Mac
 mkdir $PROJECT_ROOT/Plugins/MadaraLibrary/ThirdParty/madara/Mac
 
 echo "Copying GAMS lib"
-cp $GAMS_ROOT/lib/libgams.$GAMS_SOVERSION.dylib $PROJECT_ROOT/Plugins/GamsLibrary/ThirdParty/gams/Mac
+cp $GAMS_ROOT/install/lib/libgams.$GAMS_SOVERSION.dylib $PROJECT_ROOT/Plugins/GamsLibrary/ThirdParty/gams/Mac
 cd $PROJECT_ROOT/Plugins/GamsLibrary/ThirdParty/gams/Mac
-mv libgams.$GAMS_SOVERSION.dylib libgams.so
+mv libgams.$GAMS_SOVERSION.dylib libgams.dylib
 
 echo "Copying MADARA lib"
-cp $MADARA_ROOT/lib/libmadara.$MADARA_SOVERSION.so $PROJECT_ROOT/Plugins/MadaraLibrary/ThirdParty/madara/Mac
+cp $MADARA_ROOT/install/lib/libmadara.$MADARA_SOVERSION.dylib $PROJECT_ROOT/Plugins/MadaraLibrary/ThirdParty/madara/Mac
 cd $PROJECT_ROOT/Plugins/MadaraLibrary/ThirdParty/madara/Mac
-mv libmadara.$GAMS_SOVERSION.dylib libmadara.so
+mv libmadara.$MADARA_SOVERSION.dylib libmadara.dylib
 
 popd

@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 SCRIPTS_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPTS_DIR")")"
 PROJECT_FILE="$PROJECT_ROOT/GamsPlugins.uproject"
@@ -14,7 +16,7 @@ echo "----------------------"
 
 mkdir -p "$PROJECT_ROOT/Binaries/Linux"
 
-#"$UE4_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun -project="$PROJECT_FILE" -noP4 -build -cook -stage -stagingdirectory="$PROJECT_ROOT/out" -pak
+"$UE4_ROOT/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun -project="$PROJECT_FILE" -noP4 -build -cook -stage -stagingdirectory="$PROJECT_ROOT/out" -pak
 
 tar -czvf "$PROJECT_ROOT/out/GamsPlugins_Linux_v$VERSION.tar.gz" $PROJECT_ROOT/out/LinuxNoEditor/*
 
