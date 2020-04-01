@@ -21,7 +21,7 @@ AGamsDjiMavic::AGamsDjiMavic()
   this->max_speed = 1800.0f;
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("DjiPhantom: constr: entering"));
+    TEXT("DjiMavic: constr: entering"));
   
   actors_ = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(
     TEXT("InstancedActors"));

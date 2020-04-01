@@ -7,8 +7,11 @@ karl_files.0="Scripts/Move/line.mf";
 //karl_files.0="Scripts/Follow/follow_line.mf";
 
 // swarm control of GAMS agents
-swarm.size=200;
-controller.hz = 3.0;
+swarm.size=2000;
+
+// adjust number of threads to run agent controllers in
+ controller.threads = 2;
+controller.hz = 1.0;
 
 // default level is "Plains"
 level="Plains";
@@ -17,7 +20,7 @@ level="Ocean";
 // level="PrototypingHighBay";
 
 // variables for the game animation loop
-game.hz = 10.0;
+game.hz = 5.0;
 game.delay = 1.0;
 game.kb.update.hz = 1.0;
 

@@ -29,3 +29,5 @@ DEFINE_LOG_CATEGORY(LogGamsArDrone);
 DEFINE_LOG_CATEGORY(LogGamsF16);
 
 DEFINE_LOG_CATEGORY(LogGamsControllerThread);
+
+DEFINE_LOG_CATEGORY(LogGamsControllerEvaluateThread);

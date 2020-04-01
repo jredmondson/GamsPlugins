@@ -21,7 +21,7 @@ AGamsArDrone::AGamsArDrone()
   this->max_speed = 1100.0f;
 
   UE_LOG(LogUnrealAgentPlatform, Log,
-    TEXT("DjiPhantom: constr: entering"));
+    TEXT("ArDrone: constr: entering"));
   
   actors_ = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(
     TEXT("InstancedActors"));

@@ -28,5 +28,6 @@
 #pragma warning(disable:4800)
 #pragma warning(disable:4996)
 #include "madara/knowledge/KnowledgeBase.h"
+#include "madara/knowledge/Hive.h"
 #pragma warning(pop)
 

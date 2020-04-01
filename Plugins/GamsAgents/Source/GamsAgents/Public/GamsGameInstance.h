@@ -51,8 +51,6 @@ public:
 
   void GameRun();
 
-  gams::controllers::Multicontroller controller;
-
   madara::knowledge::KnowledgeBase kb;
 
   madara::transport::QoSTransportSettings transport_settings;
@@ -78,6 +76,10 @@ public:
   bool override_speed = false;
 
   float platform_speed = 500.0f;
+
+  madara::knowledge::Hive hive;
+
+  TArray<gams::controllers::HiveController> controllers;
 
 private:
 

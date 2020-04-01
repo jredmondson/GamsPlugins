@@ -12,6 +12,7 @@
 #include "MoviePlayer.h"
 #include "EngineUtils.h"
 #include "GamsControllerThread.h"
+#include "GamsControllerEvaluateThread.h"
 #include <stdlib.h>
 #include "UnrealAgentPlatform.h"
 #include "GamsAgentManager.h"
@@ -52,6 +53,9 @@ namespace containers = knowledge::containers;
 void UGamsGameInstance::Init()
 {
   Super::Init();
+  
+  // set the threader data plane to the game knowledge base
+  threader_.set_data_plane(kb);
 
   UE_LOG (LogGamsGameInstanceInit, Log,
     TEXT ("Init: entering"));
@@ -199,6 +203,8 @@ void UGamsGameInstance::Init()
     swarm_size = 100;
   }
 
+  hive.resize((size_t)*swarm_size);
+
   // note that the default behavior is to not animate platforms
   should_animate = platform_animate.is_true();
   
@@ -212,9 +218,54 @@ void UGamsGameInstance::Init()
   UE_LOG (LogGamsGameInstanceInit, Log,
     TEXT ("Init: resizing controller to %d agents"),
     (int)*swarm_size);
+  
+  size_t num_controllers = 1;
 
-  // create swarm.size agent controllers
-  controller.resize((size_t)*swarm_size);
+  // check for num_controllers > 1 to use more CPU cores
+  if (kb.exists("controller.threads"))
+  {
+    num_controllers = kb.get("controller.threads").to_integer();
+
+    if (num_controllers <= 0)
+    {
+      num_controllers = 1;
+    }
+  }
+  
+  UE_LOG(LogGamsGameInstanceInit, Log,
+      TEXT("Init: setting num controllers (controller.threads) to %d"),
+      (int)num_controllers);
+  
+  controllers.SetNum((int32)num_controllers);
+
+  size_t agents = (size_t)*swarm_size;
+  size_t agents_per_controller = agents / num_controllers;
+  size_t extra_agents = agents % num_controllers;
+
+  for (int32 i = 0; i < num_controllers; ++i)
+  {
+    controllers[i].set_hive(hive);
+
+    if (i != num_controllers - 1)
+    {
+      UE_LOG(LogGamsGameInstanceInit, Log,
+          TEXT("Init: resizing controller[%d] to %d agents"),
+          (int)i, (int)agents_per_controller);
+  
+      controllers[i].resize(
+        i * agents_per_controller, agents_per_controller);
+    }
+    else
+    {
+      UE_LOG(LogGamsGameInstanceInit, Log,
+          TEXT("Init: resizing controller[%d] to %d agents"),
+          (int)i, (int)(agents_per_controller + extra_agents));
+  
+      controllers[i].resize(
+        i * agents_per_controller, agents_per_controller + extra_agents);
+    }
+    // create swarm.size agent controllers
+  }
 
   // read the karl files that should be evaluated on each agent controller
   containers::Vector karl_files("karl_files", kb);
@@ -235,15 +286,20 @@ void UGamsGameInstance::Init()
       if (FFileHelper::LoadFileToString(filecontents_[i], *filename))
       {
         UE_LOG(LogGamsGameInstanceInit, Log,
-          TEXT("Init: evaluating %d byte karl logic on each platform"),
+          TEXT("Init: loaded %d byte karl logic to run on each platform"),
           (int32)filecontents_[i].Len());
-
-
-        controller.evaluate(TCHAR_TO_UTF8(*filecontents_[i]));
       }
     }
   }
   
+  for (int i = 0; i < (int)num_controllers; ++i)
+  {
+    FString name = "controller.";
+    name += FString::FromInt(i);
+    threader_.run(TCHAR_TO_UTF8(*name),
+      new GamsControllerEvaluateThread(controllers[i], filecontents_));
+  }
+
   // check if platform speed needs to be overridden
   if (kb.exists("platform.max_speed"))
   {
@@ -292,7 +348,7 @@ void UGamsGameInstance::Init()
   enable_collisions = kb.get("platform.collisions").is_true();
   collision_type = enable_collisions ?
     ECollisionEnabled::PhysicsOnly : ECollisionEnabled::NoCollision;
-
+  
   // check the hertz rate of the agent controllers
 
   if (kb.exists("controller.hz"))
@@ -300,16 +356,24 @@ void UGamsGameInstance::Init()
     containers::Double temp_hz("controller.hz", kb);
     controller_hz = *temp_hz;
   }
+  
+  UE_LOG(LogGamsGameInstanceInit, Log,
+    TEXT("Init: waiting for controller evaluations to finish"), controller_hz);
+
+  threader_.terminate();
+  threader_.wait();
 
   UE_LOG(LogGamsGameInstanceInit, Log,
     TEXT("Init: starting GAMS controller at %f hz"), controller_hz);
 
-  // launch the controller thread
+  for (int i = 0; i < (int)num_controllers; ++i)
+  {
+    FString name = "controller.";
+    name += FString::FromInt(i);
+    threader_.run(controller_hz, TCHAR_TO_UTF8(*name),
+      new GamsControllerThread(controllers[i]), false);
+  }
 
-  threader_.set_data_plane(kb);
-  threader_.run(controller_hz, "controller",
-    new GamsControllerThread(controller), true);
-  
   UE_LOG (LogGamsGameInstanceInit, Log,
     TEXT ("Init: leaving"));
 }
@@ -332,25 +396,48 @@ float UGamsGameInstance::LoadingPercentage() const
 
 void UGamsGameInstance::OnPreLoadMap(const FString& map_name)
 {
-  threader_.pause("controller");
-  threader_.wait_for_paused("controller");
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("pre_level_load: "
+      "tearing down past level components. Resuming threads."));
 
-  controller.clear_knowledge();
+  //threader_.pause("controller");
+  //threader_.wait_for_paused("controller");
 
-  if (swarm_size != controller.get_num_controllers())
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("pre_level_load: "
+      "terminating threads"));
+
+  threader_.terminate();
+  
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("pre_level_load: "
+      "waiting for threads to terminate"));
+
+  threader_.wait();
+  
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("pre_level_load: "
+      "clearing hive"));
+
+  hive.clear();
+  
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("pre_level_load: "
+      "launching new restore_vars, eval, and init_platform threads"));
+
+  for (int i = 0; i < (int)controllers.Num(); ++i)
   {
-    // create swarm.size agent controllers
-    controller.resize((size_t)*swarm_size);
-  }
-
-  controller.refresh_vars();
-
-  for (auto file : filecontents_)
-  {
-    controller.evaluate(TCHAR_TO_UTF8(*file));
+    FString name = "controller.";
+    name += FString::FromInt(i);
+    threader_.run(TCHAR_TO_UTF8(*name),
+      new GamsControllerEvaluateThread(controllers[i], filecontents_));
   }
 
   agents_loaded = 0;
+  
+  UE_LOG(LogGamsGameInstance, Log,
+    TEXT("pre_level_load: "
+      "building load screen"));
 
   if (!GetTimerManager().IsTimerPaused(run_timer_handler_))
   {
@@ -388,8 +475,6 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   // args["location"] = "random";
   // args["orientation"] = "random";
 
-  controller.init_platform("unreal_agent");
-
   // spawn the Agent Manager (actor managing HISMs of the platforms)
 
   FActorSpawnParameters spawn_parameters;
@@ -413,7 +498,22 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   last_kb_read_time_ = 0;
   last_kb_write_time_ = 0;
   
-  threader_.resume("controller");
+  UE_LOG(LogGamsGameInstanceInit, Log,
+    TEXT("Init: waiting for controller evaluations to finish"), controller_hz);
+  
+  threader_.terminate();
+  threader_.wait();
+  
+  UE_LOG(LogGamsGameInstanceInit, Log,
+    TEXT("Init:"), controller_hz);
+  
+  for (int i = 0; i < (int)controllers.Num(); ++i)
+  {
+    FString name = "controller.";
+    name += FString::FromInt(i);
+    threader_.run(controller_hz, TCHAR_TO_UTF8(*name),
+      new GamsControllerThread(controllers[i]), false);
+  }
 
   // game loop delta and the delay before starting game thread
   float delta_time = gams_delta_time;
@@ -456,6 +556,7 @@ void UGamsGameInstance::Shutdown ()
 
   threader_.terminate();
   threader_.wait();
+
   UnrealAgentPlatform::unload_platform_classes();
   TimerManager->ClearTimer(run_timer_handler_);
   delete agent_factory_;

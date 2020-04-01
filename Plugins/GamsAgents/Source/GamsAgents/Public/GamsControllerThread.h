@@ -36,7 +36,7 @@ namespace gams
 class GamsControllerThread : public madara::threads::BaseThread
 {
 public:
-  GamsControllerThread(gams::controllers::Multicontroller& controller)
+  GamsControllerThread(gams::controllers::HiveController& controller)
     : controller_ (&controller)
   {
 
@@ -61,5 +61,5 @@ public:
   }
   
   madara::utility::Timer<std::chrono::steady_clock> timer_;
-  gams::controllers::Multicontroller * controller_;
+  gams::controllers::HiveController* controller_;
 };

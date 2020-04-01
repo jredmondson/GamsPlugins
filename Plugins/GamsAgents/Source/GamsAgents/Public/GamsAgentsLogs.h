@@ -32,3 +32,5 @@ DECLARE_LOG_CATEGORY_EXTERN(LogGamsArDrone, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogGamsF16, Log, All);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogGamsControllerThread, Log, All);
+
+DECLARE_LOG_CATEGORY_EXTERN(LogGamsControllerEvaluateThread, Log, All);
