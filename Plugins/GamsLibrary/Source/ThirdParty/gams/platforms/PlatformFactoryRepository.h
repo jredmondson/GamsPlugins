@@ -146,7 +146,7 @@ namespace gams
       * @param  type   type of platform
       * @return  true, if the platform has a factory associated with it
       **/
-      bool exists(const std::string & prefix);
+      bool exists(const std::string & prefix) const;
 
     private:
 
