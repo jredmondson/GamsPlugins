@@ -25,6 +25,8 @@ AGamsArDrone::AGamsArDrone()
   
   actors_ = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(
     TEXT("InstancedActors"));
+  //RootComponent = actors_;
+
   UStaticMesh* root_mesh =  Cast<UStaticMesh>(StaticLoadObject(
     UStaticMesh::StaticClass(), NULL, TEXT("/Game/Quadcopters/Mesh/SM_QuadcopterB_Main")));
 

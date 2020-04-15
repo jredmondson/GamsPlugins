@@ -88,7 +88,7 @@ public:
     UE_LOG(LogGamsControllerEvaluateThread, Log,
       TEXT("initializing unreal_agent platform"));
 
-    controller_->init_platform("unreal_agent");
+    //controller_->init_platform("unreal_agent");
     timer_.stop();
 
     UE_LOG(LogGamsControllerEvaluateThread, Log,

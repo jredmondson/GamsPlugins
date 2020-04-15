@@ -43,8 +43,12 @@ public:
 
   virtual void Init() override;
 
-  virtual void Shutdown() override;
+  virtual void StartGameInstance() override;
 
+  virtual void OnStart() override;
+
+  virtual void Shutdown() override;
+  
   void OnPreLoadMap(const FString& map_name);
 
   void OnPostLoadMap(UWorld * new_world);
@@ -98,6 +102,8 @@ private:
   float end_loop_time_ = -1.0f;
 
   double controller_hz = 2.0f;
+  
+  size_t num_controllers_ = 1;
 
   TArray<FString> filecontents_;
 

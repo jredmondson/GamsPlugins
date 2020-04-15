@@ -50,6 +50,8 @@ namespace transport = madara::transport;
 namespace threads = madara::threads;
 namespace containers = knowledge::containers;
 
+
+
 void UGamsGameInstance::Init()
 {
   Super::Init();
@@ -219,34 +221,34 @@ void UGamsGameInstance::Init()
     TEXT ("Init: resizing controller to %d agents"),
     (int)*swarm_size);
   
-  size_t num_controllers = 1;
+  num_controllers_ = 1;
 
   // check for num_controllers > 1 to use more CPU cores
   if (kb.exists("controller.threads"))
   {
-    num_controllers = kb.get("controller.threads").to_integer();
+    num_controllers_ = kb.get("controller.threads").to_integer();
 
-    if (num_controllers <= 0)
+    if (num_controllers_ <= 0)
     {
-      num_controllers = 1;
+      num_controllers_ = 1;
     }
   }
   
   UE_LOG(LogGamsGameInstanceInit, Log,
       TEXT("Init: setting num controllers (controller.threads) to %d"),
-      (int)num_controllers);
+      (int)num_controllers_);
   
-  controllers.SetNum((int32)num_controllers);
+  controllers.SetNum((int32)num_controllers_);
 
   size_t agents = (size_t)*swarm_size;
-  size_t agents_per_controller = agents / num_controllers;
-  size_t extra_agents = agents % num_controllers;
+  size_t agents_per_controller = agents / num_controllers_;
+  size_t extra_agents = agents % num_controllers_;
 
-  for (int32 i = 0; i < num_controllers; ++i)
+  for (int32 i = 0; i < num_controllers_; ++i)
   {
     controllers[i].set_hive(hive);
 
-    if (i != num_controllers - 1)
+    if (i != num_controllers_ - 1)
     {
       UE_LOG(LogGamsGameInstanceInit, Log,
           TEXT("Init: resizing controller[%d] to %d agents"),
@@ -292,14 +294,6 @@ void UGamsGameInstance::Init()
     }
   }
   
-  for (int i = 0; i < (int)num_controllers; ++i)
-  {
-    FString name = "controller.";
-    name += FString::FromInt(i);
-    threader_.run(TCHAR_TO_UTF8(*name),
-      new GamsControllerEvaluateThread(controllers[i], filecontents_));
-  }
-
   // check if platform speed needs to be overridden
   if (kb.exists("platform.max_speed"))
   {
@@ -309,29 +303,6 @@ void UGamsGameInstance::Init()
     
     UE_LOG(LogGamsGameInstanceInit, Log,
       TEXT("Init: platform speed overridden. speed=%f"), *FString(buf));
-  }
-
-  // check if level variables exists and if so, load the level
-  if (kb.exists("level"))
-  {
-    madara::utility::to_c_str(kb.get("level"), (char*)buf, 128);
-
-    FString current_level = GetWorld()->GetMapName();
-    FName level_name(*current_level);
-    if (level_name != FName(buf))
-    {
-      UE_LOG(LogGamsGameInstanceInit, Log,
-        TEXT("Init: opening map %s"), *FString(buf));
-
-      UGameplayStatics::OpenLevel(this, FName(buf), true);
-    }
-  }
-  else
-  {
-    // editor requires explicit call to change the world
-#if UE_EDITOR
-    OnPostLoadMap(gams_current_world);
-#endif
   }
 
   // setup delegates for changing maps (happens automatically on game start)
@@ -357,26 +328,74 @@ void UGamsGameInstance::Init()
     controller_hz = *temp_hz;
   }
   
+}
+
+
+void UGamsGameInstance::StartGameInstance()
+{
   UE_LOG(LogGamsGameInstanceInit, Log,
-    TEXT("Init: waiting for controller evaluations to finish"), controller_hz);
+    TEXT("StartGameInstance: Calling StartGameInstance"), controller_hz);
 
-  threader_.terminate();
-  threader_.wait();
+}
 
+void UGamsGameInstance::OnStart()
+{
   UE_LOG(LogGamsGameInstanceInit, Log,
-    TEXT("Init: starting GAMS controller at %f hz"), controller_hz);
+    TEXT("OnStart: Calling OnStart"), controller_hz);
+  
+  size_t buf_size(0);
+  char buf[128];
 
-  for (int i = 0; i < (int)num_controllers; ++i)
+  // check if level variables exists and if so, load the level
+  if (kb.exists("level"))
   {
-    FString name = "controller.";
-    name += FString::FromInt(i);
-    threader_.run(controller_hz, TCHAR_TO_UTF8(*name),
-      new GamsControllerThread(controllers[i]), false);
+    madara::utility::to_c_str(kb.get("level"), (char*)buf, 128);
+
+    FString current_level = GetWorld()->GetMapName();
+    FName level_name(*current_level);
+    if (level_name != FName(buf))
+    {
+      UE_LOG(LogGamsGameInstanceInit, Log,
+        TEXT("OnStart: opening map %s"), *FString(buf));
+
+      UGameplayStatics::OpenLevel(this, FName(buf), true);
+    }
   }
+  else
+  {
+    UGameplayStatics::OpenLevel(this, FName("Ocean"), true);
+  }
+  
+  //UE_LOG(LogGamsGameInstanceInit, Log,
+  //  TEXT("OnStart: waiting for controller evaluations to finish"),
+  //  controller_hz);
+  //
+  //for (int i = 0; i < (int)num_controllers; ++i)
+  //{
+  //  FString name = "controller.";
+  //  name += FString::FromInt(i);
+  //  threader_.run(TCHAR_TO_UTF8(*name),
+  //    new GamsControllerEvaluateThread(controllers[i], filecontents_));
+  //}
+
+  //threader_.terminate();
+  //threader_.wait();
+
+  //UE_LOG(LogGamsGameInstanceInit, Log,
+  //  TEXT("OnStart: starting GAMS controller at %f hz"), controller_hz);
+
+  //for (int i = 0; i < (int)num_controllers; ++i)
+  //{
+  //  FString name = "controller.";
+  //  name += FString::FromInt(i);
+  //  threader_.run(controller_hz, TCHAR_TO_UTF8(*name),
+  //    new GamsControllerThread(controllers[i]), false);
+  //}
 
   UE_LOG (LogGamsGameInstanceInit, Log,
-    TEXT ("Init: leaving"));
+    TEXT ("OnStart: leaving"));
 }
+
 
 float UGamsGameInstance::LoadingPercentage() const
 {
@@ -399,9 +418,6 @@ void UGamsGameInstance::OnPreLoadMap(const FString& map_name)
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("pre_level_load: "
       "tearing down past level components. Resuming threads."));
-
-  //threader_.pause("controller");
-  //threader_.wait_for_paused("controller");
 
   UE_LOG(LogGamsGameInstance, Log,
     TEXT("pre_level_load: "
@@ -459,11 +475,20 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
 {
   gams_current_world = new_world;
 
-  UE_LOG(LogGamsGameInstance, Log,
+  UE_LOG(LogGamsGameInstanceInit, Log,
     TEXT("post_level_load: "
-      "initializing unreal_agent platforms"));
+      "evaluating karl files within %d controllers"),
+    (int)num_controllers_);
+  
+  for (int i = 0; i < (int)num_controllers_; ++i)
+  {
+    FString name = "controller.";
+    name += FString::FromInt(i);
+    threader_.run(TCHAR_TO_UTF8(*name),
+      new GamsControllerEvaluateThread(controllers[i], filecontents_));
+  }
 
-  UE_LOG(LogGamsGameInstance, Log,
+  UE_LOG(LogGamsGameInstanceInit, Log,
     TEXT("post_level_load: creating args knowledge map"));
 
 
@@ -490,7 +515,25 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   // read platform settings from the KB to initialize KB bindings
   // note that if we want to remove kb blocking semantics, this is
   // where the variables are setup to the kb where context lock occurs
-
+  
+  UE_LOG(LogGamsGameInstanceInit, Log,
+    TEXT("post_level_load: waiting for controller evaluations to finish"),
+    controller_hz);
+  
+  threader_.terminate();
+  threader_.wait();
+  
+  UE_LOG(LogGamsGameInstanceInit, Log,
+    TEXT("post_level_load: initializing all platforms"), controller_hz);
+  
+  for (int i = 0; i < (int)controllers.Num(); ++i)
+  {
+    controllers[i].init_platform("unreal_agent");
+  }
+  
+  UE_LOG(LogGamsGameInstanceInit, Log,
+    TEXT("post_level_load: reading agent info into manager"), controller_hz);
+  
   manager_->read(kb);
 
   kb.send_modifieds();
@@ -499,13 +542,7 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   last_kb_write_time_ = 0;
   
   UE_LOG(LogGamsGameInstanceInit, Log,
-    TEXT("Init: waiting for controller evaluations to finish"), controller_hz);
-  
-  threader_.terminate();
-  threader_.wait();
-  
-  UE_LOG(LogGamsGameInstanceInit, Log,
-    TEXT("Init:"), controller_hz);
+    TEXT("post_level_load: launching controller run threads"), controller_hz);
   
   for (int i = 0; i < (int)controllers.Num(); ++i)
   {
@@ -537,7 +574,7 @@ void UGamsGameInstance::OnPostLoadMap(UWorld* new_world)
   gams_delta_time = delta_time;
 
   UE_LOG(LogGamsGameInstance, Log,
-    TEXT("Init: starting game loop with delta_time=%f after %fs"),
+    TEXT("post_level_load: starting game loop with delta_time=%f after %fs"),
     delta_time, delay);
 
   GetTimerManager().SetTimer(run_timer_handler_, this,
