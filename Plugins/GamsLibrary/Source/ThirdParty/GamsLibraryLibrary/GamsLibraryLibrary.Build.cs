@@ -58,6 +58,9 @@ public class GamsLibraryLibrary : ModuleRules
       System.IO.File.Copy(Path.Combine(GamsLibDirectory, "gams.dll"),
         Path.Combine(BinariesDir, "gams.dll"), true);
 
+      System.IO.File.Copy(Path.Combine(GamsLibDirectory, "gams.lib"),
+        Path.Combine(BinariesDir, "gams.lib"), true);
+
       PublicAdditionalLibraries.Add(Path.Combine(GamsLibDirectory, "gams.lib"));
       PublicDelayLoadDLLs.Add(Path.Combine(GamsLibDirectory, "gams.dll"));
       RuntimeDependencies.Add(Path.Combine(BinariesDir, "gams.dll"));

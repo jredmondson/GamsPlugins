@@ -238,8 +238,16 @@ void UGamsGameInstance::Init()
           TEXT("Init: evaluating %d byte karl logic on each platform"),
           (int32)filecontents_[i].Len());
 
-
-        controller.evaluate(TCHAR_TO_UTF8(*filecontents_[i]));
+        try
+        {
+          controller.evaluate(TCHAR_TO_UTF8(*filecontents_[i]));
+        }
+        catch (madara::exceptions::KarlException & e)
+        {
+          FString msg (e.what());
+            UE_LOG(LogGamsGameInstanceInit, Log,
+              TEXT("Init: caught karl exception: %s"), *msg);
+        }
       }
     }
   }

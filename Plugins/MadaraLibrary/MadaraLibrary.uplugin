@@ -1,23 +1,24 @@
 {
-  "FileVersion": 3,
-  "Version": 1,
-  "VersionName": "3.3.0",
-  "FriendlyName": "MADARA Library",
-  "Description": "MADARA library for distributed knowledge",
-  "Category": "AI",
-  "CreatedBy": "James Edmondson",
-  "CreatedByURL": "https://github.com/jredmondson",
-  "DocsURL": "https://github.com/jredmondson/GamsPlugins",
-  "MarketplaceURL": "",
-  "SupportURL": "https://github.com/jredmondson/GamsPlugins",
-  "CanContainContent": true,
-  "IsBetaVersion": false,
-  "Installed": false,
-  "Modules": [
-    {
-      "Name": "MadaraLibrary",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ]
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "3.3.1",
+	"FriendlyName": "MADARA Library",
+	"Description": "MADARA library for distributed knowledge",
+	"Category": "AI",
+	"CreatedBy": "James Edmondson",
+	"CreatedByURL": "https://github.com/jredmondson",
+	"DocsURL": "https://github.com/jredmondson/GamsPlugins",
+	"MarketplaceURL": "",
+	"SupportURL": "https://github.com/jredmondson/GamsPlugins",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "MadaraLibrary",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
 }

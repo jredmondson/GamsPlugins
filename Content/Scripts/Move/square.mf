@@ -1,0 +1,29 @@
+{.prefix}.algorithm="waypoints";
+
+// the formation is based on the square root of the swarm size
+.depth = #integer(#cbrt(swarm.size));
+.plane = #integer(#pow(.depth, 2));
+
+!.robot.width => (.robot.width = 0.5);
+!.robot.height => (.robot.height = 0.5);
+!.buffer => (.buffer = 0.5);
+
+.row = .id / .depth % .depth;
+.col = .id % .depth;
+.level  = .id / .plane;
+
+.origin.x = .col * (.robot.width + .buffer);
+.origin.y = .row * (.robot.width + .buffer);
+.origin.z = .level * (.robot.height + .buffer);
+
+// if no one has set origin, then set it to [5 * agent id, 5 * agent id, 0] as origin
+!.origin => (.origin = [.origin.x, .origin.y, .origin.z]);
+!.initial_pose => (.initial_pose = .origin);
+
+
+{.prefix}.algorithm.args.locations.size=4;
+{.prefix}.algorithm.args.locations.0=[.origin[0],                                    .origin[1],                                    .origin[2]];
+{.prefix}.algorithm.args.locations.1=[.origin[0],                                    .origin[1] + (.buffer + .robot.width) * depth, .origin[2]];
+{.prefix}.algorithm.args.locations.2=[.origin[0] + (.buffer + .robot.width) * depth, .origin[1] + (.buffer + .robot.width) * depth, .origin[2]];
+{.prefix}.algorithm.args.locations.3=[.origin[0] + (.buffer + .robot.width) * depth, .origin[1],                                    .origin[2]];
+{.prefix}.algorithm.args.repeat=20;

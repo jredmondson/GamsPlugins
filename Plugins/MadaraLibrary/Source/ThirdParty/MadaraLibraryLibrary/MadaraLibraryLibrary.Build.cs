@@ -52,6 +52,9 @@ public class MadaraLibraryLibrary : ModuleRules
       System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "madara.dll"),
         Path.Combine(BinariesDir, "madara.dll"), true);
 
+      System.IO.File.Copy(Path.Combine(MadaraLibDirectory, "madara.lib"),
+        Path.Combine(BinariesDir, "madara.lib"), true);
+
       PublicAdditionalLibraries.Add(Path.Combine(MadaraLibDirectory, "madara.lib"));
       PublicDelayLoadDLLs.Add(Path.Combine(MadaraLibDirectory, "madara.dll"));
       RuntimeDependencies.Add(Path.Combine(BinariesDir, "madara.dll"));
